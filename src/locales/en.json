@@ -56,17 +56,17 @@
       "provider": "Business Management",
       "customer": "Appointment Scheduling"
     },
-    "provider_login_title": "Levi for Professionals",
+    "provider_login_title": "Agendaly for Professionals",
     "provider_login_subtitle": "Create an account or log in to manage your business.",
-    "customer_login_title": "Levi for Customers",
+    "customer_login_title": "Agendaly for Customers",
     "customer_login_subtitle": "Create an account or log in to book and manage your appointments.",
     "customer_redirect_question": "Are you a customer looking to book an appointment?",
-    "customer_redirect_link": "Go to Levi for customers",
+    "customer_redirect_link": "Go to Agendaly for customers",
     "provider_redirect_question": "Have a business account?",
     "provider_redirect_link": "Sign in as a professional"
   },
   "business": {
-    "hero_title": "Grow Your Business with Levi",
+    "hero_title": "Grow Your Business with Agendaly",
     "hero_subtitle": "The all-in-one platform for service providers. Manage services, staff, schedules, and bookings effortlessly.",
     "get_started_free": "Get Started Free",
     "go_to_dashboard": "Go to Dashboard",
@@ -97,7 +97,7 @@
       "step3_desc": "Go live and start receiving bookings from customers"
     },
     "cta_title": "Ready to Grow Your Business?",
-    "cta_subtitle": "Join hundreds of service providers who trust Levi to manage their bookings"
+    "cta_subtitle": "Join hundreds of service providers who trust Agendaly to manage their bookings"
   },
   "pricing": {
     "title": "Choose Your Plan",
@@ -198,7 +198,7 @@
     "error_title": "Something went wrong",
     "error_message": "We couldn't process your request. Please try again.",
     "back_to_plans": "Back to Plans",
-    "success_title": "Welcome to Levi!",
+    "success_title": "Welcome to Agendaly!",
     "success_message": "Your subscription is now active. Let's set up your business profile.",
     "verifying": "Verifying your payment...",
     "trial_started": "Your 30-day free trial has started!",
@@ -576,7 +576,7 @@
     "title_edit": "Business Profile",
     "title_new": "Become a Provider",
     "subtitle_edit": "Manage your business details",
-    "subtitle_new": "Start managing your business with Levi today.",
+    "subtitle_new": "Start managing your business with Agendaly today.",
     "logo_label": "Business Logo",
     "logo_help": "Upload a logo for your business (optional)",
     "business_name": "Business Name",

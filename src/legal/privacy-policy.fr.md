@@ -8,11 +8,10 @@ Cette Politique de Confidentialité décrit comment nous collectons, utilisons, 
 
 ## A. QUI NOUS SOMMES
 
-**Responsable du Traitement:** Levi Platform  
-**E-mail:** privacy@levi.com  
-**Adresse:** [Adresse de l'Entreprise]
+**Responsable du Traitement:** Agendaly Platform  
+**E-mail:** kenoslabs+privacy@gmail.com
 
-Pour les utilisateurs de l'UE, notre Délégué à la Protection des Données peut être contacté à: dpo@levi.com
+Pour les utilisateurs de l'UE, notre Délégué à la Protection des Données peut être contacté à: kenoslabs+dpo@gmail.com
 
 ---
 
@@ -102,6 +101,7 @@ Nous conservons les données personnelles aussi longtemps que nécessaire pour:
 - Résoudre les litiges et faire respecter les accords
 
 **Périodes de Conservation:**
+
 - **Comptes actifs:** Données conservées tant que le compte est actif
 - **Comptes inactifs:** Supprimés après 3 ans d'inactivité
 - **Historique des réservations:** Conservé pendant 7 ans (exigences fiscales/légales)
@@ -141,9 +141,10 @@ Nous conservons les données personnelles aussi longtemps que nécessaire pour:
 - Droit d'accéder aux informations personnelles
 - Droit de contester l'exactitude des informations personnelles
 
-**Pour Exercer Vos Droits:** Envoyez un e-mail à privacy@levi.com
+**Pour Exercer Vos Droits:** Envoyez un e-mail à kenoslabs+privacy@gmail.com
 
 Nous répondrons dans un délai de:
+
 - **30 jours** (RGPD, CCPA, PIPEDA)
 - **15 jours** (LGPD)
 
@@ -183,9 +184,8 @@ Nous mettons en œuvre des mesures de sécurité conformes aux normes de l'indus
 
 Pour les questions de confidentialité ou pour exercer vos droits:
 
-**E-mail:** privacy@levi.com  
-**Délégué à la Protection des Données (UE):** dpo@levi.com  
-**Adresse:** [Adresse de l'Entreprise]
+**E-mail:** kenoslabs+privacy@gmail.com  
+**Délégué à la Protection des Données (UE):** kenoslabs+dpo@gmail.com
 
 ---
 

@@ -51,17 +51,17 @@
       "provider": "Gestion d'entreprise",
       "customer": "Prise de rendez-vous"
     },
-    "provider_login_title": "Levi pour les Professionnels",
+    "provider_login_title": "Agendaly pour les Professionnels",
     "provider_login_subtitle": "Créez un compte ou connectez-vous pour gérer votre entreprise.",
-    "customer_login_title": "Levi pour les Clients",
+    "customer_login_title": "Agendaly pour les Clients",
     "customer_login_subtitle": "Créez un compte ou connectez-vous pour réserver et gérer vos rendez-vous.",
     "customer_redirect_question": "Êtes-vous un client cherchant à prendre rendez-vous ?",
-    "customer_redirect_link": "Aller à Levi pour les clients",
+    "customer_redirect_link": "Aller à Agendaly pour les clients",
     "provider_redirect_question": "Vous avez un compte professionnel ?",
     "provider_redirect_link": "Se connecter en tant que professionnel"
   },
   "business": {
-    "hero_title": "Développez votre activité avec Levi",
+    "hero_title": "Développez votre activité avec Agendaly",
     "hero_subtitle": "La plateforme tout-en-un pour les prestataires de services. Gérez vos services, votre personnel, vos horaires et vos réservations sans effort.",
     "get_started_free": "Commencer gratuitement",
     "go_to_dashboard": "Accéder au tableau de bord",
@@ -92,7 +92,7 @@
       "step3_desc": "Lancez-vous et commencez à recevoir des réservations de clients"
     },
     "cta_title": "Prêt à développer votre entreprise ?",
-    "cta_subtitle": "Rejoignez des centaines de prestataires de services qui font confiance à Levi pour gérer leurs réservations"
+    "cta_subtitle": "Rejoignez des centaines de prestataires de services qui font confiance à Agendaly pour gérer leurs réservations"
   },
   "pricing": {
     "title": "Choisissez votre forfait",
@@ -570,7 +570,7 @@
     "title_edit": "Profil de l'entreprise",
     "title_new": "Devenir prestataire",
     "subtitle_edit": "Gérez les détails de votre entreprise",
-    "subtitle_new": "Commencez à gérer votre entreprise avec Levi dès aujourd'hui.",
+    "subtitle_new": "Commencez à gérer votre entreprise avec Agendaly dès aujourd'hui.",
     "logo_label": "Logo de l'entreprise",
     "logo_help": "Téléchargez un logo pour votre entreprise (facultatif)",
     "business_name": "Nom de l'entreprise",

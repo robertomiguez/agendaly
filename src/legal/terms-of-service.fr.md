@@ -15,6 +15,7 @@ Ces Conditions d'Utilisation ("Conditions") régissent votre accès et utilisati
 Nous fournissons une plateforme technologique qui vous permet de découvrir, réserver et communiquer avec des Prestataires indépendants.
 
 **Avis de non-responsabilité importants:**
+
 - Nous **ne** fournissons **pas** les services nous-mêmes
 - Nous **n'** employons **pas**, ne supervisons **pas**, ne contrôlons **pas** ni ne garantissons aucun Prestataire
 - Nous **ne** vérifions **pas** les références, licences ou qualifications des Prestataires
@@ -161,6 +162,7 @@ Ces Conditions sont régies par les lois applicables dans votre juridiction.
 ### 15. Règlement des Litiges
 
 **Clients:**
+
 - Les litiges doivent d'abord être soulevés directement auprès du Prestataire
 - Si non résolus, les litiges peuvent être soumis à médiation ou arbitrage selon la loi locale
 - Les clients de l'UE ont le droit d'utiliser la plateforme de règlement en ligne des litiges: https://ec.europa.eu/consumers/odr
@@ -169,8 +171,7 @@ Ces Conditions sont régies par les lois applicables dans votre juridiction.
 
 Pour des questions sur ces Conditions, contactez:
 
-**E-mail:** legal@levi.com  
-**Adresse:** [Votre Adresse Légale]
+**E-mail:** kenoslabs+legal@gmail.com
 
 ---
 

@@ -1,4 +1,4 @@
-# 📅 Levi - Appointment Scheduling App
+# 📅 Agendaly - Appointment Scheduling App
 
 A modern appointment scheduling application built with Vue 3, inspired by Vagaro.
 

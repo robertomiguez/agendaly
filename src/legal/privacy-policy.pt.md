@@ -8,11 +8,10 @@ Esta Política de Privacidade de Dados descreve como coletamos, usamos, armazena
 
 ## A. QUEM SOMOS
 
-**Controlador de Dados:** Levi Platform  
-**E-mail:** privacy@levi.com  
-**Endereço:** [Endereço da Empresa]
+**Controlador de Dados:** Agendaly Platform  
+**E-mail:** kenoslabs+privacy@gmail.com
 
-Para usuários da UE, nosso Encarregado de Proteção de Dados pode ser contatado em: dpo@levi.com
+Para usuários da UE, nosso Encarregado de Proteção de Dados pode ser contatado em: kenoslabs+dpo@gmail.com
 
 ---
 
@@ -106,6 +105,7 @@ Retemos dados pessoais pelo tempo necessário para:
 - Resolver disputas e fazer cumprir acordos
 
 **Períodos de Retenção:**
+
 - **Contas ativas:** Dados retidos enquanto a conta estiver ativa
 - **Contas inativas:** Excluídos após 3 anos de inatividade
 - **Histórico de agendamentos:** Retidos por 7 anos (requisitos fiscais/legais)
@@ -151,9 +151,10 @@ Retemos dados pessoais pelo tempo necessário para:
 - Direito de contestar a precisão de informações pessoais
 - Direito de retirar consentimento
 
-**Para Exercer Seus Direitos:** Envie e-mail para privacy@levi.com
+**Para Exercer Seus Direitos:** Envie e-mail para kenoslabs+privacy@gmail.com
 
 Responderemos dentro de:
+
 - **15 dias** (LGPD)
 - **30 dias** (GDPR, CCPA, PIPEDA)
 
@@ -168,6 +169,7 @@ Usamos cookies para:
 - **Preferências:** Lembrar suas configurações
 
 **Suas Escolhas de Cookie:**
+
 - **UE/Reino Unido:** Consentimento opt-in necessário para cookies não essenciais
 - **Outras jurisdições:** Você pode gerenciar cookies através das configurações do navegador
 
@@ -241,11 +243,11 @@ Podemos atualizar esta Política de Privacidade periodicamente. Alterações mat
 
 Para perguntas sobre privacidade ou para exercer seus direitos:
 
-**E-mail:** privacy@levi.com  
-**Encarregado de Proteção de Dados (UE):** dpo@levi.com  
-**Endereço:** [Endereço da Empresa]
+**E-mail:** kenoslabs+privacy@gmail.com  
+**Encarregado de Proteção de Dados (UE):** kenoslabs+dpo@gmail.com
 
 **Autoridades Supervisórias:**
+
 - **Brasil:** ANPD (Autoridade Nacional de Proteção de Dados)
 - **UE:** Você pode apresentar reclamação à sua Autoridade Local de Proteção de Dados
 - **Canadá:** Escritório do Comissário de Privacidade do Canadá

@@ -91,7 +91,7 @@ const hideNavigation = computed(() => {
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
           <span class="relative inline-flex rounded-full h-10 w-10 bg-primary"></span>
         </div>
-        <p class="text-muted-foreground animate-pulse">Loading Levi...</p>
+        <p class="text-muted-foreground animate-pulse">Loading Agendaly...</p>
       </div>
     </div>
 

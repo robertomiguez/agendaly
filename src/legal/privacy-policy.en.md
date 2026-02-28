@@ -8,11 +8,10 @@ This Data Privacy Policy describes how we collect, use, store, and protect your 
 
 ## A. WHO WE ARE
 
-**Data Controller:** Levi Platform  
-**Email:** privacy@levi.com  
-**Address:** [Your Business Address]
+**Data Controller:** Agendaly Platform  
+**Email:** kenoslabs+privacy@gmail.com
 
-For EU users, our Data Protection Officer can be reached at: dpo@levi.com
+For EU users, our Data Protection Officer can be reached at: kenoslabs+dpo@gmail.com
 
 ---
 
@@ -106,6 +105,7 @@ We retain personal data for as long as necessary to:
 - Resolve disputes and enforce agreements
 
 **Retention Periods:**
+
 - **Active accounts:** Data retained while account is active
 - **Inactive accounts:** Deleted after 3 years of inactivity
 - **Booking history:** Retained for 7 years (tax/legal requirements)
@@ -127,6 +127,7 @@ We retain personal data for as long as necessary to:
 ### GDPR Rights (EU/EEA/UK)
 
 In addition to the above:
+
 - Right to restriction of processing
 - Right to lodge a complaint with your local Data Protection Authority
 
@@ -152,9 +153,10 @@ In addition to the above:
 - Right to challenge accuracy of personal information
 - Right to withdraw consent
 
-**To Exercise Your Rights:** Email privacy@levi.com
+**To Exercise Your Rights:** Email kenoslabs+privacy@gmail.com
 
 We will respond within:
+
 - **30 days** (GDPR, CCPA, PIPEDA)
 - **15 days** (LGPD)
 
@@ -169,6 +171,7 @@ We use cookies to:
 - **Preferences:** Remember your settings
 
 **Your Cookie Choices:**
+
 - **EU/UK:** Opt-in consent required for non-essential cookies
 - **Other jurisdictions:** You can manage cookies through your browser settings
 
@@ -245,11 +248,11 @@ We may update this Privacy Policy from time to time. Material changes will be co
 
 For privacy questions or to exercise your rights:
 
-**Email:** privacy@levi.com  
-**Data Protection Officer (EU):** dpo@levi.com  
-**Address:** [Your Business Address]
+**Email:** kenoslabs+privacy@gmail.com  
+**Data Protection Officer (EU):** kenoslabs+dpo@gmail.com
 
 **Supervisory Authorities:**
+
 - **EU:** You may lodge a complaint with your local Data Protection Authority
 - **Brazil:** ANPD (Autoridade Nacional de Proteção de Dados)
 - **Canada:** Office of the Privacy Commissioner of Canada

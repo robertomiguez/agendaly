@@ -192,7 +192,7 @@ function goToDashboard() {
     <div class="bg-gray-900 text-gray-400 py-12">
       <div class="max-w-7xl mx-auto px-6">
         <div class="text-center">
-          <p class="mb-4">&copy; 2025 Levi. {{ $t('footer.rights') }}</p>
+          <p class="mb-4">&copy; 2026 Agendaly. {{ $t('footer.rights') }}</p>
           <div class="flex justify-center gap-6 text-sm">
             <a href="#" class="hover:text-white transition-colors">{{ $t('footer.about') }}</a>
             <a href="#" class="hover:text-white transition-colors">{{ $t('footer.privacy') }}</a>

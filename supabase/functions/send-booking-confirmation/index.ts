@@ -9,8 +9,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-api-key",
 };
-const FROM_EMAIL = "Levi Booking System <noreply@mail.kenoslabs.com>";
-const REPLY_TO = "kenoslabs@gmail.com";
+const FROM_EMAIL = "Agendaly Booking System <noreply@mail.agendaly.com>";
+const REPLY_TO = "kenoslabs+agendaly@gmail.com";
 const EMAIL_DELAY_MS = 1000; // 1 email per second (Rate Limit)
 const PRIMARY_COLOR = "#a54545"; // From app style
 const SUCCESS_COLOR = "#059669"; // Green for money/profit
@@ -32,7 +32,7 @@ const formatCurrency = (amount: number | undefined | null, locale: string = 'en'
   return new Intl.NumberFormat(formatLocale, { style: 'currency', currency }).format(amount);
 };
 
-function emailLayout(content: string, title: string = "Levi Booking System") {
+function emailLayout(content: string, title: string = "Agendaly Booking System") {
   return `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; color: #1a1a1a;">
       <div style="text-align: center; padding: 20px 0;">
@@ -42,7 +42,7 @@ function emailLayout(content: string, title: string = "Levi Booking System") {
         ${content}
       </div>
       <div style="text-align: center; padding-top: 20px; font-size: 12px; color: #6b7280;">
-        <p>Powered by Levi</p>
+        <strong>Agendaly</strong> is proudly built by <strong>KenosLabs</strong>.
       </div>
     </div>
   `;
@@ -50,7 +50,7 @@ function emailLayout(content: string, title: string = "Levi Booking System") {
 
 const translations = {
   en: {
-    systemName: "Levi Booking System",
+    systemName: "Agendaly Booking System",
     customer: {
       subject: "Booking Confirmed: {providerName}",
       title: "Booking Confirmed!",
@@ -91,7 +91,7 @@ const translations = {
     }
   },
   pt: {
-    systemName: "Sistema de Agendamento Levi",
+    systemName: "Sistema de Agendamento Agendaly",
     customer: {
       subject: "Agendamento Confirmado: {providerName}",
       title: "Agendamento Confirmado!",
@@ -132,7 +132,7 @@ const translations = {
     }
   },
   fr: {
-    systemName: "Système de Réservation Levi",
+    systemName: "Système de Réservation Agendaly",
     customer: {
       subject: "Réservation Confirmée : {providerName}",
       title: "Réservation Confirmée !",

@@ -15,6 +15,7 @@ These Terms of Service ("Terms") govern your access to and use of our platform (
 We provide a technology platform that enables you to discover, book, and communicate with independent Providers.
 
 **Important Disclaimers:**
+
 - We do **not** provide the services ourselves
 - We do **not** employ, supervise, control, or guarantee any Provider
 - We do **not** verify Provider credentials, licenses, or qualifications
@@ -183,11 +184,13 @@ We may suspend or remove your account at any time, with or without notice, if:
 ### 17. Dispute Resolution
 
 **Customers:**
+
 - Disputes should first be raised with the Provider directly
 - If unresolved, disputes may be submitted to mediation or arbitration as permitted by local law
 - EU customers have the right to use the Online Dispute Resolution platform: https://ec.europa.eu/consumers/odr
 
 **Providers:**
+
 - Disputes must be submitted to binding arbitration (where permitted by law)
 - Class action waivers apply to the extent permitted by law
 
@@ -211,8 +214,7 @@ We may update these Terms at any time. Continued use of the Platform after chang
 
 For questions about these Terms, contact:
 
-**Email:** legal@levi.com  
-**Address:** [Your Legal Address]
+**Email:** kenoslabs+legal@gmail.com
 
 ---
 

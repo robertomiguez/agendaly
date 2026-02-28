@@ -56,17 +56,17 @@
       "provider": "Gestão de Negócios",
       "customer": "Agendamento de Compromissos"
     },
-    "provider_login_title": "Levi para Profissionais",
+    "provider_login_title": "Agendaly para Profissionais",
     "provider_login_subtitle": "Crie uma conta ou faça login para gerenciar seu negócio.",
-    "customer_login_title": "Levi para Clientes",
+    "customer_login_title": "Agendaly para Clientes",
     "customer_login_subtitle": "Crie uma conta ou faça login para agendar e gerenciar seus compromissos.",
     "customer_redirect_question": "Você é um cliente procurando agendar um compromisso?",
-    "customer_redirect_link": "Ir para Levi para clientes",
+    "customer_redirect_link": "Ir para Agendaly para clientes",
     "provider_redirect_question": "Tem uma conta comercial?",
     "provider_redirect_link": "Entrar como profissional"
   },
   "business": {
-    "hero_title": "Expanda seu Negócio com o Levi",
+    "hero_title": "Expanda seu Negócio com o Agendaly",
     "hero_subtitle": "A plataforma completa para prestadores de serviços. Gerencie serviços, equipe, agendas e reservas sem esforço.",
     "get_started_free": "Comece Gratuitamente",
     "go_to_dashboard": "Ir para o Painel",
@@ -97,7 +97,7 @@
       "step3_desc": "Fique online e comece a receber reservas de clientes"
     },
     "cta_title": "Pronto para Expandir seu Negócio?",
-    "cta_subtitle": "Junte-se a centenas de prestadores de serviços que confiam no Levi para gerenciar suas reservas"
+    "cta_subtitle": "Junte-se a centenas de prestadores de serviços que confiam no Agendaly para gerenciar suas reservas"
   },
   "pricing": {
     "title": "Escolha seu Plano",
@@ -573,7 +573,7 @@
     "title_edit": "Perfil Comercial",
     "title_new": "Torne-se um Prestador",
     "subtitle_edit": "Gerencie os dados da sua empresa",
-    "subtitle_new": "Comece a gerenciar seu negócio com o Levi hoje mesmo.",
+    "subtitle_new": "Comece a gerenciar seu negócio com o Agendaly hoje mesmo.",
     "logo_label": "Logo da Empresa",
     "logo_help": "Faça o upload do logo da sua empresa (opcional)",
     "business_name": "Nome da Empresa",

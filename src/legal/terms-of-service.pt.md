@@ -15,6 +15,7 @@ Estes Termos de Serviço ("Termos") regem seu acesso e uso de nossa plataforma (
 Fornecemos uma plataforma tecnológica que permite descobrir, agendar e se comunicar com Prestadores independentes.
 
 **Importantes Isenções de Responsabilidade:**
+
 - Nós **não** fornecemos os serviços nós mesmos
 - Nós **não** empregamos, supervisionamos, controlamos ou garantimos qualquer Prestador
 - Nós **não** verificamos credenciais, licenças ou qualificações dos Prestadores
@@ -180,10 +181,12 @@ Estes Termos são regidos pelas leis aplicáveis em sua jurisdição.
 ### 17. Resolução de Disputas
 
 **Clientes:**
+
 - As disputas devem primeiro ser levantadas diretamente com o Prestador
 - Se não resolvidas, as disputas podem ser submetidas à mediação ou arbitragem, conforme permitido pela lei local
 
 **Prestadores:**
+
 - As disputas devem ser submetidas à arbitragem vinculativa (quando permitido por lei)
 
 ### 18. Força Maior
@@ -206,8 +209,7 @@ Podemos atualizar estes Termos a qualquer momento. O uso continuado da Plataform
 
 Para perguntas sobre estes Termos, entre em contato:
 
-**E-mail:** legal@levi.com  
-**Endereço:** [Seu Endereço Legal]
+**E-mail:** kenoslabs+legal@gmail.com
 
 ---
 
