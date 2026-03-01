@@ -5,7 +5,7 @@
     DO $$
     DECLARE
         -- REPLACE THIS UUID WITH THE PROVIDER ID YOU WANT TO DELETE
-        target_provider_id uuid := '00000000-0000-0000-0000-000000000000';
+        target_provider_id uuid := '9bca88ad-92b4-4cea-a8f7-8bdf59a94da2';
         target_subscription_id uuid;
     BEGIN
         RAISE NOTICE 'Starting deletion for provider: %', target_provider_id;
@@ -75,11 +75,14 @@
             RAISE NOTICE 'Deleted payments';
         END IF;
 
-        -- 10. Delete Provider (before subscription due to FK constraint)
-        -- This must be done before deleting the subscription
-        DELETE FROM public.providers
-        WHERE id = target_provider_id;
-        RAISE NOTICE 'Deleted provider: %', target_provider_id;
+        -- 10. Break Circular Dependency
+        -- Set subscription_id to NULL on the provider to allow subscription deletion
+        IF target_subscription_id IS NOT NULL THEN
+            UPDATE public.providers
+            SET subscription_id = NULL
+            WHERE id = target_provider_id;
+            RAISE NOTICE 'Severed provider -> subscription dependency';
+        END IF;
 
         -- 11. Delete Subscription
         -- Dependencies: Plan (FK, but we don't delete plans)
@@ -88,5 +91,11 @@
             WHERE id = target_subscription_id;
             RAISE NOTICE 'Deleted subscription: %', target_subscription_id;
         END IF;
+
+        -- 12. Delete Provider
+        -- With subscription deleted, we can safely delete the provider
+        DELETE FROM public.providers
+        WHERE id = target_provider_id;
+        RAISE NOTICE 'Deleted provider: %', target_provider_id;
 
     END $$;
