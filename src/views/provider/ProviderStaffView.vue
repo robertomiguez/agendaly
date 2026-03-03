@@ -127,6 +127,13 @@ function setCopiedState(id: string) {
     }, 3000)
 }
 
+async function checkLimits() {
+  if (!authStore.provider) return
+  const limitCheck = await canAddStaff(authStore.provider.id)
+  canAdd.value = limitCheck.allowed
+  limitState.value = limitCheck
+}
+
 onMounted(async () => {
   // Trust the browser OR User Agent for share UI (force share icon on mobile)
   const isMobile = /Mobi|Android/i.test(navigator.userAgent)
@@ -141,10 +148,7 @@ onMounted(async () => {
     fetchProviderAddresses()
   ])
 
-  // Check plan limits
-  const limitCheck = await canAddStaff(authStore.provider.id)
-  canAdd.value = limitCheck.allowed
-  limitState.value = limitCheck
+  await checkLimits()
 })
 
 async function fetchStaff() {
@@ -271,6 +275,7 @@ async function executeSave(payload: typeof pendingSavePayload.value) {
     modal.close()
     showConflictModal.value = false
     pendingSavePayload.value = null
+    await checkLimits()
   } catch (e) {
     console.error('Error saving staff:', e)
     showError(t('provider.staff.save_error') + ': ' + (e instanceof Error ? e.message : String(e)))
@@ -316,6 +321,7 @@ async function executeToggleActive(staffMember: Staff) {
         staff.value[index] = data
       }
     }
+    await checkLimits()
     showSuccess(t('provider.staff.toggle_success'))
     showConflictModal.value = false
   } catch (e) {
@@ -362,7 +368,7 @@ async function confirmDeactivation() {
               {{ $t('provider.staff.add_button') }}
             </button>
             <div v-if="!canAdd && limitState?.reason === 'limit_reached'" class="mt-2 w-full max-w-[400px]">
-              <Alert variant="destructive">
+              <Alert variant="warning">
                 <AlertCircle class="h-4 w-4" />
                 <AlertTitle>{{ $t('pricing.limits.staff_msg', { planName: limitState.planName, count: limitState.limit }) }}</AlertTitle>
                 <AlertDescription>
@@ -398,7 +404,7 @@ async function confirmDeactivation() {
             {{ $t('provider.staff.add_button') }} →
           </button>
           <div v-if="!canAdd && limitState?.reason === 'limit_reached'" class="mt-4 w-full max-w-[400px] text-left">
-            <Alert variant="destructive">
+            <Alert variant="warning">
               <AlertCircle class="h-4 w-4" />
               <AlertTitle>{{ $t('pricing.limits.staff_msg', { planName: limitState.planName, count: limitState.limit }) }}</AlertTitle>
               <AlertDescription>

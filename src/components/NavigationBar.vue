@@ -151,7 +151,7 @@ function changeLanguage(lang: string) {
         <div class="flex items-center">
           <a class="flex items-center space-x-2 cursor-pointer" @click="router.push('/'); showMobileMenu = false">
             <span class="font-bold text-2xl text-primary-600 inline-block">Agendaly</span>
-            <span class="text-xs text-muted-foreground ml-1">System test alpha 0.0.3</span>
+            <span class="text-xs text-muted-foreground ml-1">System test alpha 0.0.4</span>
           </a>
         </div>
 

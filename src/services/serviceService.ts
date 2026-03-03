@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase'
 import type { Service } from '../types'
+import { canAddService } from './subscriptionService'
 
 export async function fetchServices(providerId?: string) {
     let query = supabase
@@ -42,6 +43,12 @@ export async function fetchServices(providerId?: string) {
 }
 
 export async function createService(service: Omit<Service, 'id' | 'created_at' | 'updated_at' | 'categories' | 'staff' | 'provider' | 'images'> & { staff_ids?: string[], image_urls?: string[] }) {
+    if (!service.provider_id) throw new Error('Provider ID is required');
+    const limitCheck = await canAddService(service.provider_id)
+    if (!limitCheck.allowed && service.active !== false) {
+      throw new Error(limitCheck.message || 'Service limit reached for your plan.')
+    }
+
     // Explicitly remove 'id' if it exists in the runtime object to avoid violating NOT NULL constraint
     // @ts-ignore
     const { staff_ids, image_urls, id, ...serviceData } = service

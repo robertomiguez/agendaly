@@ -13,7 +13,7 @@ import ConfirmationModal from '../../components/common/ConfirmationModal.vue'
 
 
 import LoadingSpinner from '../../components/common/LoadingSpinner.vue'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Alert, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-vue-next'
 import { canAddLocation } from '../../services/subscriptionService'
 import LocationPicker from '../../components/common/LocationPicker.vue'
@@ -51,6 +51,7 @@ async function handleConfirmDelete() {
   
   try {
     await addressStore.deleteAddress(pendingDeleteId.value)
+    await checkLimits()
     showSuccess(t('provider.locations.delete_success'))
   } catch (error) {
     console.error('Error deleting address:', error)
@@ -91,17 +92,20 @@ const limitState = ref<{
     message?: string;
 } | null>(null)
 
+async function checkLimits() {
+  if (!authStore.provider) return
+  const limitCheck = await canAddLocation(authStore.provider.id)
+  canAdd.value = limitCheck.allowed
+  limitState.value = limitCheck
+}
+
 onMounted(async () => {
   if (!authStore.provider) {
     router.push('/booking')
     return
   }
   await addressStore.fetchAddresses(authStore.provider.id)
-
-  // Check plan limits
-  const limitCheck = await canAddLocation(authStore.provider.id)
-  canAdd.value = limitCheck.allowed
-  limitState.value = limitCheck
+  await checkLimits()
 })
 
 function openAddModal() {
@@ -311,6 +315,7 @@ async function handleSave() {
       })
     }
     modal.close()
+    await checkLimits()
     showSuccess(t('provider.locations.save_success'))
   } catch (error) {
     console.error('Error saving address:', error)
@@ -363,14 +368,9 @@ async function handleSetPrimary(id: string) {
               {{ $t('provider.locations.add_button') }}
             </button>
             <div v-if="!canAdd && limitState?.reason === 'limit_reached'" class="mt-2 w-full max-w-[400px]">
-              <Alert variant="destructive">
+              <Alert variant="warning">
                 <AlertCircle class="h-4 w-4" />
                 <AlertTitle>{{ $t('pricing.limits.location_msg', { planName: limitState.planName, count: limitState.limit }) }}</AlertTitle>
-                <AlertDescription>
-                  <router-link to="/provider/pricing" class="underline font-medium hover:text-red-900">
-                    {{ $t('pricing.limits.upgrade') }}
-                  </router-link>
-                </AlertDescription>
               </Alert>
             </div>
           </div>
@@ -400,14 +400,9 @@ async function handleSetPrimary(id: string) {
             {{ $t('provider.locations.add_button') }} →
           </button>
           <div v-if="!canAdd && limitState?.reason === 'limit_reached'" class="mt-4 w-full max-w-[400px] text-left">
-            <Alert variant="destructive">
+            <Alert variant="warning">
               <AlertCircle class="h-4 w-4" />
               <AlertTitle>{{ $t('pricing.limits.location_msg', { planName: limitState.planName, count: limitState.limit }) }}</AlertTitle>
-              <AlertDescription>
-                <router-link to="/provider/pricing" class="underline font-medium hover:text-red-900">
-                  {{ $t('pricing.limits.upgrade') }}
-                </router-link>
-              </AlertDescription>
             </Alert>
           </div>
         </div>
