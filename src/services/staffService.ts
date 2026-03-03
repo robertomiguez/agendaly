@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase'
 import type { Staff } from '../types'
+import { canAddStaff } from './subscriptionService'
 
 export async function fetchStaff(providerId: string) {
     const { data, error } = await supabase
@@ -14,6 +15,12 @@ export async function fetchStaff(providerId: string) {
 }
 
 export async function createStaff(staff: Omit<Staff, 'id' | 'created_at' | 'updated_at'>) {
+    if (!staff.provider_id) throw new Error('Provider ID is required');
+    const limitCheck = await canAddStaff(staff.provider_id)
+    if (!limitCheck.allowed && staff.active !== false) {
+      throw new Error(limitCheck.message || 'Staff limit reached for your plan.')
+    }
+
     const { data, error } = await supabase
         .from('staff')
         .insert([staff])

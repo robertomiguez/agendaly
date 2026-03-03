@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase'
 import type { ProviderAddress } from '../types'
+import { canAddLocation } from './subscriptionService'
 
 export async function fetchAddresses(providerId: string): Promise<ProviderAddress[]> {
   const { data, error } = await supabase
@@ -14,6 +15,11 @@ export async function fetchAddresses(providerId: string): Promise<ProviderAddres
 }
 
 export async function createAddress(address: Omit<ProviderAddress, 'id' | 'created_at' | 'updated_at'>): Promise<ProviderAddress> {
+  const limitCheck = await canAddLocation(address.provider_id)
+  if (!limitCheck.allowed) {
+    throw new Error(limitCheck.message || 'Location limit reached for your plan.')
+  }
+
   const { data, error } = await supabase
     .from('provider_addresses')
     .insert([address])
