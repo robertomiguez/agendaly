@@ -339,7 +339,7 @@ export async function canAddLocation(providerId: string): Promise<{
             limit: subscription.plan.max_locations,
             currentCount: count || 0,
             planName: subscription.plan.display_name,
-            message: `Your ${subscription.plan.display_name} plan allows up to ${subscription.plan.max_locations} location(s). Upgrade to add more.` 
+            message: `Your ${subscription.plan.display_name} plan allows up to ${subscription.plan.max_locations} location(s).` 
         }
     }
 

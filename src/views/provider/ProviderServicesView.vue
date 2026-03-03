@@ -94,6 +94,13 @@ const filteredServices = computed(() => {
   })
 })
 
+async function checkLimits() {
+  if (!authStore.provider) return
+  const limitCheck = await canAddService(authStore.provider.id)
+  canAdd.value = limitCheck.allowed
+  limitState.value = limitCheck
+}
+
 onMounted(async () => {
   try {
     if (!authStore.provider) {
@@ -105,10 +112,7 @@ onMounted(async () => {
       categoryStore.fetchCategories()
     ])
     
-    // Check plan limits
-    const limitCheck = await canAddService(authStore.provider.id)
-    canAdd.value = limitCheck.allowed
-    limitState.value = limitCheck
+    await checkLimits()
   } finally {
     isLoading.value = false
   }
@@ -201,6 +205,7 @@ async function executeSave(serviceData: any) {
     }
     modal.close()
     showConflictModal.value = false
+    await checkLimits()
   } catch (err) {
     console.error('Error in handleSave:', err)
     showError(t('provider.services.save_error') + ': ' + (err instanceof Error ? err.message : String(err)))
@@ -240,6 +245,7 @@ async function executeToggleActive(service: Service) {
     await serviceStore.updateService(service.id, { active: !service.active })
     showSuccess(t('provider.staff.toggle_success'))
     showConflictModal.value = false
+    await checkLimits()
   } catch (err) {
     console.error('Error in toggleActive:', err)
     showError(t('provider.services.toggle_error'))
@@ -287,7 +293,7 @@ async function confirmDeactivation() {
                 {{ $t('provider.services.add_button') }}
               </button>
             <div v-if="!canAdd && limitState?.reason === 'limit_reached'" class="mt-2 w-full max-w-[400px]">
-              <Alert variant="destructive">
+              <Alert variant="warning">
                 <AlertCircle class="h-4 w-4" />
                 <AlertTitle>{{ $t('pricing.limits.service_msg', { planName: limitState.planName, count: limitState.limit }) }}</AlertTitle>
                 <AlertDescription>
@@ -348,7 +354,7 @@ async function confirmDeactivation() {
             </button>
             
             <div v-if="!canAdd && limitState?.reason === 'limit_reached'" class="mt-4 w-full max-w-[400px] text-left">
-              <Alert variant="destructive">
+              <Alert variant="warning">
                 <AlertCircle class="h-4 w-4" />
                 <AlertTitle>{{ $t('pricing.limits.service_msg', { planName: limitState.planName, count: limitState.limit }) }}</AlertTitle>
                 <AlertDescription>
