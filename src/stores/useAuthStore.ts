@@ -12,6 +12,7 @@ export const useAuthStore = defineStore('auth', () => {
     const loading = ref(false)
     const error = ref<string | null>(null)
     const isReady = ref(false)
+    let _ensureProfilePromise: Promise<void> | null = null
 
     const isAuthenticated = computed(() => !!user.value)
 
@@ -116,11 +117,24 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     async function ensureCustomerProfile(initialData?: { name?: string; phone?: string }) {
+        // Deduplication: if already running, share the same promise
+        if (_ensureProfilePromise) {
+            return _ensureProfilePromise
+        }
+
+        _ensureProfilePromise = _doEnsureCustomerProfile(initialData)
+        try {
+            await _ensureProfilePromise
+        } finally {
+            _ensureProfilePromise = null
+        }
+    }
+
+    async function _doEnsureCustomerProfile(initialData?: { name?: string; phone?: string }) {
         if (!user.value?.email) return
 
         // GUARD: If this user is ALREADY identified as a provider, do NOT create a customer profile automatically.
         if (provider.value) {
-            console.log('[AuthStore] User is a provider, skipping customer profile creation.')
             return
         }
 
@@ -132,12 +146,12 @@ export const useAuthStore = defineStore('auth', () => {
             window.location.pathname.startsWith('/provider')
             
         if (isProviderFlow) {
-            console.log('[AuthStore] Detected provider flow in URL, skipping customer profile creation.')
             return
         }
 
         try {
-             // Check for existing customer with same email but different/no auth_user_id
+            // Check for existing customer with same email but different/no auth_user_id
+            // This handles the case where a user previously signed up with OTP and now signs in with Google
             const { data: existingCustomer } = await supabase
                 .from('customers')
                 .select('*')
@@ -145,12 +159,11 @@ export const useAuthStore = defineStore('auth', () => {
                 .maybeSingle()
             
             if (existingCustomer) {
-                // Claim this profile!
+                // Claim this profile by linking it to the current auth user
                 const { data: updatedCustomer, error: updateError } = await supabase
                     .from('customers')
                     .update({ 
                         auth_user_id: user.value.id,
-                        // Update avatar if not present
                         avatar_url: existingCustomer.avatar_url || user.value.user_metadata?.avatar_url || user.value.user_metadata?.picture
                     })
                     .eq('id', existingCustomer.id)
@@ -160,7 +173,8 @@ export const useAuthStore = defineStore('auth', () => {
                 if (updateError) throw updateError
                 customer.value = updatedCustomer
             } else {
-                // Create new profile
+                // No profile found by email or auth_user_id — create a new one
+                // createCustomerProfile has its own guard against duplicates
                 await createCustomerProfile(initialData)
             }
 
@@ -173,19 +187,45 @@ export const useAuthStore = defineStore('auth', () => {
         if (!user.value) return
 
         try {
-            const { data, error: createError } = await supabase
+            // Check if profile already exists for this auth user
+            const { data: existing } = await supabase
                 .from('customers')
-                .insert([{
+                .select('*')
+                .eq('auth_user_id', user.value.id)
+                .maybeSingle()
+
+            if (existing) {
+                customer.value = existing
+                return
+            }
+
+            // No existing profile — create one
+            const { data, error: insertError } = await supabase
+                .from('customers')
+                .insert({
                     auth_user_id: user.value.id,
                     email: user.value.email!,
                     name: initialData?.name || user.value.user_metadata?.name || user.value.user_metadata?.full_name,
                     phone: initialData?.phone,
                     avatar_url: user.value.user_metadata?.avatar_url || user.value.user_metadata?.picture
-                }])
+                })
                 .select()
                 .single()
 
-            if (createError) throw createError
+            if (insertError) {
+                // Handle race condition: another call created the profile between our check and insert
+                if (insertError.code === '23505') {
+                    const { data: raceExisting } = await supabase
+                        .from('customers')
+                        .select('*')
+                        .eq('auth_user_id', user.value.id)
+                        .maybeSingle()
+                    if (raceExisting) customer.value = raceExisting
+                    return
+                }
+                throw insertError
+            }
+
             customer.value = data
         } catch (e) {
             console.error('Error creating customer profile:', e)
@@ -391,6 +431,7 @@ export const useAuthStore = defineStore('auth', () => {
         fetchCustomerProfile,
         fetchProviderProfile,
         createCustomerProfile,
+        ensureCustomerProfile,
         isReady,
         signInWithOAuth
     }

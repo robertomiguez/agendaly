@@ -222,7 +222,7 @@ router.beforeEach(async (to, _from, next) => {
             if (to.path.startsWith('/admin') || to.path.startsWith('/provider') || to.path === '/booking') {
                 return next()
             }
-            return next('/profile')
+            return next({ path: '/profile', query: { redirect: to.fullPath } })
         }
     }
 
