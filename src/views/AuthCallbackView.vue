@@ -33,26 +33,29 @@ onMounted(async () => {
 
 function handleRedirect() {
     // Get redirect from query parameter (passed through OAuth flow)
+    // NOTE: Supabase OAuth may strip query params, so we also check localStorage
     const redirect = route.query.redirect as string
     const customer = authStore.customer
     const isNewUser = !customer || !customer.name || !customer.phone
+    const pendingBookingState = localStorage.getItem('pendingBookingState')
 
-    // Check for pending booking state - only if redirect was explicitly set to /booking
-    // This prevents stale booking state from hijacking normal logins
-    if (redirect === '/booking') {
-        const pendingBookingState = localStorage.getItem('pendingBookingState')
-        if (pendingBookingState) {
-            if (isNewUser) {
-                // New user in booking flow: go to profile first, then return to booking
-                router.push('/profile?redirect=/booking')
-            } else {
-                // Existing user in booking flow: go directly to booking to complete it
-                router.push('/booking')
-            }
-            return
+    // Determine if we're in the booking flow:
+    // Either the redirect param says /booking, OR we have pending booking state in localStorage
+    const isBookingFlow = redirect === '/booking' || !!pendingBookingState
+
+    if (isBookingFlow && pendingBookingState) {
+        if (isNewUser) {
+            // New user in booking flow: go to profile first, then return to booking
+            router.push('/profile?redirect=/booking')
+        } else {
+            // Existing user in booking flow: go directly to booking to complete it
+            router.push('/booking')
         }
-    } else {
-        // Clear any stale booking state if we're not in the booking flow
+        return
+    }
+
+    // Clear any stale booking state if we're not in the booking flow
+    if (!isBookingFlow) {
         localStorage.removeItem('pendingBookingState')
     }
 
@@ -66,7 +69,12 @@ function handleRedirect() {
         }
     } else if (redirect && redirect !== '/booking') {
         // Other specific redirect (but not booking which we already handled above)
-        router.push(redirect)
+        // Only allow relative paths to prevent open redirect attacks
+        if (redirect.startsWith('/') && !redirect.startsWith('//')) {
+            router.push(redirect)
+        } else {
+            router.push('/')
+        }
     } else if (authStore.provider) {
         // No redirect specified but user is a provider
         router.push('/provider/dashboard')

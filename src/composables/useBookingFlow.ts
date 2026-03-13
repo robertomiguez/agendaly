@@ -334,7 +334,20 @@ export function useBookingFlow(initialProviderId?: string, initialStaffId?: stri
   }
 
   async function submitBooking(errorCallback: (msg: string) => void, t: (key: string) => string) {
-    if (!selectedService.value || !selectedStaffId.value || !selectedDate.value || !selectedTime.value) {
+    if (!selectedService.value) {
+      errorCallback('Missing selected service')
+      return false
+    }
+    if (!selectedStaffId.value) {
+      errorCallback('Missing selected staff')
+      return false
+    }
+    if (!selectedDate.value) {
+      errorCallback('Missing selected date')
+      return false
+    }
+    if (!selectedTime.value) {
+      errorCallback('Missing selected time')
       return false
     }
 
@@ -348,11 +361,8 @@ export function useBookingFlow(initialProviderId?: string, initialStaffId?: stri
     }
 
     if (!authStore.customer) {
-      await authStore.createCustomerProfile()
-      if (!authStore.customer) {
-        errorCallback('Please log in to book an appointment')
-        return false
-      }
+      errorCallback('Please log in to book an appointment')
+      return false
     }
 
     isSubmitting.value = true
@@ -464,34 +474,34 @@ export function useBookingFlow(initialProviderId?: string, initialStaffId?: stri
       if (state.addressId !== undefined && state.addressId !== null) {
         selectedAddressId.value = state.addressId
       }
-      if (state.date !== undefined && state.date !== null) {
-        selectedDate.value = new Date(state.date)
+      if (state.date !== undefined) { // Ensure date is properly parsed
+        const restoredDate = new Date(state.date)
+        if (!isNaN(restoredDate.getTime())) {
+          selectedDate.value = restoredDate
+          selectedTime.value = state.time
+        }
+        notes.value = state.notes || ''
+        
+        currentStep.value = 4 // Go to confirm step
+        restoredFromPending.value = true
+        showLogin.value = false
+        
+        // We do NOT clear the flag here. We rely on the caller to call finishRestoringState()
+        // once all async setup guarantees are met, to prevent watchers wiping the time.
+        
+        localStorage.removeItem(PENDING_BOOKING_KEY)
+        return true
       }
-      if (state.time !== undefined && state.time !== null) {
-        selectedTime.value = state.time
-      }
-      if (state.notes !== undefined && state.notes !== null) {
-        notes.value = state.notes
-      }
-      if (state.step !== undefined && state.step !== null) {
-        currentStep.value = state.step
-      }
-
-      // Clear flag after a short delay to ensure all watchers have processed
-      setTimeout(() => {
-        isRestoringState = false
-      }, 100)
-
-      // Clear the saved state
-      clearPendingBookingState()
-      restoredFromPending.value = true
-      return true
     } catch (e) {
-      console.error('Error restoring booking state:', e)
-      isRestoringState = false
-      clearPendingBookingState()
-      return false
+      console.error('Failed to restore booking state:', e)
     }
+    
+    isRestoringState = false
+    return false
+  }
+
+  function finishRestoringState() {
+    isRestoringState = false
   }
 
   function clearPendingBookingState() {
@@ -644,6 +654,7 @@ export function useBookingFlow(initialProviderId?: string, initialStaffId?: stri
     resetBooking,
     saveBookingState,
     restoreBookingState,
+    finishRestoringState,
     clearPendingBookingState
   }
 }

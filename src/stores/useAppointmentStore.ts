@@ -501,8 +501,6 @@ export const useAppointmentStore = defineStore('appointment', () => {
         }
     }
 
-    // Initialize store
-    console.log('Appointment store initialized with checkConflictsInRange')
 
     return {
         appointments,

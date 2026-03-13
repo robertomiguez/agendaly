@@ -43,6 +43,8 @@ watch(
 
 async function updateProfile() {
   const isNewUser = !authStore.customer
+  // Check if profile is incomplete (happens during Google Auth / OTP)
+  const wasIncomplete = !authStore.customer?.name || !authStore.customer?.phone
   loading.value = true
   clearMessages()
   
@@ -63,8 +65,9 @@ async function updateProfile() {
     
     showSuccess(t('profile.update_success'))
     
-    if (isNewUser) {
-      // Navigate to the redirect destination (booking or root)
+    // Auto-redirect if they were completing a mandatory profile setup
+    // OR if there is an explicit redirect like /booking
+    if (wasIncomplete || route.query.redirect) {
       router.push(redirectDestination.value)
     }
 
@@ -117,9 +120,9 @@ async function updateProfile() {
         </div>
 
         <div class="space-y-3">
-          <!-- New User: Save and Continue -->
+          <!-- New/Incomplete User: Save and Continue -->
           <button
-            v-if="!authStore.customer"
+            v-if="!authStore.customer || (!authStore.customer.name || !authStore.customer.phone)"
             type="submit"
             :disabled="loading"
             class="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-4 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"

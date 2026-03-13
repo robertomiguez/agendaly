@@ -160,10 +160,9 @@ export const useStaffStore = defineStore('staff', () => {
                 .eq('staff_id', staffId)
 
             if (fetchError) throw fetchError
-            console.log('Raw staff_addresses data:', data)
+
             // Map to addresses and filter nulls
             const addresses = data?.map(sa => sa.address as unknown as ProviderAddress).filter(Boolean) || []
-            console.log('Mapped addresses:', addresses)
             return addresses
         } catch (e) {
             console.error('Error fetching staff addresses:', e)

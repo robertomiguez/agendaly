@@ -29,45 +29,52 @@ const { errorMessage, showError, clearMessages } = useNotifications()
 // Initialize booking flow
 const booking = useBookingFlow()
 const isLoading = ref(true)
+const isAutoSubmitting = ref(false)
 
 onMounted(async () => {
   try {
     // Check if we're returning from OAuth with pending booking state
     const wasRestored = booking.restoreBookingState()
     
-    const providerId = wasRestored ? booking.selectedProviderId.value : route.query.provider as string
-    const staffId = wasRestored ? booking.selectedStaffId.value : route.query.staff as string
+    if (!wasRestored) {
+      const providerId = route.query.provider as string
+      const staffId = route.query.staff as string
 
-    if (staffId) {
-      const staffMember = await staffStore.fetchStaffMember(staffId)
-      if (staffMember && staffMember.provider_id) {
-        booking.selectedProviderId.value = staffMember.provider_id
-        booking.selectedStaffId.value = staffMember.id
-        await booking.fetchProviderInfo(staffMember.provider_id)
+      if (staffId) {
+        const staffMember = await staffStore.fetchStaffMember(staffId)
+        if (staffMember && staffMember.provider_id) {
+          booking.selectedProviderId.value = staffMember.provider_id
+          booking.selectedStaffId.value = staffMember.id
+          await booking.fetchProviderInfo(staffMember.provider_id)
+        }
+      } else if (providerId) {
+        booking.selectedProviderId.value = providerId
+        await booking.fetchProviderInfo(providerId)
       }
-    } else if (providerId) {
-      booking.selectedProviderId.value = providerId
-      await booking.fetchProviderInfo(providerId)
-    }
-    
-    if (booking.selectedProviderId.value) {
-      await serviceStore.fetchAllServices(booking.selectedProviderId.value)
-    }
-    await staffStore.fetchStaff()
+      
+      if (booking.selectedProviderId.value) {
+        await serviceStore.fetchAllServices(booking.selectedProviderId.value)
+      }
+      await staffStore.fetchStaff()
 
-    if (authStore.isAuthenticated && !authStore.customer) {
-      await authStore.createCustomerProfile()
+      if (staffId && booking.filteredServices.value.length === 1) {
+        booking.selectService(booking.filteredServices.value[0]!.id)
+      }
+    } else {
+      // If restored, we already have the IDs. We just need to load the data for display/computation.
+      if (booking.selectedProviderId.value) {
+        await booking.fetchProviderInfo(booking.selectedProviderId.value)
+        await serviceStore.fetchAllServices(booking.selectedProviderId.value)
+        await staffStore.fetchStaff()
+      }
     }
 
-    if (staffId && !wasRestored && booking.filteredServices.value.length === 1) {
-      booking.selectService(booking.filteredServices.value[0]!.id)
-    }
-
-    // If we restored from OAuth, we need to auto-submit the booking
+    // If we restored from pending state, auto-submit the booking
     if (wasRestored) {
-      // Wait for auth store to fully load (including customer profile)
-      const completeBooking = async () => {
-        // Wait for auth to be ready - either already authenticated or wait for it
+      isAutoSubmitting.value = true
+
+      try {
+        // Wait for auth to be ready
         if (!authStore.isAuthenticated || authStore.loading) {
           await new Promise<void>(resolve => {
             const unwatch = authStore.$subscribe((_, state) => {
@@ -76,36 +83,57 @@ onMounted(async () => {
                 resolve()
               }
             })
-            // Check immediately in case already ready
             if (authStore.user && !authStore.loading) {
               unwatch()
               resolve()
             }
           })
         }
-        
-        // Ensure customer profile exists
-        if (!authStore.customer) {
-          await authStore.createCustomerProfile()
+
+        // Ensure service is available — re-select if computed didn't resolve
+        if (!booking.selectedService.value && booking.selectedServiceId.value) {
+          // Services may not be in filteredServices yet, try re-fetching
+          if (booking.selectedProviderId.value) {
+            await serviceStore.fetchAllServices(booking.selectedProviderId.value)
+          }
+          // Explicitly call selectService to trigger any setup logic
+          booking.selectService(booking.selectedServiceId.value)
         }
-        
-        // Wait for services to be available (retry up to 10 times with 100ms delay)
-        let retries = 0
-        while (!booking.selectedService.value && retries < 10) {
-          await new Promise(resolve => setTimeout(resolve, 100))
-          retries++
-        }
-        
+
         if (!booking.selectedService.value) {
+          booking.resetBooking()
           showError('Failed to restore booking. Please try again.')
+          isAutoSubmitting.value = false
           return
         }
-        
-        // Now submit the booking
+
+        // Ensure customer profile exists
+        if (!authStore.customer) {
+          await authStore.ensureCustomerProfile()
+        }
+        if (!authStore.customer) {
+          await authStore.fetchCustomerProfile()
+        }
+
+        if (!authStore.customer) {
+          booking.resetBooking()
+          showError('Failed to load your profile. Please try again.')
+          isAutoSubmitting.value = false
+          return
+        }
+
+        // Submit the booking
         await handleSubmit()
+
+        // Stop the auto-submit spinner regardless of outcome
+        // (if confirmed, the success step will take precedence anyway, 
+        // but needs to be false if user decides to book another appointment later)
+        isAutoSubmitting.value = false
+      } catch (e) {
+        isAutoSubmitting.value = false
+      } finally {
+        booking.finishRestoringState()
       }
-      
-      completeBooking()
     }
   } finally {
     isLoading.value = false
@@ -162,6 +190,12 @@ async function handleLoginSuccess() {
         :get-directions-url="booking.getDirectionsUrl"
         @reset="booking.resetBooking"
       />
+
+      <!-- Auto-submitting after OAuth restore -->
+      <div v-else-if="isAutoSubmitting || isLoading" class="flex flex-col items-center justify-center py-20 animate-in fade-in duration-300">
+        <div class="h-8 w-8 border-3 border-primary-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p v-if="isAutoSubmitting" class="text-lg font-medium text-gray-700">{{ $t('booking.completing') }}</p>
+      </div>
 
       <!-- Booking Flow -->
       <div v-else class="max-w-3xl mx-auto">
