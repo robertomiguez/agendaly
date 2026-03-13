@@ -375,7 +375,8 @@
     "summary_title": "Resumo do Agendamento",
     "closed": "Fechado",
     "available_times_header": "Horários Disponíveis",
-    "get_directions": "Como Chegar"
+    "get_directions": "Como Chegar",
+    "completing": "Concluindo seu agendamento..."
   },
   "calendar": {
     "title": "Calendário",

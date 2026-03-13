@@ -378,7 +378,8 @@
     "summary_title": "Booking Summary",
     "closed": "Closed",
     "available_times_header": "Available Times",
-    "get_directions": "Get Directions"
+    "get_directions": "Get Directions",
+    "completing": "Completing your booking..."
   },
   "calendar": {
     "title": "Calendar",
