@@ -9,7 +9,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-api-key",
 };
-const FROM_EMAIL = "Agendaly Booking System <noreply@mail.agendaly.com>";
+const FROM_EMAIL = "Agendaly Booking System <noreply@mail.agendaly.co>";
 const REPLY_TO = "kenoslabs+agendaly@gmail.com";
 const EMAIL_DELAY_MS = 1000; // 1 email per second (Rate Limit)
 const PRIMARY_COLOR = "#a54545"; // From app style
@@ -432,6 +432,9 @@ Deno.serve(async (req) => {
     for (const send of emailQueue) {
       try {
         const result = await send();
+        if (result.status >= 400) {
+          console.error(`[Resend API Error] Failed to send email to ${result.recipient}. Status ${result.status}:`, JSON.stringify(result.response));
+        }
         results.push(result);
       } catch (err: any) {
         console.error("Failed to execute email send:", err);
