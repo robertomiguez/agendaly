@@ -4,6 +4,7 @@ import Modal from "../common/Modal.vue";
 import { RRule } from "rrule";
 import type { BlockedDate, Staff } from "../../types";
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue';
+import { useDays } from "../../composables/useDays";
 
 const props = defineProps<{
   isOpen: boolean;
@@ -33,17 +34,14 @@ const form = ref({
   customRecurrence: "",
 });
 
-const daysOfWeek = [
-  { value: RRule.MO, label: "Mon" },
-  { value: RRule.TU, label: "Tue" },
-  { value: RRule.WE, label: "Wed" },
-  { value: RRule.TH, label: "Thu" },
-  { value: RRule.FR, label: "Fri" },
-  { value: RRule.SA, label: "Sat" },
-  { value: RRule.FR, label: "Fri" },
-  { value: RRule.SA, label: "Sat" },
-  { value: RRule.SU, label: "Sun" },
-];
+const { daysOfWeekShort, rruleDays } = useDays();
+const daysOfWeek = computed(() => {
+  return daysOfWeekShort.value.map((day, index) => ({
+    value: rruleDays[index],
+    label: day.label
+  }));
+});
+
 
 const timeOptions = computed(() => {
   const options = [];
