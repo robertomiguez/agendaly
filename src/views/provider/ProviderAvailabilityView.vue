@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useAuthStore } from '../../stores/useAuthStore'
 import { useAppointmentStore } from '../../stores/useAppointmentStore'
 import { useRouter } from 'vue-router'
@@ -9,24 +9,18 @@ import * as availabilityService from '../../services/availabilityService'
 import { useNotifications } from '../../composables/useNotifications'
 
 import { useI18n } from 'vue-i18n'
-import { useSettingsStore } from '../../stores/useSettingsStore'
 import ConfirmationModal from '../../components/common/ConfirmationModal.vue'
 import LoadingSpinner from '../../components/common/LoadingSpinner.vue'
+import { useDays } from '../../composables/useDays'
 import type { Availability, Staff } from '../../types'
 
 const authStore = useAuthStore()
 const appointmentStore = useAppointmentStore()
 const router = useRouter()
 const { t } = useI18n()
-const settingsStore = useSettingsStore()
 
-const daysOfWeek = computed(() => {
-  const formatter = new Intl.DateTimeFormat(settingsStore.language, { weekday: 'long' })
-  return Array.from({ length: 7 }, (_, i) => {
-    const date = new Date(2024, 0, i + 7) // i=0 is Sunday
-    return formatter.format(date)
-  })
-})
+const { daysOfWeek } = useDays()
+
 
 const staff = ref<Staff[]>([])
 const selectedStaffId = ref<string>('')
@@ -88,30 +82,23 @@ async function fetchSchedule() {
   try {
     const availData = await availabilityService.fetchAvailability(selectedStaffId.value)
 
-    if (!availData || availData.length === 0) {
-      weeklySchedule.value = daysOfWeek.value.map((_, index: number) => ({
+    // Map through 7 days to ensure a complete UI, using existing data or a fallback
+    weeklySchedule.value = daysOfWeek.value.map((_, index: number) => {
+      const existing = availData.find(a => a.day_of_week === index)
+      if (existing) return existing
+      
+      const isFriToSat = index >= 5 && index <= 6
+      
+      return {
         id: `temp-${index}`,
         staff_id: selectedStaffId.value,
         provider_id: authStore.provider?.id || '',
         day_of_week: index,
-        start_time: '09:00',
-        end_time: '17:00',
-        is_available: index >= 1 && index <= 5
-      }))
-    } else {
-      weeklySchedule.value = daysOfWeek.value.map((_, index: number) => {
-        const existing = availData.find(a => a.day_of_week === index)
-        return existing || {
-          id: `temp-${index}`,
-          staff_id: selectedStaffId.value,
-          provider_id: authStore.provider?.id || '',
-          day_of_week: index,
-          start_time: '09:00',
-          end_time: '17:00',
-          is_available: false
-        }
-      })
-    }
+        start_time: isFriToSat ? '08:00' : '09:00',
+        end_time: isFriToSat ? '20:00' : '19:00',
+        is_available: false
+      }
+    })
 
     originalSchedule.value = JSON.parse(JSON.stringify(weeklySchedule.value))
   } catch (e) {
@@ -136,7 +123,7 @@ async function checkForConflicts(): Promise<boolean> {
     
     const date = parseISO(dateStr)
     const dayIndex = date.getDay()
-    const dayName = daysOfWeek.value[dayIndex]
+    const dayName = daysOfWeek.value[dayIndex]?.label
     
     if (!dayName) continue
     
@@ -149,7 +136,7 @@ async function checkForConflicts(): Promise<boolean> {
   const conflicts: {day: string, count: number, samples: string[]}[] = []
 
   for (const slot of weeklySchedule.value) {
-    const dayName = daysOfWeek.value[slot.day_of_week]
+    const dayName = daysOfWeek.value[slot.day_of_week]?.label
     if (!dayName) continue
     const originalSlot = originalSchedule.value.find(s => s.day_of_week === slot.day_of_week)
     
@@ -329,7 +316,7 @@ async function performSave() {
                   class="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                 >
                 <span class="font-medium text-gray-900" :class="{'text-gray-400': !day.is_available}">
-                  {{ daysOfWeek[day.day_of_week] }}
+                  {{ daysOfWeek[day.day_of_week]?.label }}
                 </span>
               </div>
 

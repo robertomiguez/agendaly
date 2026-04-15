@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useStaffStore } from '../stores/useStaffStore'
+import { useDays } from '../composables/useDays'
 import { useNotifications } from '../composables/useNotifications'
 import ConfirmationModal from '../components/common/ConfirmationModal.vue'
 import BlockedDateModal from '../components/provider/BlockedDateModal.vue'
@@ -39,15 +40,8 @@ async function handleConfirmDelete() {
   }
 }
 
-const daysOfWeek = [
-  { value: 0, label: 'Sunday' },
-  { value: 1, label: 'Monday' },
-  { value: 2, label: 'Tuesday' },
-  { value: 3, label: 'Wednesday' },
-  { value: 4, label: 'Thursday' },
-  { value: 5, label: 'Friday' },
-  { value: 6, label: 'Saturday' }
-]
+const { daysOfWeek } = useDays()
+
 
 interface ScheduleItem {
   enabled: boolean
@@ -55,15 +49,8 @@ interface ScheduleItem {
   end: string
 }
 
-const weeklySchedule = ref<ScheduleItem[]>([
-  { enabled: false, start: '09:00', end: '17:00' },
-  { enabled: true, start: '09:00', end: '17:00' },
-  { enabled: true, start: '09:00', end: '17:00' },
-  { enabled: true, start: '09:00', end: '17:00' },
-  { enabled: true, start: '09:00', end: '17:00' },
-  { enabled: true, start: '09:00', end: '17:00' },
-  { enabled: false, start: '09:00', end: '17:00' }
-])
+const weeklySchedule = ref<ScheduleItem[]>([])
+
 
 onMounted(async () => {
   await staffStore.fetchStaff()
@@ -79,16 +66,12 @@ async function loadStaffAvailability() {
   await staffStore.fetchAvailability(selectedStaffId.value)
   await staffStore.fetchBlockedDates(selectedStaffId.value)
   
-  // Reset schedule
-  weeklySchedule.value = [
-    { enabled: false, start: '09:00', end: '17:00' },
-    { enabled: true, start: '09:00', end: '17:00' },
-    { enabled: true, start: '09:00', end: '17:00' },
-    { enabled: true, start: '09:00', end: '17:00' },
-    { enabled: true, start: '09:00', end: '17:00' },
-    { enabled: true, start: '09:00', end: '17:00' },
-    { enabled: false, start: '09:00', end: '17:00' }
-  ]
+  // Initialize with 7 days (default closed)
+  weeklySchedule.value = Array.from({ length: 7 }, () => ({
+    enabled: false,
+    start: '09:00',
+    end: '17:00'
+  }))
   
   // Populate from database
   staffStore.availability.forEach(avail => {
@@ -192,7 +175,7 @@ function formatDate(dateStr: string) {
                 v-model="schedule.enabled"
                 class="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
               />
-              <span class="w-24 text-sm font-medium text-gray-700">{{ daysOfWeek[index]?.label }}</span>
+              <span class="w-24 text-sm font-medium text-gray-700 capitalize text-left">{{ daysOfWeek[index]?.label }}</span>
               
               <template v-if="schedule.enabled">
                 <input 
