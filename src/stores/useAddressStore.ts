@@ -22,11 +22,15 @@ export const useAddressStore = defineStore('address', () => {
         }
     }
 
-    async function createAddress(address: Omit<ProviderAddress, 'id' | 'created_at' | 'updated_at'>) {
+    async function createAddress(params: {
+        address: Omit<ProviderAddress, 'id' | 'created_at' | 'updated_at'>,
+        photoFile?: File | null,
+        authUserId: string
+    }) {
         loading.value = true
         error.value = null
         try {
-            const data = await addressService.createAddress(address)
+            const data = await addressService.createAddress(params)
             if (data) {
                 addresses.value.push(data)
             }
@@ -40,13 +44,19 @@ export const useAddressStore = defineStore('address', () => {
         }
     }
 
-    async function updateAddress(id: string, updates: Partial<ProviderAddress>) {
+    async function updateAddress(params: {
+        id: string,
+        updates: Partial<ProviderAddress>,
+        photoFile?: File | null,
+        authUserId: string,
+        existingPhotoPath?: string | null
+    }) {
         loading.value = true
         error.value = null
         try {
-            const data = await addressService.updateAddress(id, updates)
+            const data = await addressService.updateAddress(params)
             if (data) {
-                const index = addresses.value.findIndex(a => a.id === id)
+                const index = addresses.value.findIndex(a => a.id === params.id)
                 if (index !== -1) {
                     addresses.value[index] = data
                 }

@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase'
-import { uploadLogo, deleteLogo } from '../lib/storage'
+import { uploadImage, deleteImage } from '../lib/storage'
 
 import { getPlanByName } from './subscriptionService'
 
@@ -53,10 +53,10 @@ export async function saveProvider({
 
     if (logoFile) {
         // delete old
-        await deleteLogo(logo_path)
+        await deleteImage('provider-logos', logo_path)
 
         // upload new
-        const uploaded = await uploadLogo(user.id, logoFile)
+        const uploaded = await uploadImage('provider-logos', user.id, logoFile)
         logo_url = uploaded.url
         logo_path = uploaded.path
     }

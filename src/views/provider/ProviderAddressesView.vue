@@ -20,6 +20,7 @@ import LocationPicker from '../../components/common/LocationPicker.vue'
 import { geocodeAddress, reverseGeocode } from '../../services/geocoding'
 import { watch, nextTick } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
+import ImageUpload from '../../components/ImageUpload.vue'
 
 
 
@@ -75,8 +76,11 @@ const form = ref({
   postal_code: '',
   country: userCountry.value || 'USA',
   latitude: null as number | null,
-  longitude: null as number | null
+  longitude: null as number | null,
+  photo_url: null as string | null
 })
+
+const photoFile = ref<File | null>(null)
 
 
 const saving = ref(false)
@@ -119,8 +123,10 @@ function openAddModal() {
     postal_code: '',
     country: userCountry.value || 'USA',
     latitude: null,
-    longitude: null
+    longitude: null,
+    photo_url: null
   }
+  photoFile.value = null
 }
 
 function openEditModal(address: ProviderAddress) {
@@ -135,8 +141,10 @@ function openEditModal(address: ProviderAddress) {
     postal_code: address.postal_code,
     country: address.country,
     latitude: address.latitude || null,
-    longitude: address.longitude || null
+    longitude: address.longitude || null,
+    photo_url: address.photo_url || null
   }
+  photoFile.value = null
 }
 
 
@@ -302,16 +310,27 @@ async function handleSave() {
     const payload = {
       ...form.value,
       latitude: form.value.latitude ?? undefined,
-      longitude: form.value.longitude ?? undefined
+      longitude: form.value.longitude ?? undefined,
+      photo_url: form.value.photo_url ?? undefined
     }
 
     if (modal.data.value) {
-      await addressStore.updateAddress(modal.data.value.id, payload)
+      await addressStore.updateAddress({
+        id: modal.data.value.id,
+        updates: payload,
+        photoFile: photoFile.value,
+        authUserId: authStore.user!.id,
+        existingPhotoPath: modal.data.value.photo_path
+      })
     } else {
       await addressStore.createAddress({
-        ...payload,
-        provider_id: authStore.provider.id,
-        is_primary: addressStore.addresses.length === 0
+        address: {
+          ...payload,
+          provider_id: authStore.provider.id,
+          is_primary: addressStore.addresses.length === 0
+        },
+        photoFile: photoFile.value,
+        authUserId: authStore.user!.id
       })
     }
     modal.close()
@@ -424,10 +443,17 @@ async function handleSetPrimary(id: string) {
               </span>
             </div>
 
-            <!-- Label -->
-            <h3 class="text-lg font-bold text-gray-900 mb-3">
-              {{ address.label || $t('provider.locations.primary_label') }}
-            </h3>
+            <!-- Image/Map/Label -->
+            <div class="flex gap-4 items-start mb-3">
+              <div v-if="address.photo_url" class="w-16 h-16 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
+                <img :src="address.photo_url" class="w-full h-full object-cover" />
+              </div>
+              <div class="flex-1">
+                <h3 class="text-lg font-bold text-gray-900">
+                  {{ address.label || $t('provider.locations.primary_label') }}
+                </h3>
+              </div>
+            </div>
 
             <!-- Address -->
             <div class="text-gray-700 space-y-1 mb-4">
@@ -492,6 +518,14 @@ async function handleSetPrimary(id: string) {
             type="text"
             :placeholder="$t('provider.locations.form.label_placeholder')"
             class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+          />
+        </div>
+
+        <div>
+          <ImageUpload
+            v-model="form.photo_url"
+            :label="$t('provider.locations.form.photo_label')"
+            @change="file => photoFile = file"
           />
         </div>
 

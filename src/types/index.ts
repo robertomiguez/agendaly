@@ -71,6 +71,8 @@ export interface Staff {
     role: 'admin' | 'staff'
     active: boolean
     provider_id?: string // References providers table
+    photo_url?: string
+    photo_path?: string
     created_at?: string
     updated_at?: string
     addresses?: ProviderAddress[] // Joined data via staff_addresses
@@ -96,6 +98,8 @@ export interface ProviderAddress {
     is_primary: boolean
     latitude?: number
     longitude?: number
+    photo_url?: string
+    photo_path?: string
     created_at?: string
     updated_at?: string
 }

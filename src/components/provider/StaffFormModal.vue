@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import ImageUpload from '../ImageUpload.vue'
 
 const props = defineProps<{
   isOpen: boolean
@@ -23,7 +24,8 @@ const emit = defineEmits<{
     email: string
     role: 'admin' | 'staff'
     active: boolean
-    addressIds: string[] 
+    addressIds: string[]
+    photoFile: File | null
   }): void
 }>()
 
@@ -32,9 +34,11 @@ const form = ref({
   name: '',
   email: '',
   role: 'staff' as 'admin' | 'staff',
-  active: true
+  active: true,
+  photo_url: null as string | null
 })
 
+const photoFile = ref<File | null>(null)
 const selectedAddressIds = ref<string[]>([])
 
 // Initialize form when staff prop changes or modal opens
@@ -45,8 +49,10 @@ watch(() => props.isOpen, (newVal) => {
         name: props.staff.name,
         email: props.staff.email,
         role: props.staff.role,
-        active: props.staff.active
+        active: props.staff.active,
+        photo_url: props.staff.photo_url || null
       }
+      photoFile.value = null
       // Initialize with passed address IDs
       selectedAddressIds.value = [...props.initialAddressIds]
     } else {
@@ -55,8 +61,10 @@ watch(() => props.isOpen, (newVal) => {
         name: '',
         email: '',
         role: 'staff',
-        active: true
+        active: true,
+        photo_url: null
       }
+      photoFile.value = null
       // Default: select all addresses for new staff
       selectedAddressIds.value = props.providerAddresses.map(a => a.id)
     }
@@ -76,7 +84,8 @@ const title = computed(() => isEditMode.value ? t('provider.staff.edit_title') :
 function handleSubmit() {
   emit('save', {
     ...form.value,
-    addressIds: selectedAddressIds.value
+    addressIds: selectedAddressIds.value,
+    photoFile: photoFile.value
   })
 }
 </script>
@@ -88,6 +97,15 @@ function handleSubmit() {
     @close="$emit('close')"
   >
     <form @submit.prevent="handleSubmit" class="mt-4 space-y-4">
+      <!-- Photo Upload -->
+      <div class="space-y-2">
+        <ImageUpload
+          v-model="form.photo_url"
+          :label="$t('modals.staff.photo_label')"
+          @change="file => photoFile = file"
+        />
+      </div>
+
       <div class="space-y-2">
         <Label for="staff-name">{{ $t('modals.staff.name') }}</Label>
         <Input

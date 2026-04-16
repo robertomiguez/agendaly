@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { optimizeImage } from '../lib/imageCompression'
 
 const props = defineProps<{
   modelValue?: string | null
@@ -49,17 +50,33 @@ function handleFileSelect(e: Event) {
   }
 }
 
-function processFile(file: File) {
+async function processFile(file: File) {
   if (!file.type.startsWith('image/')) return
   
-  // Create local preview
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    previewUrl.value = e.target?.result as string
-  }
-  reader.readAsDataURL(file)
+  // Local processing flag to show spinner during compression
+  emit('update:modelValue', null) // Clear previous
   
-  emit('change', file)
+  try {
+    const optimized = await optimizeImage(file)
+    
+    // Create local preview
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      previewUrl.value = e.target?.result as string
+    }
+    reader.readAsDataURL(optimized)
+    
+    emit('change', optimized)
+  } catch (error) {
+    console.error('Optimization failed in component, using original file:', error)
+    // Fallback if optimization fails
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      previewUrl.value = e.target?.result as string
+    }
+    reader.readAsDataURL(file)
+    emit('change', file)
+  }
 }
 
 function removeImage() {
