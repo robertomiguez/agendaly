@@ -411,7 +411,6 @@ CREATE TABLE public.plans (
     name text NOT NULL,
     display_name text NOT NULL,
     description text,
-    price_monthly numeric(10,2) NOT NULL,
     price_yearly numeric(10,2),
     max_staff integer,
     max_locations integer,

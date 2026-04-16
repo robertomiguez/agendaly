@@ -33,7 +33,7 @@ describe('subscriptionService Currency Support', () => {
             plan: {
                 id: 'plan_solo',
                 name: 'solo',
-                price_monthly: 10 // USD base
+                prices: { usd: 10 }
             },
             currency: 'cad', // user is in CAD
             locked_price: 13, // CAD price
@@ -45,8 +45,8 @@ describe('subscriptionService Currency Support', () => {
         const mockNewPlan = {
             id: 'plan_store',
             name: 'store',
-            price_monthly: 20, // USD base
             prices: {
+                usd: 20,
                 cad: 26, // Fixed CAD price
                 eur: 18
             }

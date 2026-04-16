@@ -90,8 +90,9 @@ const { formatPrice, targetCurrency } = useCurrency()
 
 const planPrice = computed(() => {
     if (!subscription.value) return 0
-    // Use locked price if available, otherwise current plan price
-    return subscription.value.locked_price ?? subscription.value.plan?.price_monthly ?? 0
+    // Use locked price if available, otherwise current plan price from the prices map
+    const cur = subscription.value.currency?.toLowerCase() || targetCurrency.value
+    return subscription.value.locked_price ?? (subscription.value.plan as any)?.prices?.[cur] ?? (subscription.value.plan as any)?.prices?.['usd'] ?? 0
 })
 
 const planDiscount = computed(() => {
