@@ -136,7 +136,7 @@ export async function saveProvider({
                     status: 'active',
                     current_period_start: now.toISOString(),
                     current_period_end: new Date(now.setMonth(now.getMonth() + 1)).toISOString(),
-                    locked_price: plan.price_monthly,
+                    locked_price: plan.prices?.usd || 0,
                     locked_discount_percent: plan.discount_percent || 0,
                     discount_ends_at: discountEndsAt?.toISOString()
                 })
@@ -148,9 +148,10 @@ export async function saveProvider({
             } else if (subData) {
                  // Create initial payment record (Simulated)
                  // In a real app complexity, this comes from Stripe webhook
+                 const basePrice = plan.prices?.usd || 0
                  const amount = plan.discount_percent 
-                    ? plan.price_monthly * (1 - plan.discount_percent / 100) 
-                    : plan.price_monthly
+                    ? basePrice * (1 - plan.discount_percent / 100) 
+                    : basePrice
 
                  const { error: payError } = await supabase
                     .from('payments')

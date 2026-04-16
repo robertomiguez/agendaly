@@ -185,7 +185,7 @@ export async function createSubscription({
             current_period_start: now.toISOString(),
             current_period_end: trialEndsAt.toISOString(),
             // Snapshot current plan terms
-            locked_price: plan.price_monthly,
+            locked_price: getPlanPrice(plan, 'usd'),
             locked_discount_percent: plan.discount_percent || 0,
             discount_ends_at: discountEndsAt?.toISOString()
         })
@@ -386,11 +386,11 @@ export async function resumeSubscription(subscriptionId: string): Promise<void> 
  */
 function getPlanPrice(plan: Plan, currency: string = 'usd'): number {
     const cur = currency.toLowerCase()
-    if (cur !== 'usd' && plan.prices && plan.prices[cur]) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (plan.prices as any)[cur]
+    if (plan.prices && plan.prices[cur]) {
+        return plan.prices[cur]
     }
-    return plan.price_monthly
+    // Fallback to USD if requested currency not found
+    return plan.prices?.['usd'] || 0
 }
 
 /**
@@ -683,7 +683,7 @@ function calculateProration(
         locked_price?: number
         locked_discount_percent?: number
         discount_ends_at?: string
-        plan?: { price_monthly: number }
+        plan?: { prices: Record<string, number> }
         currency?: string
     }, 
     newPlan: Plan
