@@ -25,8 +25,8 @@ describe('subscriptionService - previewPlanChange Limits', () => {
     const currentSub = {
         id: subId,
         provider_id: providerId,
-        plan: { id: 'plan-old', price_monthly: 50 }, 
-        price_monthly: 50,
+        plan: { id: 'plan-old', prices: { usd: 50 } }, 
+        prices: { usd: 50 },
         currency: 'usd',
         status: 'active'
     }
@@ -37,7 +37,7 @@ describe('subscriptionService - previewPlanChange Limits', () => {
         max_staff: 1,      // LIMIT: 1
         max_services: 10,
         max_locations: 1,
-        price_monthly: 20
+        prices: { usd: 20 }
     }
 
     // Mock implementation
@@ -100,8 +100,8 @@ describe('subscriptionService - previewPlanChange Limits', () => {
     const currentSub = {
         id: subId,
         provider_id: 'prov-1',
-        plan: { id: 'plan-old', price_monthly: 50 },
-        price_monthly: 50,
+        plan: { id: 'plan-old', prices: { usd: 50 } },
+        prices: { usd: 50 },
         currency: 'usd',
         status: 'active'
     }
@@ -112,7 +112,7 @@ describe('subscriptionService - previewPlanChange Limits', () => {
         max_staff: 10,
         max_services: 2, // LIMIT: 2
         max_locations: 1,
-        price_monthly: 20
+        prices: { usd: 20 }
     }
 
     const mockFrom = vi.fn()
@@ -155,8 +155,8 @@ describe('subscriptionService - previewPlanChange Limits', () => {
     const currentSub = {
         id: subId,
         provider_id: 'prov-1',
-        plan: { id: 'plan-old', price_monthly: 50 },
-        price_monthly: 50,
+        plan: { id: 'plan-old', prices: { usd: 50 } },
+        prices: { usd: 50 },
         currency: 'usd',
         status: 'active'
     }
@@ -167,7 +167,7 @@ describe('subscriptionService - previewPlanChange Limits', () => {
         max_staff: 5,
         max_services: 5,
         max_locations: 5,
-        price_monthly: 20
+        prices: { usd: 20 }
     }
 
     const mockFrom = vi.fn()

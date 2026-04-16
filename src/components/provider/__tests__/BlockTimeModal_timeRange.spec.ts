@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
+import { createTestingPinia } from "@pinia/testing";
 import BlockTimeModal from "../BlockTimeModal.vue";
 
 describe("BlockTimeModal Time Range", () => {
@@ -9,6 +10,7 @@ describe("BlockTimeModal Time Range", () => {
   };
 
   const globalMock = {
+    plugins: [createTestingPinia()],
     mocks: { $t: (key: string) => key },
     stubs: {
         Modal: { template: '<div><slot /></div>' }

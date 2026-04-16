@@ -67,12 +67,11 @@ const isChangeMode = computed(() => route.query.mode === 'change')
 
 function getPlanPrice(plan: Plan): number {
     const cur = targetCurrency.value
-    // If currency is not USD and plan has a fixed price for it, use it
-    if (cur !== 'usd' && plan.prices && plan.prices[cur]) {
+    if (plan.prices && plan.prices[cur]) {
         return plan.prices[cur]
     }
-    // Fallback to USD (price_monthly)
-    return plan.price_monthly
+    // Fallback to USD
+    return plan.prices?.['usd'] || 0
 }
 // --- Currency Logic End ---
 
