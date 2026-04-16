@@ -1,6 +1,6 @@
 import { supabase } from "./supabase"
-
-const BUCKET = 'provider-logos'
+import { MAX_IMAGE_SIZE_BYTES } from "../constants"
+import { optimizeImage } from "./imageCompression"
 
 // Polyfill for crypto.randomUUID() to support all browsers, especially mobile
 function generateUUID(): string {
@@ -15,18 +15,30 @@ function generateUUID(): string {
     })
 }
 
-export async function uploadLogo(userId: string, file: File) {
-    const ext = file.name.split('.').pop()
+/**
+ * Generic image upload to a specified bucket.
+ * Uses the userId (auth_user_id) as the top-level folder for RLS consistency.
+ */
+export async function uploadImage(bucket: string, userId: string, file: File) {
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+        const mb = MAX_IMAGE_SIZE_BYTES / (1024 * 1024)
+        throw new Error(`File size exceeds ${mb}MB limit.`)
+    }
+
+    // Optimize image before upload (Resizing, WebP, Compression)
+    const optimizedFile = await optimizeImage(file)
+
+    const ext = optimizedFile.name.split('.').pop()
     const path = `${userId}/${generateUUID()}.${ext}`
 
     const { error } = await supabase.storage
-        .from(BUCKET)
-        .upload(path, file, { upsert: false })
+        .from(bucket)
+        .upload(path, optimizedFile, { upsert: false })
 
     if (error) throw error
 
     const { data } = supabase.storage
-        .from(BUCKET)
+        .from(bucket)
         .getPublicUrl(path)
 
     return {
@@ -35,14 +47,18 @@ export async function uploadLogo(userId: string, file: File) {
     }
 }
 
-export async function deleteLogo(path?: string | null) {
+/**
+ * Generic image delete from a specified bucket.
+ */
+export async function deleteImage(bucket: string, path?: string | null) {
     if (!path) return
 
     const { error } = await supabase.storage
-        .from(BUCKET)
+        .from(bucket)
         .remove([path])
 
     if (error) {
-        console.warn('Failed to delete logo:', error)
+        console.warn(`Failed to delete image from ${bucket}:`, error)
     }
 }
+

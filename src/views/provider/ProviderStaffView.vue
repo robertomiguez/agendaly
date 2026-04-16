@@ -53,6 +53,7 @@ const pendingSavePayload = ref<{
   role: 'admin' | 'staff'
   active: boolean
   addressIds: string[]
+  photoFile: File | null
 } | null>(null)
 
 // Conflict modal state
@@ -197,6 +198,7 @@ async function onSaveStaff(payload: {
   role: 'admin' | 'staff'
   active: boolean
   addressIds: string[]
+  photoFile: File | null
 }) {
   if (!authStore.provider) return
 
@@ -234,11 +236,17 @@ async function executeSave(payload: typeof pendingSavePayload.value) {
     
     if (modal.data.value) {
       // Update existing staff
-      const data = await staffService.updateStaff(modal.data.value.id, {
-        name: payload.name,
-        email: payload.email,
-        role: payload.role,
-        active: payload.active
+      const data = await staffService.updateStaff({
+        id: modal.data.value.id,
+        updates: {
+          name: payload.name,
+          email: payload.email,
+          role: payload.role,
+          active: payload.active
+        },
+        photoFile: payload.photoFile,
+        authUserId: authStore.user!.id,
+        existingPhotoPath: modal.data.value.photo_path
       })
       
       // Update local state
@@ -252,11 +260,15 @@ async function executeSave(payload: typeof pendingSavePayload.value) {
     } else {
       // Create new staff
       const data = await staffService.createStaff({
-        name: payload.name,
-        email: payload.email,
-        role: payload.role,
-        active: payload.active,
-        provider_id: authStore.provider.id
+        staff: {
+          name: payload.name,
+          email: payload.email,
+          role: payload.role,
+          active: payload.active,
+          provider_id: authStore.provider.id
+        },
+        photoFile: payload.photoFile,
+        authUserId: authStore.user!.id
       })
       
       // Add to local state
@@ -311,8 +323,14 @@ async function toggleActive(staffMember: Staff) {
 }
 
 async function executeToggleActive(staffMember: Staff) {
+  if (!authStore.user) return
+  
   try {
-    const data = await staffService.updateStaff(staffMember.id, { active: !staffMember.active })
+    const data = await staffService.updateStaff({
+      id: staffMember.id,
+      updates: { active: !staffMember.active },
+      authUserId: authStore.user.id
+    })
     
     // Update local state
     if (data) {
@@ -434,11 +452,15 @@ async function confirmDeactivation() {
             </div>
 
             <div class="flex items-center gap-4 mb-4">
-              <div 
-                class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl"
-                :class="member.active ? 'bg-primary-100 text-primary-700' : 'bg-gray-200 text-gray-500'"
-              >
-                {{ member.name.charAt(0).toUpperCase() }}
+              <div class="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center bg-gray-100">
+                <img v-if="member.photo_url" :src="member.photo_url" :alt="member.name" class="w-full h-full object-cover" />
+                <div 
+                  v-else
+                  class="w-full h-full flex items-center justify-center font-bold text-xl"
+                  :class="member.active ? 'bg-primary-100 text-primary-700' : 'bg-gray-200 text-gray-500'"
+                >
+                  {{ member.name.charAt(0).toUpperCase() }}
+                </div>
               </div>
               <div class="flex-1">
                 <h3 class="text-lg font-bold" :class="member.active ? 'text-gray-900' : 'text-gray-600'">
