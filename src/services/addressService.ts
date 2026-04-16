@@ -31,8 +31,8 @@ export async function createAddress({
     throw new Error(limitCheck.message || 'Location limit reached for your plan.')
   }
 
-  let photo_url = null
-  let photo_path = null
+  let photo_url: string | null = null
+  let photo_path: string | null = null
 
   if (photoFile) {
     const uploaded = await uploadImage(BUCKET, authUserId, photoFile)
