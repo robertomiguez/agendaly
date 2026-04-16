@@ -1,0 +1,39 @@
+name: Protect Main Branch
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  check-enforcement:
+    name: Enforcement Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Block non-staging PRs
+        if: github.event_name == 'pull_request'
+        run: |
+          if [[ "${{ github.head_ref }}" != "staging" ]]; then
+            echo "❌ ERROR: Pull Requests to 'main' must come from 'staging'."
+            echo "Current source: ${{ github.head_ref }}"
+            exit 1
+          fi
+          echo "✅ OK: PR is from staging."
+
+      - name: Block direct pushes
+        if: github.event_name == 'push'
+        run: |
+          echo "⚠️ Detected a push/merge activity on 'main'."
+          echo "Actor: ${{ github.actor }}"
+          
+          # In a 'push' event, we can't easily tell if it's a CLI push
+          # or a PR merge without complex API calls.
+          # Failing here will mark ALL pushes (including merges) with an X,
+          # serving as a deterrent and mandatory audit trail.
+          
+          echo "❌ ERROR: Direct pushes to 'main' are prohibited."
+          echo "Please use a Pull Request from 'staging' instead."
+          exit 1
