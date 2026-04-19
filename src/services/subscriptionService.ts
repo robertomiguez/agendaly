@@ -2,82 +2,6 @@ import { supabase } from '../lib/supabase'
 import type { Plan, Subscription } from '../types'
 
 /**
- * Create a Stripe Checkout session for subscription
- */
-export interface CheckoutSessionParams {
-  planName: string
-  providerId?: string
-  userId?: string
-  providerEmail: string
-  locale?: string
-  termsAccepted?: boolean
-  termsVersion?: string
-  mode?: 'subscription' | 'setup'
-  successUrl?: string
-  cancelUrl?: string
-}
-
-export async function createCheckoutSession({
-    planName,
-    providerId,
-    userId,
-    providerEmail,
-    locale,
-    termsAccepted,
-    termsVersion,
-    mode = 'subscription',
-    successUrl,
-    cancelUrl
-}: CheckoutSessionParams): Promise<{ url: string; sessionId: string }> {
-    const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: {
-            planName,
-            providerId,
-            userId,
-            providerEmail,
-            locale: locale || (typeof navigator !== 'undefined' ? navigator.language : 'en'),
-            termsAccepted,
-            termsVersion,
-            mode,
-            successUrl,
-            cancelUrl
-        }
-    })
-
-    if (error) throw error
-    if (!data?.url) throw new Error('No checkout URL returned')
-    
-    return data
-}
-    
-
-/**
- * Create a Stripe Customer Portal session for billing management
- */
-export async function createPortalSession({
-    providerId,
-    returnUrl,
-    locale
-}: {
-    providerId: string
-    returnUrl?: string
-    locale?: string
-}): Promise<{ url: string }> {
-    const { data, error } = await supabase.functions.invoke('create-portal-session', {
-        body: {
-            providerId,
-            returnUrl: returnUrl || window.location.href,
-            locale
-        }
-    })
-
-    if (error) throw error
-    if (!data?.url) throw new Error('No portal URL returned')
-    
-    return data
-}
-
-/**
  * Fetch all active subscription plans
  */
 export async function getPlans(): Promise<Plan[]> {
@@ -530,27 +454,6 @@ export async function changePlan(
         }
     }
 
-    // --- STRIPE SYNCHRONIZATION ---
-    // Synchronize the plan change with Stripe via Edge Function
-    try {
-        const { data: edgeResult, error: edgeError } = await supabase.functions.invoke('update-subscription', {
-            body: {
-                subscriptionId: subscriptionId,
-                newPlanId: newPlanId,
-                isDowngrade: isDowngrade
-            }
-        })
-
-        if (edgeError) throw edgeError
-        if (edgeResult && edgeResult.error) throw new Error(edgeResult.error)
-    } catch (err: any) {
-        console.error('Failed to sync plan change with billing provider:', err)
-        return {
-            success: false,
-            message: 'Failed to synchronize plan change with billing provider. Please try again.'
-        }
-    }
-    
     // --- LOCAL DATABASE UPDATES ---
     if (isTrialing) {
         // Free switch during trial - update immediately, no billing

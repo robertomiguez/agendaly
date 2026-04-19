@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/useAuthStore'
 import ImageUpload from '../../components/ImageUpload.vue'
 import { saveProvider } from '../../services/providerService'
@@ -16,8 +16,11 @@ import { Building, Phone, FileText } from 'lucide-vue-next'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const { t } = useI18n()
+
+const selectedPlan = computed(() => route.query.plan as string || null)
 
 const form = ref({
   business_name: '',
@@ -81,7 +84,8 @@ async function handleSubmit() {
       user: authStore.user,
       provider: authStore.provider,
       form: form.value,
-      logoFile: logoFile.value
+      logoFile: logoFile.value,
+      planName: selectedPlan.value
     })
 
     showSuccess(isEditing.value

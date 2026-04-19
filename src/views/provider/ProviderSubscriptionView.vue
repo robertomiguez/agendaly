@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/useAuthStore'
-import { getProviderSubscription, getPlan, createCheckoutSession, createPortalSession } from '../../services/subscriptionService'
+import { getProviderSubscription, getPlan } from '../../services/subscriptionService'
 import type { Subscription, Plan } from '../../types'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
@@ -10,16 +10,13 @@ import { Badge } from '@/components/ui/badge'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 
 import { 
- 
-    CreditCard, 
     Calendar, 
     AlertTriangle,
     CheckCircle2,
     ArrowUpCircle,
-    ArrowDownCircle,
-    ExternalLink
+    ArrowDownCircle
 } from 'lucide-vue-next'
-import { useI18n } from 'vue-i18n'
+
 import { useNotifications } from '@/composables/useNotifications'
 import { useRoute } from 'vue-router'
 import { useCurrency } from '@/composables/useCurrency'
@@ -27,13 +24,11 @@ import { useCurrency } from '@/composables/useCurrency'
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
-const { t } = useI18n()
-const { showSuccess, showError } = useNotifications()
+const { showSuccess } = useNotifications()
 
 const subscription = ref<Subscription | null>(null)
 const loading = ref(true)
 const processing = ref(false)
-const managingBilling = ref(false)
 
 
 
@@ -130,49 +125,8 @@ const formattedPeriodEnd = computed(() => {
     return isNaN(date.getTime()) ? '...' : date.toLocaleDateString();
 })
 
-// Removed cancel/resume handlers - managed via Stripe Portal
-
-async function handleManageBilling() {
-    if (!authStore.provider) return
-
-    managingBilling.value = true
-    try {
-        const { url } = await createPortalSession({
-            providerId: authStore.provider.id,
-            locale: navigator.language || 'en-US'
-        })
-        window.location.href = url
-    } catch (error) {
-        console.error('Failed to create portal session:', error)
-        showError(t('common.error_occurred'))
-        managingBilling.value = false
-    }
-}
-
 function verifyChangePlan() {
     router.push('/provider/pricing?mode=change')
-}
-
-async function handleAddPaymentMethod() {
-    if (!authStore.provider) return
-    
-    processing.value = true
-    try {
-        const { url } = await createCheckoutSession({
-            mode: 'setup',
-            planName: '', // Not used in setup mode
-            providerId: authStore.provider.id,
-            providerEmail: authStore.provider.email,
-            successUrl: `${window.location.origin}/provider/subscription?payment_added=true`,
-            cancelUrl: window.location.href
-        })
-        
-        window.location.href = url
-    } catch (error) {
-        console.error('Failed to start payment setup:', error)
-        showError(t('common.error_occurred'))
-        processing.value = false
-    }
 }
 </script>
 
@@ -288,34 +242,6 @@ async function handleAddPaymentMethod() {
                         <ArrowUpCircle class="mr-2 h-4 w-4" />
                         {{ $t('subscription.change_plan') }}
                     </Button>
-                    
-                    <div class="flex-grow"></div>
-
-                    <!-- Add Payment Method (for cardless trial) -->
-                    <!-- Add Payment Method (for cardless trial) -->
-                    <Button
-                        v-if="!subscription.stripe_customer_id && subscription.status === 'trialing'"
-                        variant="default"
-                        class="w-full sm:w-auto bg-primary-600 hover:bg-primary-700"
-                        @click="handleAddPaymentMethod"
-                        :disabled="processing"
-                    >
-                        <CreditCard class="mr-2 h-4 w-4" />
-                        Add Payment Method
-                    </Button>
-
-                    <!-- Manage Billing (Customer Portal) -->
-                    <Button
-                        v-else-if="subscription.stripe_customer_id"
-                        variant="outline"
-                        class="w-full sm:w-auto"
-                        @click="handleManageBilling"
-                        :disabled="processing || managingBilling"
-                    >
-                        <LoadingSpinner v-if="managingBilling" inline size="sm" class="mr-2" />
-                        <ExternalLink v-else class="mr-2 h-4 w-4" />
-                        {{ $t('subscription.manage_billing') }}
-                    </Button>
                 </CardFooter>
             </Card>
 
@@ -327,15 +253,6 @@ async function handleAddPaymentMethod() {
                     <p class="text-sm text-yellow-700 mt-1">
                         {{ $t('subscription.loss_warning', { date: formattedPeriodEnd }) }}
                     </p>
-                    <div class="mt-2">
-                        <Button 
-                            variant="link" 
-                            class="text-yellow-800 p-0 h-auto font-semibold"
-                            @click="handleManageBilling"
-                        >
-                            {{ $t('subscription.manage_billing') }} &rarr;
-                        </Button>
-                    </div>
                 </div>
             </div>
 
@@ -350,15 +267,6 @@ async function handleAddPaymentMethod() {
                             date: formattedPeriodEnd
                         }) }}
                     </p>
-                    <div class="mt-2">
-                        <Button 
-                            variant="link" 
-                            class="text-amber-800 p-0 h-auto font-semibold"
-                            @click="handleManageBilling"
-                        >
-                            {{ $t('subscription.manage_billing') }} &rarr;
-                        </Button>
-                    </div>
                 </div>
             </div>
         </div>

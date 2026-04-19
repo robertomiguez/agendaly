@@ -5,7 +5,7 @@
 DO $$
 DECLARE
     -- REPLACE THIS UUID WITH THE CUSTOMER ID YOU WANT TO DELETE
-    target_customer_id uuid := '1588e047-91f4-4a4b-8b55-c50cb1615c6f';
+    target_customer_id uuid := '82bf1fc6-5e4f-4894-b1c6-13dc8e30fcf7';
 BEGIN
     RAISE NOTICE 'Starting deletion for customer: %', target_customer_id;
 

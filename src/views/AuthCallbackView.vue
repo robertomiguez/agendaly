@@ -35,6 +35,24 @@ function handleRedirect() {
     // Get redirect from query parameter (passed through OAuth flow)
     // NOTE: Supabase OAuth may strip query params, so we also check localStorage
     const redirect = route.query.redirect as string
+
+    // Super Admin flow: if the user is a super admin, go directly to admin dashboard
+    // This takes priority over all other flows
+    if (authStore.isSuperAdmin) {
+        if (redirect && redirect.startsWith('/super-admin')) {
+            router.push(redirect)
+        } else {
+            router.push('/super-admin/dashboard')
+        }
+        return
+    }
+
+    // Also check redirect param for admin context (in case isSuperAdmin wasn't loaded yet)
+    if (redirect && redirect.startsWith('/super-admin')) {
+        router.push(redirect)
+        return
+    }
+
     const customer = authStore.customer
     const isNewUser = !customer || !customer.name || !customer.phone
     const pendingBookingState = localStorage.getItem('pendingBookingState')
