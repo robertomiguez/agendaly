@@ -66,6 +66,7 @@ export interface Provider {
     logo_path?: string
     avatar_url?: string
     status: ProviderStatus
+    active?: boolean
     approved_by?: string // References staff table
     approved_at?: string
     rejection_reason?: string
@@ -108,6 +109,8 @@ export interface ProviderAddress {
     postal_code: string
     country: string
     is_primary: boolean
+    active?: boolean
+    deactivation_reason?: string
     latitude?: number
     longitude?: number
     photo_url?: string | null

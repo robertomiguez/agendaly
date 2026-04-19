@@ -16,7 +16,7 @@ import {
     ArrowUpCircle,
     ArrowDownCircle
 } from 'lucide-vue-next'
-import { useI18n } from 'vue-i18n'
+
 import { useNotifications } from '@/composables/useNotifications'
 import { useRoute } from 'vue-router'
 import { useCurrency } from '@/composables/useCurrency'
@@ -24,8 +24,7 @@ import { useCurrency } from '@/composables/useCurrency'
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
-const { t } = useI18n()
-const { showSuccess, showError } = useNotifications()
+const { showSuccess } = useNotifications()
 
 const subscription = ref<Subscription | null>(null)
 const loading = ref(true)

@@ -70,8 +70,8 @@ export async function updateAddress({
     authUserId: string,
     existingPhotoPath?: string | null
 }): Promise<ProviderAddress> {
-  let photo_url = updates.photo_url
-  let photo_path = updates.photo_path
+  let photo_url: string | null | undefined = updates.photo_url
+  let photo_path: string | null | undefined = updates.photo_path
 
   if (photoFile) {
     if (existingPhotoPath) {

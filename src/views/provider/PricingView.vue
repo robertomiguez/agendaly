@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Check, AlertCircle, RefreshCw, ArrowUp, ArrowLeft, Calendar, Lock, Users, MapPin, Scissors, AlertTriangle, ArrowRight } from 'lucide-vue-next'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 
-import { TERMS_VERSION } from '../../constants'
+
 import Modal from '@/components/common/Modal.vue'
 import LegalDocumentViewer from '@/components/legal/LegalDocumentViewer.vue'
 

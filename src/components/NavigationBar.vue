@@ -231,7 +231,7 @@ function changeLanguage(lang: string) {
                   {{ $t('nav.dashboard') }}
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  v-if="userRole === 'Customer' || userRole === 'Both'" 
+                  v-if="userRole === 'Customer'" 
                   @click="navigateToMyBookings"
                   class="cursor-pointer"
                 >
@@ -322,7 +322,7 @@ function changeLanguage(lang: string) {
           </Button>
           
           <Button 
-            v-if="userRole === 'Customer' || userRole === 'Both'"
+            v-if="userRole === 'Customer'"
             variant="ghost" 
             class="justify-start h-12"
             @click="navigateToMyBookings"

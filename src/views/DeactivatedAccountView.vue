@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/useAuthStore'
-import { ShieldAlert, LogOut, MessageSquare } from 'lucide-vue-next'
+import { ShieldAlert, LogOut } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 
 const router = useRouter()

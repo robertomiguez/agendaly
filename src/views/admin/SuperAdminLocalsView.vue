@@ -5,8 +5,7 @@ import {
   Search, 
   MapPin,
   Building,
-  Phone,
-  Globe,
+
   EyeOff,
   Eye,
   MoreVertical,
