@@ -51,7 +51,8 @@ const userRole = computed(() => {
   const isProvider = authStore.provider !== null
   const isCustomer = authStore.customer !== null
   
-  if (isProvider && isCustomer) return 'Both'
+  if (authStore.isSuperAdmin && isProvider) return 'Both (Admin)'
+  if (authStore.isSuperAdmin) return 'Admin'
   if (isProvider) return 'Provider'
   if (isCustomer) return 'Customer'
   return null
@@ -138,6 +139,11 @@ function navigateToMyBookings() {
   router.push('/my-bookings')
 }
 
+function navigateToSuperAdmin() {
+  showMobileMenu.value = false
+  router.push('/super-admin/dashboard')
+}
+
 function changeLanguage(lang: string) {
   settingsStore.setLanguage(lang)
   showMobileMenu.value = false
@@ -210,6 +216,13 @@ function changeLanguage(lang: string) {
                     <p class="text-xs leading-none text-muted-foreground">
                       {{ authStore.user?.email }}
                     </p>
+                    <DropdownMenuLabel>{{ $t('nav.my_account') }}</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    
+                    <DropdownMenuItem v-if="authStore.isSuperAdmin" @click="navigateToSuperAdmin" class="cursor-pointer font-bold text-indigo-600">
+                      <LayoutDashboard class="mr-2 h-4 w-4" />
+                      Super Admin
+                    </DropdownMenuItem>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />

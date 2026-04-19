@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { createCheckoutSession, canAddStaff, canAddService, canAddLocation } from '../subscriptionService'
+import { canAddStaff, canAddService, canAddLocation } from '../subscriptionService'
 import { supabase } from '@/lib/supabase'
 
 // helpers
@@ -72,29 +72,6 @@ describe('subscriptionService', () => {
     mockEq.mockReturnThis()
     mockOrder.mockReturnThis()
     mockLimit.mockReturnThis()
-  })
-
-  describe('createCheckoutSession', () => {
-    it('calls the edge function with correct parameters including locale', async () => {
-      mockInvoke.mockResolvedValue({ data: { url: 'https://checkout.stripe.com/test' }, error: null })
-
-      const params = {
-        planName: 'pro',
-        providerId: '123',
-        providerEmail: 'test@example.com',
-        locale: 'pt-BR'
-      }
-
-      await createCheckoutSession(params)
-
-      expect(supabase.functions.invoke).toHaveBeenCalledWith('create-checkout-session', expect.objectContaining({
-        body: expect.objectContaining({
-          planName: 'pro',
-          providerId: '123',
-          locale: 'pt-BR'
-        })
-      }))
-    })
   })
 
   describe('Limit Checks', () => {

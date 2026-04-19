@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useNotifications } from '@/composables/useNotifications'
-import { getAllPlans, getProviderSubscription, changePlan, previewPlanChange, createCheckoutSession } from '../../services/subscriptionService'
+import { getAllPlans, getProviderSubscription, createSubscription, changePlan, previewPlanChange } from '../../services/subscriptionService'
 import type { Plan, Subscription } from '../../types'
 import { useAuthStore } from '../../stores/useAuthStore'
 import { Button } from '@/components/ui/button'
@@ -164,33 +164,36 @@ async function handlePlanAction(plan: Plan) {
             processing.value = false
         }
     } else {
-        // Direct Checkout with implicit terms acceptance
+        // Handle initial plan selection
+        if (plan.status !== 'active') {
+            showError(t('pricing.coming_soon'))
+            processing.value = false
+            return
+        }
+
+        if (!authStore.provider) {
+            // New provider: no provider record yet, go to profile creation
+            // Pass the selected plan name so saveProvider creates provider + subscription together
+            router.push({ path: '/provider/profile', query: { plan: plan.name } })
+            return
+        }
+
+        // Existing provider without subscription (edge case / retry)
         processing.value = true
         try {
-            // If no provider profile, use auth user ID to allow backend to create stub
-            const userId = authStore.user?.id
-            const providerId = authStore.provider?.id
-            const email = authStore.provider?.email || authStore.user?.email
-
-            if (!userId && !providerId) {
-                 throw new Error(t('common.error_occurred'))
+            if (!currentSubscription.value) {
+                await createSubscription({
+                    providerId: authStore.provider.id,
+                    planId: plan.id
+                })
+            } else if (currentSubscription.value.plan_id !== plan.id) {
+                await changePlan(currentSubscription.value.id, plan.id)
             }
-
-            const { url } = await createCheckoutSession({
-                planName: plan.name,
-                providerId: providerId,
-                userId: userId,
-                providerEmail: email!,
-                locale: navigator.language || 'en-US',
-                termsAccepted: true,
-                termsVersion: TERMS_VERSION
-            })
-            
-            // Redirect to Stripe
-            window.location.href = url
+            router.push('/provider/dashboard')
         } catch (err) {
-            console.error('Failed to start checkout:', err)
+            console.error('Failed to select plan:', err)
             showError(t('common.error_occurred'))
+        } finally {
             processing.value = false
         }
     }
@@ -315,9 +318,7 @@ function resolveLimitViolation() {
                 <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl mb-4">
                     {{ $t('pricing.title') }}
                 </h1>
-                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                    {{ $t('pricing.subtitle') }}
-                </p>
+
 
                 <!-- Billing Toggle -->
                 <div class="mt-8 flex items-center justify-center gap-4">
@@ -341,10 +342,7 @@ function resolveLimitViolation() {
                     </div>
                 </div>
 
-                <!-- Promo Banner -->
-                <div class="mt-6 inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full text-sm font-medium">
-                    🎉 {{ $t('pricing.promo_badge') }}
-                </div>
+
                 
                 <!-- No Card Required Badge -->
                 <div class="mt-4 flex items-center justify-center gap-2 text-sm text-gray-500">
@@ -402,131 +400,149 @@ function resolveLimitViolation() {
                     v-for="plan in plans" 
                     :key="plan.id"
                     :class="[
-                        'relative transition-all duration-200 hover:shadow-lg flex flex-col h-full',
+                        'relative transition-all duration-200 flex flex-col h-full',
                         isSelected(plan) ? 'border-2 border-green-500 shadow-lg ring-2 ring-green-100' : 
                             isPopular(plan) ? 'border-2 border-violet-200 shadow-md' : 'border border-gray-200',
-                        plan.status !== 'active' ? 'opacity-75' : 'cursor-pointer'
+                        plan.status === 'active' ? 'hover:shadow-lg cursor-pointer' : 'cursor-default'
                     ]"
                     @click="selectPlan(plan)"
                 >
-                    <!-- Selected Indicator -->
+                    <!-- Coming Soon Overlay -->
                     <div 
-                        v-if="isSelected(plan) || isCurrentPlan(plan)" 
-                        class="absolute -top-3 right-3"
+                        v-if="plan.status === 'coming_soon'" 
+                        class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/40 backdrop-blur-[2px] transition-all"
                     >
-                        <div class="bg-green-500 text-white rounded-full p-1">
-                            <Check class="h-4 w-4" />
+                        <div class="bg-white/90 p-4 rounded-full shadow-sm mb-3 border border-gray-100">
+                            <Lock class="h-8 w-8 text-gray-400" />
                         </div>
+                        <span class="text-xl font-bold text-gray-500 bg-white/80 px-4 py-1.5 rounded-full shadow-sm border border-gray-100 uppercase tracking-widest text-sm">
+                            {{ $t('pricing.coming_soon') }}
+                        </span>
                     </div>
 
-                    <!-- Popular Badge -->
-                    <div 
-                        v-if="isPopular(plan) && !isSelected(plan)" 
-                        class="absolute -top-3 left-1/2 -translate-x-1/2"
-                    >
-                        <Badge class="bg-violet-600 text-white px-3 py-1">
-                            {{ $t('pricing.most_popular') }}
-                        </Badge>
-                    </div>
-
-                    <!-- Status Badge -->
-                    <div 
-                        v-if="plan.status === 'coming_soon' || plan.status === 'legacy'" 
-                        class="absolute -top-3 left-1/2 -translate-x-1/2"
-                    >
-                        <Badge variant="secondary" class="px-3 py-1">
-                            {{ plan.status === 'legacy' ? 'Legacy Plan' : $t('pricing.coming_soon') }}
-                        </Badge>
-                    </div>
-
-                    <CardHeader class="text-center pt-8">
-                        <CardTitle class="text-2xl font-bold">
-                            {{ plan.display_name }}
-                        </CardTitle>
-                        <CardDescription class="mt-2">
-                            {{ plan.description }}
-                        </CardDescription>
-                    </CardHeader>
-
-                    <CardContent class="text-center">
-                        <!-- Price -->
-                        <div class="mb-6">
-                            <template v-if="plan.status === 'active' || plan.status === 'legacy'">
-                                <div class="flex flex-col items-center justify-center min-h-[5rem]">
-                                    <template v-if="hasDiscount(plan)">
-                                        <!-- Original Price -->
-                                        <div class="text-gray-400 text-lg line-through font-medium">
-                                            {{ currencySymbol }}{{ getPlanPrice(plan).toFixed(2) }}
-                                        </div>
-                                        <!-- Discounted Price -->
-                                        <div class="flex items-baseline justify-center gap-1">
-                                            <span class="text-4xl font-bold text-gray-900">
-                                                {{ currencySymbol }}{{ getDiscountedPrice(plan).toFixed(2) }}
-                                            </span>
-                                            <span class="text-gray-500">
-                                                {{ $t('pricing.per_month') }}
-                                            </span>
-                                        </div>
-                                        <div class="mt-2">
-                                            <Badge variant="outline" class="text-green-600 border-green-200 bg-green-50">
-                                                {{ plan.discount_percent }}% off
-                                                <span v-if="plan.discount_duration_months">
-                                                    for {{ plan.discount_duration_months }} mos
-                                                </span>
-                                            </Badge>
-                                        </div>
-                                    </template>
-                                    <template v-else>
-                                        <div class="flex items-baseline justify-center gap-1">
-                                            <span class="text-4xl font-bold text-gray-900">
-                                                {{ currencySymbol }}{{ getPlanPrice(plan).toFixed(2) }}
-                                            </span>
-                                            <span class="text-gray-500">
-                                                {{ $t('pricing.per_month') }}
-                                            </span>
-                                        </div>
-                                    </template>
-                                </div>
-                            </template>
-                            <template v-else>
-                                <span class="text-2xl font-bold text-gray-400">---</span>
-                            </template>
-                        </div>
-
-                        <!-- Features List -->
-                        <ul class="space-y-3 text-left">
-                            <li 
-                                v-for="(feature, idx) in getFeatures(plan)" 
-                                :key="idx"
-                                class="flex items-start gap-3"
-                            >
-                                <Check class="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                                <span class="text-gray-600 text-sm">{{ feature }}</span>
-                            </li>
-                        </ul>
-                    </CardContent>
-
-                    <CardFooter class="mt-auto">
-                        <Button 
-                            variant="outline"
-                            :disabled="plan.status !== 'active' || (isChangeMode && isCurrentPlan(plan)) || processing"
-                            :class="[
-                                'w-full',
-                                isSelected(plan) ? 'bg-green-600 hover:bg-green-700 text-white border-green-600' : ''
-                            ]"
-                            size="lg"
-                            @click.stop="handlePlanAction(plan)"
+                    <!-- Content wrapper that gets blurred if coming soon -->
+                    <div :class="['flex-1 flex flex-col h-full', { 'blur-[2px] select-none pointer-events-none grayscale-[0.3]': plan.status === 'coming_soon' }]">
+                        <!-- Selected Indicator -->
+                        <div 
+                            v-if="isSelected(plan) || isCurrentPlan(plan)" 
+                            class="absolute -top-3 right-3 z-10"
                         >
-                            <LoadingSpinner v-if="processing && isSelected(plan)" inline size="sm" class="mr-2" color="text-white" />
-                            <template v-else>
-                                <span v-if="plan.status === 'coming_soon'">{{ $t('pricing.coming_soon') }}</span>
-                                <span v-else-if="plan.status === 'legacy'">Legacy Plan</span>
-                                <span v-else-if="isChangeMode && isCurrentPlan(plan)">{{ $t('pricing.current_plan') }}</span>
-                                <span v-else-if="isChangeMode">{{ $t('pricing.switch_plan') }}</span>
-                                <span v-else>{{ $t('pricing.start_trial') }}</span>
-                            </template>
-                        </Button>
-                    </CardFooter>
+                            <div class="bg-green-500 text-white rounded-full p-1 shadow-sm">
+                                <Check class="h-4 w-4" />
+                            </div>
+                        </div>
+
+                        <!-- Popular Badge -->
+                        <div 
+                            v-if="isPopular(plan) && !isSelected(plan)" 
+                            class="absolute -top-3 left-1/2 -translate-x-1/2 z-10"
+                        >
+                            <Badge class="bg-violet-600 text-white px-3 py-1">
+                                {{ $t('pricing.most_popular') }}
+                            </Badge>
+                        </div>
+
+                        <!-- Status Badge (Only for legacy, since soon has overlay) -->
+                        <div 
+                            v-if="plan.status === 'legacy'" 
+                            class="absolute -top-3 left-1/2 -translate-x-1/2 z-10"
+                        >
+                            <Badge variant="secondary" class="px-3 py-1">
+                                Legacy Plan
+                            </Badge>
+                        </div>
+
+                        <CardHeader class="text-center pt-8">
+                            <CardTitle class="text-2xl font-bold">
+                                {{ plan.display_name }}
+                            </CardTitle>
+                            <CardDescription class="mt-2">
+                                {{ plan.description }}
+                            </CardDescription>
+                        </CardHeader>
+
+                        <CardContent class="text-center">
+                            <!-- Price -->
+                            <div class="mb-6">
+                                <template v-if="plan.status === 'active' || plan.status === 'legacy'">
+                                    <div class="flex flex-col items-center justify-center min-h-[5rem]">
+                                        <template v-if="hasDiscount(plan)">
+                                            <!-- Original Price -->
+                                            <div class="text-gray-400 text-lg line-through font-medium">
+                                                {{ currencySymbol }}{{ getPlanPrice(plan).toFixed(2) }}
+                                            </div>
+                                            <!-- Discounted Price -->
+                                            <div class="flex items-baseline justify-center gap-1">
+                                                <span class="text-4xl font-bold text-gray-900">
+                                                    {{ currencySymbol }}{{ getDiscountedPrice(plan).toFixed(2) }}
+                                                </span>
+                                                <span class="text-gray-500">
+                                                    {{ $t('pricing.per_month') }}
+                                                </span>
+                                            </div>
+                                            <div class="mt-2">
+                                                <Badge variant="outline" class="text-green-600 border-green-200 bg-green-50">
+                                                    {{ plan.discount_percent }}% off
+                                                    <span v-if="plan.discount_duration_months">
+                                                        for {{ plan.discount_duration_months }} mos
+                                                    </span>
+                                                </Badge>
+                                            </div>
+                                        </template>
+                                        <template v-else>
+                                            <div class="flex items-baseline justify-center gap-1">
+                                                <span class="text-4xl font-bold text-gray-900">
+                                                    {{ currencySymbol }}{{ getPlanPrice(plan).toFixed(2) }}
+                                                </span>
+                                                <span class="text-gray-500">
+                                                    {{ $t('pricing.per_month') }}
+                                                </span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template v-else>
+                                    <div class="flex flex-col items-center justify-center min-h-[5rem]">
+                                        <span class="text-34xl font-bold text-gray-300">---</span>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Features List -->
+                            <ul class="space-y-3 text-left">
+                                <li 
+                                    v-for="(feature, idx) in getFeatures(plan)" 
+                                    :key="idx"
+                                    class="flex items-start gap-3"
+                                >
+                                    <Check class="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                                    <span class="text-gray-600 text-sm">{{ feature }}</span>
+                                </li>
+                            </ul>
+                        </CardContent>
+
+                        <CardFooter class="mt-auto">
+                            <Button 
+                                variant="outline"
+                                :disabled="plan.status !== 'active' || (isChangeMode && isCurrentPlan(plan)) || processing"
+                                :class="[
+                                    'w-full',
+                                    isSelected(plan) ? 'bg-green-600 hover:bg-green-700 text-white border-green-600' : ''
+                                ]"
+                                size="lg"
+                                @click.stop="handlePlanAction(plan)"
+                            >
+                                <LoadingSpinner v-if="processing && isSelected(plan)" inline size="sm" class="mr-2" color="text-white" />
+                                <template v-else>
+                                    <span v-if="plan.status === 'coming_soon'">{{ $t('pricing.coming_soon') }}</span>
+                                    <span v-else-if="plan.status === 'legacy'">Legacy Plan</span>
+                                    <span v-else-if="isChangeMode && isCurrentPlan(plan)">{{ $t('pricing.current_plan') }}</span>
+                                    <span v-else-if="isChangeMode">{{ $t('pricing.switch_plan') }}</span>
+                                    <span v-else>{{ $t('pricing.start_trial') }}</span>
+                                </template>
+                            </Button>
+                        </CardFooter>
+                    </div>
                 </Card>
             </div>
 

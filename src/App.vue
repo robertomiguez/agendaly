@@ -76,9 +76,10 @@ const hideNavigation = computed(() => {
     '/provider/pricing',
     '/provider/checkout',
     '/provider/checkout/success',
-    '/profile'
+    '/profile',
+    '/super-admin'
   ]
-  return hiddenRoutes.includes(route.path)
+  return hiddenRoutes.includes(route.path) || route.path.startsWith('/super-admin')
 })
 </script>
 

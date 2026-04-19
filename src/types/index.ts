@@ -24,6 +24,7 @@ export interface Service {
     description?: string
     image_url?: string
     active: boolean
+    deactivation_reason?: string
     provider_id?: string // References providers table
     created_at?: string
     updated_at?: string
@@ -39,6 +40,15 @@ export interface Customer {
     name?: string
     phone?: string
     avatar_url?: string
+    created_at?: string
+    updated_at?: string
+}
+
+export interface SuperAdmin {
+    id: string
+    auth_user_id: string
+    email: string
+    name?: string
     created_at?: string
     updated_at?: string
 }
@@ -59,6 +69,7 @@ export interface Provider {
     approved_by?: string // References staff table
     approved_at?: string
     rejection_reason?: string
+    deactivation_reason?: string
     created_at?: string
     updated_at?: string
     provider_addresses?: ProviderAddress[] // Joined data
@@ -70,6 +81,7 @@ export interface Staff {
     email: string
     role: 'admin' | 'staff'
     active: boolean
+    deactivation_reason?: string
     provider_id?: string // References providers table
     photo_url?: string | null
     photo_path?: string | null
