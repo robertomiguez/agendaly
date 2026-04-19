@@ -117,7 +117,7 @@ export async function saveProvider({
             .from('subscriptions')
             .select('id')
             .eq('provider_id', newProviderId)
-            .single()
+            .maybeSingle()
 
         if (plan && !existingSub) {
             // Calculate discount end date if applicable
@@ -128,6 +128,9 @@ export async function saveProvider({
                 discountEndsAt.setMonth(discountEndsAt.getMonth() + plan.discount_duration_months)
             }
 
+            const isFreemium = plan.name === 'freemium'
+            const currentPeriodEnd = isFreemium ? null : new Date(now.setMonth(now.getMonth() + 1)).toISOString()
+
             const { data: subData, error: subError } = await supabase
                 .from('subscriptions')
                 .insert({
@@ -135,7 +138,7 @@ export async function saveProvider({
                     plan_id: plan.id,
                     status: 'active',
                     current_period_start: now.toISOString(),
-                    current_period_end: new Date(now.setMonth(now.getMonth() + 1)).toISOString(),
+                    current_period_end: currentPeriodEnd,
                     locked_price: plan.prices?.usd || 0,
                     locked_discount_percent: plan.discount_percent || 0,
                     discount_ends_at: discountEndsAt?.toISOString()
@@ -160,7 +163,7 @@ export async function saveProvider({
                         amount: amount,
                         currency: 'usd',
                         status: 'succeeded',
-                        payment_method: 'card',
+                        payment_method: amount === 0 ? null : 'card',
                         paid_at: new Date().toISOString()
                     })
                 

@@ -137,26 +137,54 @@ const router = createRouter({
             component: () => import('../views/provider/ProviderCalendarView.vue'),
             meta: { requiresAuth: true, requiresProvider: true }
         },
-        // Admin routes
         {
             path: '/admin',
-            name: 'Admin',
-            redirect: '/admin/calendar'
+            name: 'AdminLogin',
+            component: () => import('../views/admin/AdminLoginView.vue'),
+            meta: { requiresGuest: true }
+        },
+        // Super Admin routes
+        {
+            path: '/super-admin',
+            component: () => import('../components/layouts/SuperAdminLayout.vue'),
+            meta: { requiresAuth: true, requiresSuperAdmin: true },
+            children: [
+                {
+                    path: '',
+                    redirect: '/super-admin/dashboard'
+                },
+                {
+                    path: 'dashboard',
+                    name: 'SuperAdminDashboard',
+                    component: () => import('../views/admin/SuperAdminDashboardView.vue')
+                },
+                {
+                    path: 'providers',
+                    name: 'SuperAdminProviders',
+                    component: () => import('../views/admin/SuperAdminProvidersView.vue')
+                },
+                {
+                    path: 'services',
+                    name: 'SuperAdminServices',
+                    component: () => import('../views/admin/SuperAdminServicesView.vue')
+                },
+                {
+                    path: 'staff',
+                    name: 'SuperAdminStaff',
+                    component: () => import('../views/admin/SuperAdminStaffView.vue')
+                },
+                {
+                    path: 'locals',
+                    name: 'SuperAdminLocals',
+                    component: () => import('../views/admin/SuperAdminLocalsView.vue')
+                }
+            ]
         },
         {
-            path: '/admin/calendar',
-            name: 'Calendar',
-            component: () => import('../views/CalendarView.vue')
-        },
-        {
-            path: '/admin/services',
-            name: 'Services',
-            component: () => import('../views/ServicesView.vue')
-        },
-        {
-            path: '/admin/availability',
-            name: 'Availability',
-            component: () => import('../views/AvailabilityView.vue')
+            path: '/deactivated',
+            name: 'Deactivated',
+            component: () => import('../views/DeactivatedAccountView.vue'),
+            meta: { requiresAuth: true }
         }
     ]
 })
@@ -177,6 +205,9 @@ router.beforeEach(async (to, _from, next) => {
 
     // Login page - redirect if already authenticated based on role
     if (to.meta.requiresGuest && authStore.isAuthenticated) {
+        if (authStore.isSuperAdmin) {
+            return next('/super-admin/dashboard')
+        }
         if (role === 'provider') {
             return next('/provider/dashboard')
         }
@@ -215,14 +246,40 @@ router.beforeEach(async (to, _from, next) => {
     }
 
     // Profile completion check (only for customers, not providers)
-    if (authStore.isAuthenticated && !authStore.provider && to.path !== '/profile' && to.path !== '/provider/profile') {
+    if (authStore.isAuthenticated && !authStore.provider && !authStore.isSuperAdmin && to.path !== '/profile' && to.path !== '/provider/profile') {
         // Check if customer profile is incomplete
         if (authStore.customer && (!authStore.customer.name || !authStore.customer.phone)) {
             // Skip for admin routes, provider routes, or booking route (booking handles its own flow)
-            if (to.path.startsWith('/admin') || to.path.startsWith('/provider') || to.path === '/booking') {
+            if (to.path.startsWith('/admin') || to.path.startsWith('/provider') || to.path.startsWith('/super-admin') || to.path === '/booking') {
                 return next()
             }
             return next({ path: '/profile', query: { redirect: to.fullPath } })
+        }
+    }
+
+    // Super Admin check - block non-admins from admin routes
+    if (to.meta.requiresSuperAdmin && !authStore.isSuperAdmin) {
+        // If they just tried to log in through the admin portal, boot them out entirely
+        if (to.path.startsWith('/super-admin') && (_from.path === '/admin' || _from.path === '/auth/callback')) {
+            await authStore.signOut()
+            return next('/admin?error=not_admin')
+        }
+        return next('/')
+    }
+
+    // Super Admin containment - admins can ONLY access admin routes
+    if (authStore.isAuthenticated && authStore.isSuperAdmin) {
+        const isAdminRoute = to.path.startsWith('/super-admin') || to.path.startsWith('/admin') || to.path === '/auth/callback'
+        if (!isAdminRoute) {
+            return next('/super-admin/dashboard')
+        }
+    }
+
+    // Deactivated Account Check (for providers)
+    if (authStore.provider && !authStore.provider.active && to.path !== '/deactivated') {
+        // Only block if trying to access provider dashboard
+        if (to.path.startsWith('/provider')) {
+            return next('/deactivated')
         }
     }
 

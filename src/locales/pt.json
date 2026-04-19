@@ -101,17 +101,17 @@
   },
   "pricing": {
     "title": "Escolha seu Plano",
-    "subtitle": "Comece com 1 mês grátis. Cancele a qualquer momento.",
+    "subtitle": "",
     "monthly": "Mensal",
     "yearly": "Anual",
     "coming_soon": "Em Breve",
     "per_month": "/mês",
-    "start_trial": "Iniciar Teste Grátis",
+    "start_trial": "Continuar",
     "switch_plan": "Mudar para este Plano",
     "current_plan": "Plano Atual",
     "confirm_change_plan": "Tem certeza de que deseja mudar para o plano {plan}? O faturamento será atualizado imediatamente.",
     "most_popular": "Mais Popular",
-    "promo_badge": "50% de desconto nos primeiros 3 meses + 1 mês grátis",
+    "promo_badge": "",
     "footer_note": "Todos os planos incluem acesso 24/7.",
     "contact_support": "Contatar Suporte",
     "error_title": "Não conseguimos carregar os planos",
@@ -185,7 +185,7 @@
     "total": "Total",
     "promo_code": "Código Promocional",
     "apply": "Aplicar",
-    "terms_agree": "Ao clicar em \"Iniciar Teste Grátis\", você concorda com os",
+    "terms_agree": "Ao clicar em \"Continuar\", você concorda com os",
     "and": "e",
     "complete_purchase": "Completar Compra",
     "processing": "Processando...",
@@ -208,8 +208,8 @@
     "cancelled_title": "Compra Cancelada",
     "cancelled_message": "Não se preocupe! Você pode tentar novamente quando estiver pronto.",
     "no_charge": "Seu cartão não foi cobrado.",
-    "start_trial_btn": "Iniciar Teste Grátis de 30 Dias",
-    "no_card_required": "Não é necessário cartão de crédito para o teste",
+    "start_trial_btn": "Continuar",
+    "no_card_required": "Não é necessário cartão de crédito para o plano Freemium",
     "due_today": "vence hoje",
     "secure_note": "Pagamento seguro via Stripe",
     "discount_text": "{percent}% de desconto (meses 2-{endMonth})",
@@ -555,6 +555,7 @@
         "add_title": "Adicionar Local",
         "label": "Nome do Local (Opcional)",
         "label_placeholder": "ex: Unidade Matriz, Filial Centro",
+        "photo_label": "Foto da Unidade",
         "street": "Endereço *",
         "street_placeholder": "Rua Exemplo, 123",
         "street2": "Apto, Sala, Andar (Opcional)",
@@ -589,6 +590,7 @@
   "modals": {
     "staff": {
       "name": "Nome",
+      "photo_label": "Foto do Profissional",
       "email": "E-mail",
       "role": "Função",
       "active": "Ativo",
@@ -671,7 +673,8 @@
   "roles": {
     "provider": "Prestador",
     "customer": "Cliente",
-    "both": "Ambos"
+    "both": "Ambos",
+    "admin": "Administrador"
   },
   "reports": {
     "loading": "Carregando relatório..."

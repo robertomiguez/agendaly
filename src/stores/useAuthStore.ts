@@ -2,13 +2,14 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { supabase } from '../lib/supabase'
 import type { User, Session } from '@supabase/supabase-js'
-import type { Customer, Provider, UserRole } from '../types'
+import type { Customer, Provider, UserRole, SuperAdmin } from '../types'
 
 export const useAuthStore = defineStore('auth', () => {
     const user = ref<User | null>(null)
     const session = ref<Session | null>(null)
     const customer = ref<Customer | null>(null)
     const provider = ref<Provider | null>(null)
+    const superAdmin = ref<SuperAdmin | null>(null)
     const loading = ref(false)
     const error = ref<string | null>(null)
     const isReady = ref(false)
@@ -30,6 +31,7 @@ export const useAuthStore = defineStore('auth', () => {
     })
 
     const isProvider = computed(() => userRole.value === 'provider')
+    const isSuperAdmin = computed(() => !!superAdmin.value)
     const isAdmin = computed(() => userRole.value === 'admin')
 
     async function initialize() {
@@ -42,7 +44,8 @@ export const useAuthStore = defineStore('auth', () => {
                 session.value = currentSession
                 user.value = currentSession.user
                 
-                // IMPORTANT: Fetch provider profile FIRST to establish context
+                // IMPORTANT: Fetch profiles to establish context
+                await fetchSuperAdminProfile()
                 await fetchProviderProfile()
                 // Only fetch/create customer profile if not a provider (or if it's a dual account)
                 await fetchCustomerProfile()
@@ -60,7 +63,8 @@ export const useAuthStore = defineStore('auth', () => {
 
                 if (newSession?.user) {
                     try {
-                        // IMPORTANT: Fetch provider profile FIRST to establish context
+                        // IMPORTANT: Fetch profiles to establish context
+                        await fetchSuperAdminProfile()
                         await fetchProviderProfile()
                         
                         // Wait for provider check to complete before checking customer
@@ -71,6 +75,7 @@ export const useAuthStore = defineStore('auth', () => {
                 } else {
                     customer.value = null
                     provider.value = null
+                    superAdmin.value = null
                     loading.value = false
                 }
             })
@@ -138,6 +143,11 @@ export const useAuthStore = defineStore('auth', () => {
             return
         }
 
+        // GUARD: If this user is a super admin, do NOT create a customer profile.
+        if (superAdmin.value) {
+            return
+        }
+
         // GUARD: Check URL for provider context (redirects, paths) to prevent creation during provider signup
         // This handles the case where provider.value is not yet set (e.g. first login) but the INTENT is provider
         const isProviderFlow = 
@@ -146,6 +156,17 @@ export const useAuthStore = defineStore('auth', () => {
             window.location.pathname.startsWith('/provider')
             
         if (isProviderFlow) {
+            return
+        }
+
+        // GUARD: Check URL for admin context to prevent creation during admin login
+        const isAdminFlow =
+            window.location.pathname.startsWith('/admin') ||
+            window.location.pathname.startsWith('/super-admin') ||
+            window.location.search.includes('redirect=%2Fsuper-admin') ||
+            window.location.search.includes('redirect=/super-admin')
+
+        if (isAdminFlow) {
             return
         }
 
@@ -229,6 +250,29 @@ export const useAuthStore = defineStore('auth', () => {
             customer.value = data
         } catch (e) {
             console.error('Error creating customer profile:', e)
+        }
+    }
+
+    async function fetchSuperAdminProfile() {
+        if (!user.value) {
+            return
+        }
+
+        try {
+            const { data, error: fetchError } = await supabase
+                .from('super_admins')
+                .select('*')
+                .eq('auth_user_id', user.value.id)
+                .maybeSingle()
+
+            if (fetchError) {
+                throw fetchError
+            }
+
+            superAdmin.value = data || null
+        } catch (e) {
+            console.error('Error fetching super admin profile:', e)
+            superAdmin.value = null
         }
     }
 
@@ -355,7 +399,8 @@ export const useAuthStore = defineStore('auth', () => {
             if (data.user) {
                 user.value = data.user
                 session.value = data.session
-                // Fetch provider first to establish context
+                // Fetch profiles to establish context
+                await fetchSuperAdminProfile()
                 await fetchProviderProfile()
                 await fetchCustomerProfile()
             }
@@ -380,6 +425,7 @@ export const useAuthStore = defineStore('auth', () => {
             session.value = null
             customer.value = null
             provider.value = null
+            superAdmin.value = null
         } catch (e) {
             error.value = e instanceof Error ? e.message : 'Failed to sign out'
             console.error('Error signing out:', e)
@@ -433,6 +479,9 @@ export const useAuthStore = defineStore('auth', () => {
         createCustomerProfile,
         ensureCustomerProfile,
         isReady,
-        signInWithOAuth
+        signInWithOAuth,
+        superAdmin,
+        isSuperAdmin,
+        fetchSuperAdminProfile
     }
 })
