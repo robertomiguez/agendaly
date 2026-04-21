@@ -397,12 +397,12 @@ export function useBookingFlow(initialProviderId?: string, initialStaffId?: stri
         bookingConfirmed.value = true
 
         // Send confirmation email
-        if (providerInfo.value && authStore.customer?.email) {
+        if (providerInfo.value && authStore.customer?.profile?.email) {
           try {
             await supabase.functions.invoke('send-booking-confirmation', {
               body: {
                 booking: { ...appointment, service: selectedService.value },
-                customer: { name: authStore.customer.name, email: authStore.customer.email },
+                customer: { name: authStore.profile?.name, email: authStore.profile?.email },
                 provider: providerInfo.value,
                 staff: selectedStaff.value,
                 locale: locale.value,

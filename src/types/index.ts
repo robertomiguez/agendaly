@@ -33,9 +33,9 @@ export interface Service {
     images?: ServiceImage[] // Joined data
 }
 
-export interface Customer {
+export interface Profile {
     id: string
-    auth_user_id?: string
+    auth_user_id: string
     email: string
     name?: string
     phone?: string
@@ -44,27 +44,31 @@ export interface Customer {
     updated_at?: string
 }
 
-export interface SuperAdmin {
+export interface Customer {
     id: string
-    auth_user_id: string
-    email: string
-    name?: string
+    profile_id: string
     created_at?: string
     updated_at?: string
+    profile?: Profile // Joined data
+}
+
+export interface SuperAdmin {
+    id: string
+    profile_id: string
+    created_at?: string
+    updated_at?: string
+    profile?: Profile // Joined data
 }
 
 export type ProviderStatus = 'pending' | 'approved' | 'rejected' | 'suspended'
 
 export interface Provider {
     id: string
-    auth_user_id?: string
+    profile_id: string
     business_name: string
-    email: string
-    phone?: string
     description?: string
     logo_url?: string
     logo_path?: string
-    avatar_url?: string
     status: ProviderStatus
     active?: boolean
     approved_by?: string // References staff table
@@ -73,6 +77,7 @@ export interface Provider {
     deactivation_reason?: string
     created_at?: string
     updated_at?: string
+    profile?: Profile // Joined data
     provider_addresses?: ProviderAddress[] // Joined data
 }
 

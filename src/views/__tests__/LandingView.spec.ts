@@ -92,7 +92,6 @@ describe('LandingView', () => {
 
         // Check if the hero section exists
         const heroSection = wrapper.find('.bg-cover')
-        console.log(heroSection.html())
         expect(heroSection.exists()).toBe(true)
 
         // Check if background image is set

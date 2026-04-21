@@ -21,9 +21,9 @@ const redirectDestination = computed(() => {
 })
 
 function populateForm() {
-  if (authStore.customer) {
-    name.value = authStore.customer.name || ''
-    phone.value = authStore.customer.phone || ''
+  if (authStore.profile) {
+    name.value = authStore.profile.name || ''
+    phone.value = authStore.profile.phone || ''
   }
 }
 
@@ -32,9 +32,9 @@ onMounted(() => {
 })
 
 watch(
-  () => authStore.customer,
-  (newCustomer) => {
-    if (newCustomer) {
+  () => authStore.profile,
+  (newProfile) => {
+    if (newProfile) {
       populateForm()
     }
   },
@@ -42,26 +42,15 @@ watch(
 )
 
 async function updateProfile() {
-  const isNewUser = !authStore.customer
-  // Check if profile is incomplete (happens during Google Auth / OTP)
-  const wasIncomplete = !authStore.customer?.name || !authStore.customer?.phone
+  const wasIncomplete = !authStore.profile?.name || !authStore.profile?.phone
   loading.value = true
   clearMessages()
   
   try {
-    // If no customer profile exists, create one with the current form data
-    if (isNewUser) {
-      await authStore.createCustomerProfile({
-        name: name.value,
-        phone: phone.value
-      })
-    } else {
-      // Otherwise update existing profile
-      await authStore.updateProfile({
-        name: name.value,
-        phone: phone.value
-      })
-    }
+    await authStore.updateProfile({
+      name: name.value,
+      phone: phone.value
+    })
     
     showSuccess(t('profile.update_success'))
     
@@ -122,7 +111,7 @@ async function updateProfile() {
         <div class="space-y-3">
           <!-- New/Incomplete User: Save and Continue -->
           <button
-            v-if="!authStore.customer || (!authStore.customer.name || !authStore.customer.phone)"
+            v-if="!authStore.profile || (!authStore.profile.name || !authStore.profile.phone)"
             type="submit"
             :disabled="loading"
             class="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-4 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"

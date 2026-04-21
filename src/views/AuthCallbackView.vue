@@ -34,7 +34,15 @@ onMounted(async () => {
 function handleRedirect() {
     // Get redirect from query parameter (passed through OAuth flow)
     // NOTE: Supabase OAuth may strip query params, so we also check localStorage
-    const redirect = route.query.redirect as string
+    let redirect = route.query.redirect as string
+    
+    if (!redirect) {
+        redirect = localStorage.getItem('authRedirect') as string
+    }
+    
+    if (redirect) {
+        localStorage.removeItem('authRedirect')
+    }
 
     // Super Admin flow: if the user is a super admin, go directly to admin dashboard
     // This takes priority over all other flows
@@ -53,8 +61,8 @@ function handleRedirect() {
         return
     }
 
-    const customer = authStore.customer
-    const isNewUser = !customer || !customer.name || !customer.phone
+    const profile = authStore.profile
+    const isNewUser = !profile || !profile.name || !profile.phone
     const pendingBookingState = localStorage.getItem('pendingBookingState')
 
     // Determine if we're in the booking flow:
@@ -63,10 +71,8 @@ function handleRedirect() {
 
     if (isBookingFlow && pendingBookingState) {
         if (isNewUser) {
-            // New user in booking flow: go to profile first, then return to booking
             router.push('/profile?redirect=/booking')
         } else {
-            // Existing user in booking flow: go directly to booking to complete it
             router.push('/booking')
         }
         return
@@ -79,30 +85,23 @@ function handleRedirect() {
 
     if (redirect === '/provider') {
         if (authStore.provider) {
-            // Existing provider - go to dashboard
             router.push('/provider/dashboard')
         } else {
-            // New provider - go to pricing first to select a plan
             router.push('/provider/pricing')
         }
     } else if (redirect && redirect !== '/booking') {
-        // Other specific redirect (but not booking which we already handled above)
-        // Only allow relative paths to prevent open redirect attacks
         if (redirect.startsWith('/') && !redirect.startsWith('//')) {
             router.push(redirect)
         } else {
             router.push('/')
         }
     } else if (authStore.provider) {
-        // No redirect specified but user is a provider
         router.push('/provider/dashboard')
     } else {
         // Customer flow from header/normal login
         if (isNewUser) {
-            // New customer - go to profile page first, then root
             router.push('/profile?redirect=/')
         } else {
-            // Existing customer with complete profile - go to root
             router.push('/')
         }
     }

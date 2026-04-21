@@ -194,11 +194,9 @@ const autoGeocode = useDebounceFn(async () => {
     }
   }
 
-  console.log('Auto-geocoding (structured):', structuredQuery)
   const coords = await geocodeAddress(structuredQuery)
   
   if (coords) {
-    console.log('Geocode success:', coords)
     form.value.latitude = coords.latitude
     form.value.longitude = coords.longitude
   }
@@ -216,11 +214,9 @@ watch(
         postal_code: newPostal,
         country: newCountry
       }
-      console.log('Auto-filling from Zip (structured):', structuredQuery)
       
       const result = await geocodeAddress(structuredQuery)
       if (result && result.address) {
-        console.log('Auto-fill result:', result)
         
         // Only fill if empty to avoid overwriting user input
         if (!form.value.city && result.address.city) form.value.city = result.address.city
@@ -260,7 +256,6 @@ async function handleLocationUpdate(loc: { latitude: number; longitude: number }
   try {
     const result = await reverseGeocode(loc.latitude, loc.longitude)
     if (result && result.address) {
-      console.log('Reverse geocode result:', result)
       
       form.value.street_address = result.address.road || ''
       // If road is missing, maybe use suburb or neighbourhood? (handled in service)

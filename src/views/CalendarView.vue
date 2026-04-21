@@ -264,7 +264,7 @@ function formatTime(time: string) {
                 >
                   <div class="font-semibold text-sm">{{ formatTime(appointment.start_time) }}</div>
                   <div class="text-sm font-medium mt-1">{{ getServiceName(appointment.service_id) }}</div>
-                  <div class="text-xs mt-1">{{ appointment.customer?.name || 'Unknown Customer' }}</div>
+                  <div class="text-xs mt-1">{{ appointment.customer?.profile?.name || 'Unknown Customer' }}</div>
                 </button>
                 
                 <div v-if="getAppointmentsForDate(day).length === 0" class="text-center py-12 text-gray-400 text-sm">
@@ -317,9 +317,9 @@ function formatTime(time: string) {
 
             <div>
               <span class="text-sm text-gray-500">Customer</span>
-              <p class="font-semibold text-gray-900">{{ selectedAppointment.customer?.name || 'Unknown Customer' }}</p>
-              <p class="text-sm text-gray-600">{{ selectedAppointment.customer?.email }}</p>
-              <p class="text-sm text-gray-600">{{ selectedAppointment.customer?.phone }}</p>
+              <p class="font-semibold text-gray-900">{{ selectedAppointment.customer?.profile?.name || 'Unknown Customer' }}</p>
+              <p class="text-sm text-gray-600">{{ selectedAppointment.customer?.profile?.email }}</p>
+              <p class="text-sm text-gray-600">{{ selectedAppointment.customer?.profile?.phone }}</p>
             </div>
 
             <div v-if="selectedAppointment.notes">

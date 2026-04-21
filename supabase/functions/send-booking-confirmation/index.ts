@@ -219,7 +219,6 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    console.log(`Processing booking emails for: ${customer.email} (Locale: ${locale})`);
     
     // Data prep
     const date = booking.appointment_date;

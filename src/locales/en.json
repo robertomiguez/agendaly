@@ -255,7 +255,8 @@
     "profile": "Profile",
     "book_now": "Book Now",
     "subscription": "My Subscription",
-    "see_all": "See all"
+    "see_all": "See all",
+    "my_account": "My Account"
   },
   "landing": {
     "hero_title": "Discover your perfect",
@@ -583,12 +584,18 @@
     "logo_help": "Upload a logo for your business (optional)",
     "business_name": "Business Name",
     "phone_number": "Phone Number",
+    "contact_section": "Contact Person",
+    "contact_name": "Contact Person",
+    "contact_name_placeholder": "e.g. John Smith",
+    "contact_phone": "Contact Phone",
     "description": "Description",
     "description_placeholder": "Tell us about your services...",
     "save_success_edit": "Profile updated successfully",
     "save_success_new": "Profile created successfully",
     "save_error": "Failed to save changes",
-    "business_name_required": "Business Name is required."
+    "business_name_required": "Business Name is required.",
+    "contact_name_required": "Contact person is required.",
+    "contact_phone_required": "Contact phone is required."
   },
   "modals": {
     "staff": {

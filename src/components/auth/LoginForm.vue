@@ -43,6 +43,15 @@ watch(otpValue, (newVal) => {
 async function sendCode() {
   if (!email.value) return
   
+  // Persist the redirect intent for OTP flow so that
+  // ensureProfileAndCustomer can detect provider/admin context
+  const redirectIntent = route.query.redirect as string || props.redirect
+  if (redirectIntent) {
+    localStorage.setItem('authRedirect', redirectIntent)
+  } else {
+    localStorage.removeItem('authRedirect')
+  }
+  
   try {
     await authStore.sendOtpCode(email.value)
     codeSent.value = true
@@ -57,6 +66,10 @@ async function verifyCode() {
   
   try {
     await authStore.verifyOtpCode(email.value, code)
+    
+    // Clear authRedirect after successful OTP verify
+    // (it was consumed by ensureProfileAndCustomer during verifyOtpCode)
+    localStorage.removeItem('authRedirect')
     
     if (props.redirect) {
          router.push(props.redirect)

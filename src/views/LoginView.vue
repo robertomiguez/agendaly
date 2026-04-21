@@ -31,18 +31,18 @@ onMounted(async () => {
 })
 
 function handleLoginSuccess() {
+  // Clear any stored redirect intent — we're consuming it now
+  localStorage.removeItem('authRedirect')
   const redirect = route.query.redirect as string
   
   if (redirect === '/provider') {
     if (authStore.provider) {
-      // Existing provider - go to dashboard
       router.push('/provider/dashboard')
     } else {
-      // New provider - go to pricing first to select a plan
       router.push('/provider/pricing')
     }
   } else if (redirect === '/customer') {
-    if (authStore.customer && authStore.customer.name && authStore.customer.phone) {
+    if (authStore.profile && authStore.profile.name && authStore.profile.phone) {
       router.push('/booking')
     } else {
       router.push('/profile')

@@ -48,19 +48,27 @@ const currentLanguageFlag = computed(() => {
 })
 
 const userRole = computed(() => {
-  const isProvider = authStore.provider !== null
-  const isCustomer = authStore.customer !== null
-  
-  if (authStore.isSuperAdmin && isProvider) return 'Both (Admin)'
   if (authStore.isSuperAdmin) return 'Admin'
-  if (isProvider) return 'Provider'
-  if (isCustomer) return 'Customer'
+
+  const hasProvider = authStore.provider !== null
+  const hasCustomer = authStore.customer !== null
+
+  if (hasProvider && hasCustomer) {
+    if (route.path.startsWith('/provider')) return 'Provider'
+    return 'Customer'
+  }
+
+  if (hasProvider) return 'Provider'
+  if (hasCustomer) return 'Customer'
+  
   return null
 })
 
 const userName = computed(() => {
+  if (authStore.superAdmin) return authStore.profile?.name || 'Super Admin'
+  if (authStore.provider && userRole.value === 'Provider') return authStore.provider.business_name
+  if (authStore.profile) return authStore.profile.name || 'Customer'
   if (authStore.provider) return authStore.provider.business_name
-  if (authStore.customer) return authStore.customer.name || 'Customer'
   return authStore.user?.email || 'User'
 })
 
@@ -75,8 +83,8 @@ const userInitials = computed(() => {
 })
 
 const userLogo = computed(() => {
-  if (authStore.provider) return authStore.provider.logo_url
-  if (authStore.customer) return authStore.customer.avatar_url
+  if (authStore.provider && userRole.value === 'Provider') return authStore.provider.logo_url
+  if (authStore.profile) return authStore.profile.avatar_url
   return null
 })
 
@@ -107,20 +115,26 @@ function navigateToLogin() {
 
 function navigateToDashboard() {
   showMobileMenu.value = false
-  if (authStore.provider) {
-    router.push('/provider/dashboard')
-  } else {
-    router.push('/booking')
-  }
+  router.push('/provider/dashboard')
 }
 
 function navigateToProfile() {
   showMobileMenu.value = false
-  if (authStore.provider) {
+  if (userRole.value === 'Provider') {
     router.push('/provider/profile')
   } else {
     router.push('/profile')
   }
+}
+
+function switchToCustomer() {
+  showMobileMenu.value = false
+  router.push('/')
+}
+
+function switchToProvider() {
+  showMobileMenu.value = false
+  router.push('/provider/dashboard')
 }
 
 function navigateToSubscription() {
@@ -226,26 +240,51 @@ function changeLanguage(lang: string) {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem v-if="authStore.provider" @click="navigateToDashboard" class="cursor-pointer">
-                  <LayoutDashboard class="mr-2 h-4 w-4" />
-                  {{ $t('nav.dashboard') }}
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  v-if="userRole === 'Customer'" 
-                  @click="navigateToMyBookings"
-                  class="cursor-pointer"
-                >
-                  <CalendarDays class="mr-2 h-4 w-4" />
-                  {{ $t('nav.my_bookings') }}
-                </DropdownMenuItem>
-                <DropdownMenuItem @click="navigateToProfile" class="cursor-pointer">
-                  <User class="mr-2 h-4 w-4" />
-                  {{ authStore.provider ? $t('nav.business_profile') : $t('nav.profile') }}
-                </DropdownMenuItem>
-                <DropdownMenuItem v-if="authStore.provider" @click="navigateToSubscription" class="cursor-pointer">
-                  <CreditCard class="mr-2 h-4 w-4" />
-                  {{ $t('nav.subscription') }}
-                </DropdownMenuItem>
+                
+                <!-- Provider Context -->
+                <template v-if="userRole === 'Provider'">
+                  <DropdownMenuItem @click="navigateToDashboard" class="cursor-pointer">
+                    <LayoutDashboard class="mr-2 h-4 w-4" />
+                    {{ $t('nav.dashboard') }}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem @click="navigateToProfile" class="cursor-pointer">
+                    <User class="mr-2 h-4 w-4" />
+                    {{ $t('nav.business_profile') }}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem @click="navigateToSubscription" class="cursor-pointer">
+                    <CreditCard class="mr-2 h-4 w-4" />
+                    {{ $t('nav.subscription') }}
+                  </DropdownMenuItem>
+                  
+                  <template v-if="authStore.customer">
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem @click="switchToCustomer" class="cursor-pointer font-medium text-blue-600 focus:text-blue-700">
+                      <User class="mr-2 h-4 w-4" />
+                      Switch to Customer
+                    </DropdownMenuItem>
+                  </template>
+                </template>
+
+                <!-- Customer Context -->
+                <template v-else-if="userRole === 'Customer'">
+                  <DropdownMenuItem @click="navigateToMyBookings" class="cursor-pointer">
+                    <CalendarDays class="mr-2 h-4 w-4" />
+                    {{ $t('nav.my_bookings') }}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem @click="navigateToProfile" class="cursor-pointer">
+                    <User class="mr-2 h-4 w-4" />
+                    {{ $t('nav.profile') }}
+                  </DropdownMenuItem>
+                  
+                  <template v-if="authStore.provider">
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem @click="switchToProvider" class="cursor-pointer font-medium text-purple-600 focus:text-purple-700">
+                      <Briefcase class="mr-2 h-4 w-4" />
+                      Switch to Business Dashboard
+                    </DropdownMenuItem>
+                  </template>
+                </template>
+
                 <DropdownMenuSeparator />
                 <DropdownMenuItem @click="handleLogout" class="text-destructive focus:text-destructive cursor-pointer">
                   <LogOut class="mr-2 h-4 w-4" />
@@ -311,44 +350,43 @@ function changeLanguage(lang: string) {
         </Button>
         
         <template v-if="authStore.isAuthenticated">
-          <Button 
-            v-if="authStore.provider" 
-            variant="ghost" 
-            class="justify-start h-12"
-            @click="navigateToDashboard"
-          >
-            <LayoutDashboard class="mr-2 h-5 w-5" />
-             {{ $t('nav.dashboard') }}
-          </Button>
-          
-          <Button 
-            v-if="userRole === 'Customer'"
-            variant="ghost" 
-            class="justify-start h-12"
-            @click="navigateToMyBookings"
-          >
-            <CalendarDays class="mr-2 h-5 w-5" />
-            {{ $t('nav.my_bookings') }}
-          </Button>
+          <!-- Provider Context -->
+          <template v-if="userRole === 'Provider'">
+            <Button variant="ghost" class="justify-start h-12" @click="navigateToDashboard">
+              <LayoutDashboard class="mr-2 h-5 w-5" />
+               {{ $t('nav.dashboard') }}
+            </Button>
+            <Button variant="ghost" class="justify-start h-12" @click="navigateToProfile">
+              <User class="mr-2 h-5 w-5" />
+              {{ $t('nav.business_profile') }}
+            </Button>
+            <Button variant="ghost" class="justify-start h-12" @click="navigateToSubscription">
+              <CreditCard class="mr-2 h-5 w-5" />
+              {{ $t('nav.subscription') }}
+            </Button>
+            
+            <Button v-if="authStore.customer" variant="ghost" class="justify-start h-12 font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50" @click="switchToCustomer">
+              <User class="mr-2 h-5 w-5" />
+              Switch to Customer
+            </Button>
+          </template>
 
-           <Button 
-            variant="ghost" 
-            class="justify-start h-12"
-            @click="navigateToProfile"
-          >
-            <User class="mr-2 h-5 w-5" />
-            {{ authStore.provider ? $t('nav.business_profile') : $t('nav.profile') }}
-          </Button>
-
-           <Button 
-            v-if="authStore.provider" 
-            variant="ghost" 
-            class="justify-start h-12"
-            @click="navigateToSubscription"
-          >
-            <CreditCard class="mr-2 h-5 w-5" />
-            {{ $t('nav.subscription') }}
-          </Button>
+          <!-- Customer Context -->
+          <template v-else-if="userRole === 'Customer'">
+            <Button variant="ghost" class="justify-start h-12" @click="navigateToMyBookings">
+              <CalendarDays class="mr-2 h-5 w-5" />
+              {{ $t('nav.my_bookings') }}
+            </Button>
+            <Button variant="ghost" class="justify-start h-12" @click="navigateToProfile">
+              <User class="mr-2 h-5 w-5" />
+              {{ $t('nav.profile') }}
+            </Button>
+            
+            <Button v-if="authStore.provider" variant="ghost" class="justify-start h-12 font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50" @click="switchToProvider">
+              <Briefcase class="mr-2 h-5 w-5" />
+              Switch to Business Dashboard
+            </Button>
+          </template>
 
            <Button 
             variant="ghost" 
