@@ -891,11 +891,11 @@ ALTER TABLE ONLY public.staff_addresses
 
 --
 -- TOC entry 4076 (class 2606 OID 18768)
--- Name: staff staff_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: staff staff_provider_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.staff
-    ADD CONSTRAINT staff_email_key UNIQUE (email);
+    ADD CONSTRAINT staff_provider_email_key UNIQUE (provider_id, email);
 
 
 --
