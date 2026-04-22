@@ -105,7 +105,7 @@ async function copyStaffLink(member: Staff) {
       })
       return // Success!
     } catch (err) {
-       console.log('Share canceled or failed, falling back to copy', err)
+       console.error('Share canceled or failed, falling back to copy', err)
     }
   }
 

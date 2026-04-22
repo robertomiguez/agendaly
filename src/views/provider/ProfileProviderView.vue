@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea' // Assuming Textarea component exists or use native
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Building, Phone, FileText } from 'lucide-vue-next'
+import { Building, FileText, User } from 'lucide-vue-next'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 
 const router = useRouter()
@@ -25,9 +25,11 @@ const selectedPlan = computed(() => route.query.plan as string || null)
 const form = ref({
   business_name: '',
   description: '',
-  phone: '',
   logo_url: null as string | null
 })
+
+const contactName = ref('')
+const contactPhone = ref('')
 
 const logoFile = ref<File | null>(null)
 const loading = ref(false)
@@ -42,10 +44,13 @@ function populateForm() {
   if (authStore.provider) {
     form.value = {
       business_name: authStore.provider.business_name || '',
-      phone: authStore.provider.phone || '',
       description: authStore.provider.description || '',
       logo_url: authStore.provider.logo_url || null
     }
+  }
+  if (authStore.profile) {
+    contactName.value = authStore.profile.name || ''
+    contactPhone.value = authStore.profile.phone || ''
   }
 }
 
@@ -65,7 +70,7 @@ watch(
 )
 
 async function handleSubmit() {
-  if (!authStore.user) return
+  if (!authStore.user || !authStore.profile) return
 
   loading.value = true
   clearMessages()
@@ -77,15 +82,33 @@ async function handleSubmit() {
     return
   }
 
+  if (!contactName.value || !contactName.value.trim()) {
+    showError(t('provider_profile.contact_name_required'))
+    loading.value = false
+    return
+  }
+
+  if (!contactPhone.value || !contactPhone.value.trim()) {
+    showError(t('provider_profile.contact_phone_required'))
+    loading.value = false
+    return
+  }
+
   // Capture if we are editing (provider exists) before saving and potentially updating store
 
   try {
     await saveProvider({
       user: authStore.user,
+      profile: authStore.profile,
       provider: authStore.provider,
       form: form.value,
       logoFile: logoFile.value,
       planName: selectedPlan.value
+    })
+
+    await authStore.updateProfile({
+      name: contactName.value,
+      phone: contactPhone.value
     })
 
     showSuccess(isEditing.value
@@ -148,11 +171,42 @@ async function handleSubmit() {
               </div>
             </div>
 
-            <!-- Contact & Description -->
+            <!-- Contact Person -->
+            <div class="space-y-4 pt-4 border-t border-gray-100">
+              <div class="flex items-center gap-2 mb-4 text-primary-600">
+                <User class="h-5 w-5" />
+                <h3 class="font-semibold">{{ $t('provider_profile.contact_section') }}</h3>
+              </div>
+
+              <div class="grid gap-4">
+                <div class="grid gap-2">
+                  <Label for="contact_name">{{ $t('provider_profile.contact_name') }} <span class="text-red-500">*</span></Label>
+                  <Input
+                    id="contact_name"
+                    v-model="contactName"
+                    required
+                    :placeholder="$t('provider_profile.contact_name_placeholder')"
+                  />
+                </div>
+
+                <div class="grid gap-2">
+                  <Label for="contact_phone">{{ $t('provider_profile.contact_phone') }} <span class="text-red-500">*</span></Label>
+                  <Input
+                    id="contact_phone"
+                    v-model="contactPhone"
+                    type="tel"
+                    required
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Description -->
             <div class="space-y-4 pt-4 border-t border-gray-100">
               <div class="flex items-center gap-2 mb-4 text-primary-600">
                 <FileText class="h-5 w-5" />
-                <h3 class="font-semibold">{{ $t('provider_profile.description') }} & Contact</h3>
+                <h3 class="font-semibold">{{ $t('provider_profile.description') }}</h3>
               </div>
 
               <div class="grid gap-4">
@@ -164,21 +218,6 @@ async function handleSubmit() {
                     rows="4"
                     :placeholder="$t('provider_profile.description_placeholder')"
                   />
-                </div>
-
-                <div class="grid gap-2">
-                  <Label for="phone">{{ $t('provider_profile.phone_number') }}</Label>
-                  <div class="relative">
-                    <Phone class="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="phone"
-                      v-model="form.phone"
-                      type="tel"
-                      required
-                      class="pl-9"
-                      placeholder="(555) 123-4567"
-                    />
-                  </div>
                 </div>
               </div>
             </div>

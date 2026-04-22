@@ -105,11 +105,11 @@ async function handleLogout() {
 
         <div class="flex items-center gap-4">
           <div class="hidden md:flex flex-col text-right">
-            <span class="text-sm font-semibold text-slate-900">{{ authStore.superAdmin?.name || 'Super Admin' }}</span>
-            <span class="text-xs text-slate-500">{{ authStore.superAdmin?.email }}</span>
+            <span class="text-sm font-semibold text-slate-900">{{ authStore.superAdmin?.profile?.name || 'Super Admin' }}</span>
+            <span class="text-xs text-slate-500">{{ authStore.superAdmin?.profile?.email }}</span>
           </div>
           <div class="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold">
-            {{ (authStore.superAdmin?.name?.[0] || 'S').toUpperCase() }}
+            {{ (authStore.superAdmin?.profile?.name?.[0] || 'S').toUpperCase() }}
           </div>
         </div>
       </header>

@@ -7,12 +7,12 @@ import { getPlanByName } from './subscriptionService'
  * Create a minimal provider record for checkout flow.
  * This allows users to checkout before completing their full profile.
  */
-export async function createMinimalProvider(user: { id: string; email: string }): Promise<string> {
+export async function createMinimalProvider(profileId: string): Promise<string> {
     // Check if provider already exists
     const { data: existingProvider } = await supabase
         .from('providers')
         .select('id')
-        .eq('auth_user_id', user.id)
+        .eq('profile_id', profileId)
         .single()
 
     if (existingProvider) {
@@ -23,8 +23,7 @@ export async function createMinimalProvider(user: { id: string; email: string })
     const { data: newProvider, error } = await supabase
         .from('providers')
         .insert({
-            auth_user_id: user.id,
-            email: user.email,
+            profile_id: profileId,
             business_name: '', // Will be filled in profile completion
             status: 'pending', // Not approved until profile is complete
         })
@@ -37,12 +36,14 @@ export async function createMinimalProvider(user: { id: string; email: string })
 
 export async function saveProvider({
     user,
+    profile,
     provider,
     form,
     logoFile,
     planName // Optional plan name to create subscription
 }: {
     user: any
+    profile: any
     provider?: any
     form: any
     logoFile?: File | null
@@ -67,7 +68,6 @@ export async function saveProvider({
         // UPDATE
         const updateData: any = {
             business_name: form.business_name,
-            phone: form.phone,
             description: form.description,
             logo_url,
             logo_path
@@ -90,10 +90,8 @@ export async function saveProvider({
         const { data: newProvider, error } = await supabase
             .from('providers')
             .insert({
-                auth_user_id: user.id,
-                email: user.email,
+                profile_id: profile.id,
                 business_name: form.business_name,
-                phone: form.phone,
                 description: form.description,
                 logo_url,
                 logo_path,

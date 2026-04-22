@@ -109,7 +109,7 @@ onMounted(async () => {
 
         // Ensure customer profile exists
         if (!authStore.customer) {
-          await authStore.ensureCustomerProfile()
+          await authStore.ensureProfileAndCustomer()
         }
         if (!authStore.customer) {
           await authStore.fetchCustomerProfile()
@@ -142,13 +142,26 @@ onMounted(async () => {
 
 async function handleSubmit() {
   clearMessages()
+
+  if (authStore.isAuthenticated) {
+    if (!authStore.profile?.name || !authStore.profile?.phone) {
+      booking.saveBookingState()
+      router.push('/profile?redirect=/booking')
+      return
+    }
+
+    if (!authStore.customer) {
+      await authStore.ensureProfileAndCustomer()
+    }
+  }
+
   await booking.submitBooking(showError, t)
 }
 
 async function handleLoginSuccess() {
   // Check if user has a complete profile (name and phone)
-  const customer = authStore.customer
-  if (!customer || !customer.name || !customer.phone) {
+  const profile = authStore.profile
+  if (!profile || !profile.name || !profile.phone) {
     // New user or incomplete profile - redirect to profile first
     // Save booking state so we can restore after profile completion
     booking.saveBookingState()

@@ -19,7 +19,7 @@ function goToRegister() {
     if (authStore.provider) {
       router.push('/provider/dashboard')
     } else {
-      router.push('/provider/profile')
+      router.push('/provider/pricing')
     }
   } else {
     // Not authenticated - go to login with provider redirect

@@ -250,7 +250,8 @@
     "profile": "Profil",
     "book_now": "Réserver",
     "subscription": "Mon Abonnement",
-    "see_all": "Tout voir"
+    "see_all": "Tout voir",
+    "my_account": "Mon Compte"
   },
   "landing": {
     "hero_title": "Découvrez votre",
@@ -576,11 +577,18 @@
     "logo_help": "Téléchargez un logo pour votre entreprise (facultatif)",
     "business_name": "Nom de l'entreprise",
     "phone_number": "Numéro de téléphone",
+    "contact_section": "Personne de contact",
+    "contact_name": "Personne de contact",
+    "contact_name_placeholder": "ex: Jean Dupont",
+    "contact_phone": "Téléphone de contact",
     "description": "Description",
     "description_placeholder": "Parlez-nous de vos services...",
     "save_success_edit": "Profil mis à jour avec succès",
     "save_success_new": "Profil créé avec succès",
-    "save_error": "Échec de l'enregistrement des modifications"
+    "save_error": "Échec de l'enregistrement des modifications",
+    "business_name_required": "Le nom de l'entreprise est obligatoire.",
+    "contact_name_required": "Le nom de la personne de contact est obligatoire.",
+    "contact_phone_required": "Le téléphone de contact est obligatoire."
   },
   "modals": {
     "staff": {

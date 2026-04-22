@@ -15,12 +15,9 @@ app.use(i18n)
 
 // Initialize auth before mounting
 const authStore = useAuthStore()
-console.log('[Main] Initializing auth store...')
 authStore.initialize()
     .then(() => {
-        console.log('[Main] Auth initialized successfully, mounting app...')
         app.mount('#app')
-        console.log('[Main] App mounted successfully')
     })
     .catch((error) => {
         console.error('[Main] Error during auth initialization:', error)

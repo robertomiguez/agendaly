@@ -46,7 +46,7 @@ const authStore = useAuthStore()
           <CheckCircle2 class="h-8 w-8 text-green-600" />
         </div>
         <CardTitle class="text-2xl text-green-700">{{ $t('booking.confirmed_title') }}</CardTitle>
-        <CardDescription>{{ $t('booking.confirmed_desc', { email: authStore.customer?.email }) }}</CardDescription>
+        <CardDescription>{{ $t('booking.confirmed_desc', { email: authStore.customer?.profile?.email }) }}</CardDescription>
       </CardHeader>
       <CardContent class="grid gap-4 pt-4">
         <div class="bg-gray-50 rounded-lg p-4 grid gap-3 text-sm border">

@@ -44,7 +44,11 @@ TO public
 WITH CHECK (
   bucket_id = 'service-images'::text 
   AND auth.role() = 'authenticated'::text 
-  AND EXISTS (SELECT 1 FROM providers WHERE providers.auth_user_id = auth.uid())
+  AND EXISTS (
+    SELECT 1 FROM providers 
+    JOIN profiles ON providers.profile_id = profiles.id
+    WHERE profiles.auth_user_id = auth.uid()
+  )
 );
 
 CREATE POLICY "Providers can update their service images" 
@@ -53,7 +57,11 @@ TO public
 USING (
   bucket_id = 'service-images'::text 
   AND auth.role() = 'authenticated'::text 
-  AND EXISTS (SELECT 1 FROM providers WHERE providers.auth_user_id = auth.uid())
+  AND EXISTS (
+    SELECT 1 FROM providers 
+    JOIN profiles ON providers.profile_id = profiles.id
+    WHERE profiles.auth_user_id = auth.uid()
+  )
 );
 
 CREATE POLICY "Providers can delete their service images" 
@@ -62,5 +70,9 @@ TO public
 USING (
   bucket_id = 'service-images'::text 
   AND auth.role() = 'authenticated'::text 
-  AND EXISTS (SELECT 1 FROM providers WHERE providers.auth_user_id = auth.uid())
+  AND EXISTS (
+    SELECT 1 FROM providers 
+    JOIN profiles ON providers.profile_id = profiles.id
+    WHERE profiles.auth_user_id = auth.uid()
+  )
 );

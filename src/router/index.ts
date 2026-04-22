@@ -247,10 +247,10 @@ router.beforeEach(async (to, _from, next) => {
 
     // Profile completion check (only for customers, not providers)
     if (authStore.isAuthenticated && !authStore.provider && !authStore.isSuperAdmin && to.path !== '/profile' && to.path !== '/provider/profile') {
-        // Check if customer profile is incomplete
-        if (authStore.customer && (!authStore.customer.name || !authStore.customer.phone)) {
-            // Skip for admin routes, provider routes, or booking route (booking handles its own flow)
-            if (to.path.startsWith('/admin') || to.path.startsWith('/provider') || to.path.startsWith('/super-admin') || to.path === '/booking') {
+        // Check if profile is incomplete
+        if (authStore.profile && (!authStore.profile.name || !authStore.profile.phone)) {
+            // Skip for auth callback, admin routes, provider routes, or booking route (they handle their own flow)
+            if (to.path === '/auth/callback' || to.path.startsWith('/admin') || to.path.startsWith('/provider') || to.path.startsWith('/super-admin') || to.path === '/booking') {
                 return next()
             }
             return next({ path: '/profile', query: { redirect: to.fullPath } })

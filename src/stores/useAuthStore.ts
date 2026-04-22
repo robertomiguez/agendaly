@@ -2,11 +2,12 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { supabase } from '../lib/supabase'
 import type { User, Session } from '@supabase/supabase-js'
-import type { Customer, Provider, UserRole, SuperAdmin } from '../types'
+import type { Customer, Provider, UserRole, SuperAdmin, Profile } from '../types'
 
 export const useAuthStore = defineStore('auth', () => {
     const user = ref<User | null>(null)
     const session = ref<Session | null>(null)
+    const profile = ref<Profile | null>(null)
     const customer = ref<Customer | null>(null)
     const provider = ref<Provider | null>(null)
     const superAdmin = ref<SuperAdmin | null>(null)
@@ -17,16 +18,9 @@ export const useAuthStore = defineStore('auth', () => {
 
     const isAuthenticated = computed(() => !!user.value)
 
-    // Compute user role based on provider and staff status
     const userRole = computed<UserRole>(() => {
         if (!user.value) return 'customer'
-
-        // Check if user has a provider profile
-        if (provider.value) {
-            return 'provider'
-        }
-
-        // Default to customer
+        if (provider.value) return 'provider'
         return 'customer'
     })
 
@@ -37,42 +31,30 @@ export const useAuthStore = defineStore('auth', () => {
     async function initialize() {
         loading.value = true
         try {
-            // Get current session
             const { data: { session: currentSession } } = await supabase.auth.getSession()
 
             if (currentSession) {
                 session.value = currentSession
                 user.value = currentSession.user
                 
-                // IMPORTANT: Fetch profiles to establish context
-                await fetchSuperAdminProfile()
-                await fetchProviderProfile()
-                // Only fetch/create customer profile if not a provider (or if it's a dual account)
-                await fetchCustomerProfile()
+                await fetchCoreData()
             }
 
-            // Listen for auth changes
             supabase.auth.onAuthStateChange(async (_event, newSession) => {
-                // If we have a user, set loading to true while we fetch profiles
                 if (newSession?.user) {
                     loading.value = true
                 }
-
                 session.value = newSession
                 user.value = newSession?.user ?? null
 
                 if (newSession?.user) {
                     try {
-                        // IMPORTANT: Fetch profiles to establish context
-                        await fetchSuperAdminProfile()
-                        await fetchProviderProfile()
-                        
-                        // Wait for provider check to complete before checking customer
-                        await fetchCustomerProfile()
+                        await fetchCoreData()
                     } finally {
                         loading.value = false
                     }
                 } else {
+                    profile.value = null
                     customer.value = null
                     provider.value = null
                     superAdmin.value = null
@@ -88,187 +70,70 @@ export const useAuthStore = defineStore('auth', () => {
         }
     }
 
-    async function fetchCustomerProfile() {
-        if (!user.value) return
+    async function fetchCoreData() {
+        await fetchProfile()
+        if (profile.value) {
+            await fetchSuperAdminProfile()
+            await fetchProviderProfile()
+            await fetchCustomerProfile()
+        } else if (user.value) {
+            // Edge case: logged in but no profile. Let's ensure one exists based on email.
+            if (user.value.email) {
+                await ensureProfileAndCustomer()
+                // After creating the profile, fetch all role records
+                if (profile.value) {
+                    await fetchSuperAdminProfile()
+                    await fetchProviderProfile()
+                    await fetchCustomerProfile()
+                }
+            }
+        }
+    }
 
+    async function fetchProfile() {
+        if (!user.value) return
         try {
-            // First try to find by auth_user_id
             const { data, error: fetchError } = await supabase
-                .from('customers')
+                .from('profiles')
                 .select('*')
                 .eq('auth_user_id', user.value.id)
                 .maybeSingle()
 
-            if (fetchError) {
-                throw fetchError
-            }
+            if (fetchError) throw fetchError
+            profile.value = data
+        } catch (e) {
+            console.error('Error fetching profile:', e)
+        }
+    }
 
+    async function fetchCustomerProfile() {
+        if (!profile.value) return
+        try {
+            const { data, error: fetchError } = await supabase
+                .from('customers')
+                .select('*')
+                .eq('profile_id', profile.value.id)
+                .maybeSingle()
+
+            if (fetchError) throw fetchError
             if (data) {
                 customer.value = data
-                return
             }
-
-            // If no profile found by ID, check if we can claim one by email
-            // This happens when a user previously signed up with OTP/Email and now signs in with Google
-            if (user.value.email) {
-                await ensureCustomerProfile()
-            } else {
-                 customer.value = null
-            }
-
         } catch (e) {
             console.error('Error fetching customer profile:', e)
         }
     }
 
-    async function ensureCustomerProfile(initialData?: { name?: string; phone?: string }) {
-        // Deduplication: if already running, share the same promise
-        if (_ensureProfilePromise) {
-            return _ensureProfilePromise
-        }
-
-        _ensureProfilePromise = _doEnsureCustomerProfile(initialData)
-        try {
-            await _ensureProfilePromise
-        } finally {
-            _ensureProfilePromise = null
-        }
-    }
-
-    async function _doEnsureCustomerProfile(initialData?: { name?: string; phone?: string }) {
-        if (!user.value?.email) return
-
-        // GUARD: If this user is ALREADY identified as a provider, do NOT create a customer profile automatically.
-        if (provider.value) {
-            return
-        }
-
-        // GUARD: If this user is a super admin, do NOT create a customer profile.
-        if (superAdmin.value) {
-            return
-        }
-
-        // GUARD: Check URL for provider context (redirects, paths) to prevent creation during provider signup
-        // This handles the case where provider.value is not yet set (e.g. first login) but the INTENT is provider
-        const isProviderFlow = 
-            window.location.search.includes('redirect=%2Fprovider') || 
-            window.location.search.includes('redirect=/provider') || 
-            window.location.pathname.startsWith('/provider')
-            
-        if (isProviderFlow) {
-            return
-        }
-
-        // GUARD: Check URL for admin context to prevent creation during admin login
-        const isAdminFlow =
-            window.location.pathname.startsWith('/admin') ||
-            window.location.pathname.startsWith('/super-admin') ||
-            window.location.search.includes('redirect=%2Fsuper-admin') ||
-            window.location.search.includes('redirect=/super-admin')
-
-        if (isAdminFlow) {
-            return
-        }
-
-        try {
-            // Check for existing customer with same email but different/no auth_user_id
-            // This handles the case where a user previously signed up with OTP and now signs in with Google
-            const { data: existingCustomer } = await supabase
-                .from('customers')
-                .select('*')
-                .eq('email', user.value.email)
-                .maybeSingle()
-            
-            if (existingCustomer) {
-                // Claim this profile by linking it to the current auth user
-                const { data: updatedCustomer, error: updateError } = await supabase
-                    .from('customers')
-                    .update({ 
-                        auth_user_id: user.value.id,
-                        avatar_url: existingCustomer.avatar_url || user.value.user_metadata?.avatar_url || user.value.user_metadata?.picture
-                    })
-                    .eq('id', existingCustomer.id)
-                    .select()
-                    .single()
-                
-                if (updateError) throw updateError
-                customer.value = updatedCustomer
-            } else {
-                // No profile found by email or auth_user_id — create a new one
-                // createCustomerProfile has its own guard against duplicates
-                await createCustomerProfile(initialData)
-            }
-
-        } catch (e) {
-            console.error('Error ensuring customer profile:', e)
-        }
-    }
-
-    async function createCustomerProfile(initialData?: { name?: string; phone?: string }) {
-        if (!user.value) return
-
-        try {
-            // Check if profile already exists for this auth user
-            const { data: existing } = await supabase
-                .from('customers')
-                .select('*')
-                .eq('auth_user_id', user.value.id)
-                .maybeSingle()
-
-            if (existing) {
-                customer.value = existing
-                return
-            }
-
-            // No existing profile — create one
-            const { data, error: insertError } = await supabase
-                .from('customers')
-                .insert({
-                    auth_user_id: user.value.id,
-                    email: user.value.email!,
-                    name: initialData?.name || user.value.user_metadata?.name || user.value.user_metadata?.full_name,
-                    phone: initialData?.phone,
-                    avatar_url: user.value.user_metadata?.avatar_url || user.value.user_metadata?.picture
-                })
-                .select()
-                .single()
-
-            if (insertError) {
-                // Handle race condition: another call created the profile between our check and insert
-                if (insertError.code === '23505') {
-                    const { data: raceExisting } = await supabase
-                        .from('customers')
-                        .select('*')
-                        .eq('auth_user_id', user.value.id)
-                        .maybeSingle()
-                    if (raceExisting) customer.value = raceExisting
-                    return
-                }
-                throw insertError
-            }
-
-            customer.value = data
-        } catch (e) {
-            console.error('Error creating customer profile:', e)
-        }
-    }
-
     async function fetchSuperAdminProfile() {
-        if (!user.value) {
-            return
-        }
-
+        if (!profile.value) return
         try {
             const { data, error: fetchError } = await supabase
                 .from('super_admins')
                 .select('*')
-                .eq('auth_user_id', user.value.id)
+                .eq('profile_id', profile.value.id)
                 .maybeSingle()
 
-            if (fetchError) {
-                throw fetchError
-            }
-
+            if (fetchError) throw fetchError
             superAdmin.value = data || null
         } catch (e) {
             console.error('Error fetching super admin profile:', e)
@@ -277,53 +142,17 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     async function fetchProviderProfile() {
-        if (!user.value) {
-            return
-        }
-
+        if (!profile.value) return
         try {
-            // First try to find by auth_user_id
             const { data, error: fetchError } = await supabase
                 .from('providers')
                 .select('*')
-                .eq('auth_user_id', user.value.id)
+                .eq('profile_id', profile.value.id)
                 .maybeSingle()
 
-            if (fetchError) {
-                throw fetchError
-            }
-
+            if (fetchError) throw fetchError
             if (data) {
                 provider.value = data
-                return
-            }
-
-            // If no profile found by ID, check if we can claim one by email
-            // This happens when a user previously signed up with OTP/Email and now signs in with Google
-            if (user.value.email) {
-                const { data: existingProvider } = await supabase
-                    .from('providers')
-                    .select('*')
-                    .eq('email', user.value.email)
-                    .maybeSingle()
-
-                if (existingProvider) {
-                    // Claim this provider profile by updating auth_user_id
-                    const { data: updatedProvider, error: updateError } = await supabase
-                        .from('providers')
-                        .update({ auth_user_id: user.value.id })
-                        .eq('id', existingProvider.id)
-                        .select()
-                        .single()
-
-                    if (updateError) {
-                        console.error('[AuthStore] Error updating provider auth_user_id:', updateError)
-                        throw updateError
-                    }
-                    provider.value = updatedProvider
-                } else {
-                    provider.value = null
-                }
             } else {
                 provider.value = null
             }
@@ -333,20 +162,84 @@ export const useAuthStore = defineStore('auth', () => {
         }
     }
 
+    async function ensureProfileAndCustomer(initialData?: { name?: string; phone?: string }) {
+        if (_ensureProfilePromise) return _ensureProfilePromise
+
+        _ensureProfilePromise = _doEnsureProfileAndCustomer(initialData)
+        try {
+            await _ensureProfilePromise
+        } finally {
+            _ensureProfilePromise = null
+        }
+    }
+
+    async function _doEnsureProfileAndCustomer(initialData?: { name?: string; phone?: string }) {
+        if (!user.value?.email) return
+        if (superAdmin.value) return
+
+        const storedRedirect = localStorage.getItem('authRedirect') || ''
+
+        const isProviderFlow = 
+            window.location.search.includes('redirect=%2Fprovider') || 
+            window.location.search.includes('redirect=/provider') || 
+            window.location.pathname.startsWith('/provider') ||
+            storedRedirect === '/provider' ||
+            storedRedirect.startsWith('/provider/')
+
+        const isAdminFlow =
+            window.location.pathname.startsWith('/admin') ||
+            window.location.pathname.startsWith('/super-admin') ||
+            window.location.search.includes('redirect=%2Fsuper-admin') ||
+            window.location.search.includes('redirect=/super-admin') ||
+            storedRedirect.startsWith('/super-admin')
+
+        try {
+            // Ensure profile exists
+            if (!profile.value) {
+                const { data: profileData, error: profileError } = await supabase
+                    .from('profiles')
+                    .upsert({
+                        auth_user_id: user.value.id,
+                        email: user.value.email,
+                        name: initialData?.name || user.value.user_metadata?.name || user.value.user_metadata?.full_name,
+                        phone: initialData?.phone,
+                        avatar_url: user.value.user_metadata?.avatar_url || user.value.user_metadata?.picture
+                    }, { onConflict: 'auth_user_id' })
+                    .select()
+                    .single()
+                    
+                if (profileError) throw profileError
+                profile.value = profileData
+            }
+
+            // Ensure customer exists ONLY if not provider/admin flow
+            if (!isProviderFlow && !isAdminFlow) {
+                if (profile.value && !customer.value) {
+                    const { data: customerData, error: customerError } = await supabase
+                        .from('customers')
+                        .upsert({ profile_id: profile.value.id }, { onConflict: 'profile_id' })
+                        .select()
+                        .single()
+
+                    if (customerError && customerError.code !== '23505') throw customerError
+                    if (customerData) customer.value = customerData
+                }
+            }
+
+        } catch (e) {
+            console.error('Error ensuring profile and customer:', e)
+        }
+    }
+
     async function sendOtpCode(email: string) {
         loading.value = true
         error.value = null
         try {
             const { error: signInError } = await supabase.auth.signInWithOtp({
                 email,
-                options: {
-                    shouldCreateUser: true
-                }
+                options: { shouldCreateUser: true }
             })
-
             if (signInError) throw signInError
-
-            // Success - OTP sent
             return { success: true }
         } catch (e) {
             error.value = e instanceof Error ? e.message : 'Failed to send verification code'
@@ -361,17 +254,17 @@ export const useAuthStore = defineStore('auth', () => {
         loading.value = true
         error.value = null
         try {
-            // Build callback URL with optional redirect parameter
             let callbackUrl = `${window.location.origin}/auth/callback`
             if (redirectTo) {
                 callbackUrl += `?redirect=${encodeURIComponent(redirectTo)}`
+                localStorage.setItem('authRedirect', redirectTo)
+            } else {
+                localStorage.removeItem('authRedirect')
             }
 
             const { error: signInError } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
-                options: {
-                    redirectTo: callbackUrl,
-                }
+                options: { redirectTo: callbackUrl }
             })
 
             if (signInError) throw signInError
@@ -399,10 +292,7 @@ export const useAuthStore = defineStore('auth', () => {
             if (data.user) {
                 user.value = data.user
                 session.value = data.session
-                // Fetch profiles to establish context
-                await fetchSuperAdminProfile()
-                await fetchProviderProfile()
-                await fetchCustomerProfile()
+                await fetchCoreData()
             }
 
             return { success: true }
@@ -414,6 +304,7 @@ export const useAuthStore = defineStore('auth', () => {
             loading.value = false
         }
     }
+
     async function signOut() {
         loading.value = true
         error.value = null
@@ -423,9 +314,11 @@ export const useAuthStore = defineStore('auth', () => {
 
             user.value = null
             session.value = null
+            profile.value = null
             customer.value = null
             provider.value = null
             superAdmin.value = null
+            localStorage.removeItem('authRedirect')
         } catch (e) {
             error.value = e instanceof Error ? e.message : 'Failed to sign out'
             console.error('Error signing out:', e)
@@ -434,21 +327,22 @@ export const useAuthStore = defineStore('auth', () => {
             loading.value = false
         }
     }
-    async function updateProfile(updates: Partial<Customer>) {
-        if (!customer.value) return
+
+    async function updateProfile(updates: Partial<Profile>) {
+        if (!profile.value) return
 
         loading.value = true
         error.value = null
         try {
             const { data, error: updateError } = await supabase
-                .from('customers')
+                .from('profiles')
                 .update(updates)
-                .eq('id', customer.value.id)
+                .eq('id', profile.value.id)
                 .select()
                 .single()
 
             if (updateError) throw updateError
-            customer.value = data
+            profile.value = data
         } catch (e) {
             error.value = e instanceof Error ? e.message : 'Failed to update profile'
             console.error('Error updating profile:', e)
@@ -461,27 +355,28 @@ export const useAuthStore = defineStore('auth', () => {
     return {
         user,
         session,
+        profile,
         customer,
         provider,
+        superAdmin,
         loading,
         error,
+        isReady,
         isAuthenticated,
         userRole,
         isProvider,
         isAdmin,
+        isSuperAdmin,
         initialize,
         sendOtpCode,
         verifyOtpCode,
+        signInWithOAuth,
         signOut,
         updateProfile,
+        fetchProfile,
         fetchCustomerProfile,
         fetchProviderProfile,
-        createCustomerProfile,
-        ensureCustomerProfile,
-        isReady,
-        signInWithOAuth,
-        superAdmin,
-        isSuperAdmin,
-        fetchSuperAdminProfile
+        fetchSuperAdminProfile,
+        ensureProfileAndCustomer
     }
 })

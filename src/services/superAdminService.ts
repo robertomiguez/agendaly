@@ -55,11 +55,11 @@ export const superAdminService = {
     async listProviders() {
         const { data, error } = await supabase
             .from('providers')
-            .select('*')
+            .select('*, profiles(email, phone)')
             .order('created_at', { ascending: false })
         
         if (error) throw error
-        return data as Provider[]
+        return data as (Provider & { profiles: { email: string, phone: string } })[]
     },
 
     async updateProviderStatus(adminId: string, providerId: string, updates: { active?: boolean; status?: any; deactivation_reason?: string }) {

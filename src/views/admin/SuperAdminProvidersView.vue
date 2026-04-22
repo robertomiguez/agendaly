@@ -33,7 +33,7 @@ const filteredProviders = computed(() => {
   const q = searchQuery.value.toLowerCase()
   return adminStore.providers.filter(p => 
     p.business_name.toLowerCase().includes(q) || 
-    p.email.toLowerCase().includes(q)
+    p.profiles?.email.toLowerCase().includes(q)
   )
 })
 
@@ -111,9 +111,9 @@ import { computed } from 'vue'
               <td class="px-6 py-4">
                 <div class="flex flex-col">
                   <div class="flex items-center text-sm text-slate-600 mb-1">
-                    <Mail class="h-3 w-3 mr-1.5 opacity-50" /> {{ provider.email }}
+                    <Mail class="h-3 w-3 mr-1.5 opacity-50" /> {{ provider.profiles?.email }}
                   </div>
-                  <div class="text-xs text-slate-400">{{ provider.phone || 'No phone' }}</div>
+                  <div class="text-xs text-slate-400">{{ provider.profiles?.phone || 'No phone' }}</div>
                 </div>
               </td>
               <td class="px-6 py-4">

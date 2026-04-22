@@ -18,8 +18,6 @@ const props = defineProps<{
   loading?: boolean
 }>()
 
-console.log('ServiceFormModal mounted', props.service)
-
 const emit = defineEmits(['close', 'save'])
 const categoryStore = useCategoryStore()
 const staffStore = useStaffStore()
@@ -151,7 +149,6 @@ async function handleSubmit() {
       }
     }
     
-    console.log('Submitting form with images:', finalUrls)
     emit('save', { 
         ...form.value, 
         id: props.service?.id,
