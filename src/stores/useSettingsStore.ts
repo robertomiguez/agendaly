@@ -48,14 +48,14 @@ export const useSettingsStore = defineStore('settings', () => {
     if (!finalLang) {
       // 2. Browser Language
       const browserLang = navigator.language.split('-')[0] || ''
-      const supportedLangs = ['en', 'fr', 'pt']
+      const supportedLangs = ['en', 'pt']
 
       if (supportedLangs.includes(browserLang)) {
         finalLang = browserLang
       }
       // 3. Country detection (IP)
       else if (geoData) {
-        finalLang = getLanguageFromGeo(geoData.country_code, geoData.region_code)
+        finalLang = getLanguageFromGeo(geoData.country_code)
       }
       // 4. Fallback
       else {

@@ -1,12 +1,11 @@
 import { createI18n } from 'vue-i18n'
 import en from '../locales/en.json'
-import fr from '../locales/fr.json'
 import pt from '../locales/pt.json'
 
 function getBrowserLocale(): string {
   const navigatorLocale = navigator.language || 'en'
   const locale = navigatorLocale.split('-')[0] || 'en'
-  if (['en', 'pt', 'fr'].includes(locale)) {
+  if (['en', 'pt'].includes(locale)) {
     return locale
   }
   return 'en'
@@ -19,7 +18,6 @@ const i18n = createI18n({
   fallbackLocale: 'en',
   messages: {
     en,
-    fr,
     pt
   }
 })

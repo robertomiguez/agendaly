@@ -23,7 +23,7 @@ export const fetchGeoInfo = async (): Promise<GeoInfo | null> => {
     }
 }
 
-export const getLanguageFromGeo = (country: string, region?: string): string => {
+export const getLanguageFromGeo = (country: string): string => {
     const code = country.toUpperCase()
 
     // Portuguese
@@ -32,19 +32,6 @@ export const getLanguageFromGeo = (country: string, region?: string): string => 
         return 'pt'
     }
 
-    // French
-    // Quebec, Canada
-    if (code === 'CA' && region === 'QC') {
-        return 'fr'
-    }
-
-    const frenchCountries = [
-        'FR', 'MC', 'CD', 'MG', 'CM', 'CI', 'BF', 'NE', 'SN', 'ML', 'RW',
-        'BE', 'CH', 'HT', 'LU' // Simplified list, extensive list can be added if needed
-    ]
-    if (frenchCountries.includes(code)) {
-        return 'fr'
-    }
 
     // Default to English (including US, UK, Rest of World)
     return 'en'
