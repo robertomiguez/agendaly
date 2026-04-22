@@ -15,6 +15,25 @@ export const useAuthStore = defineStore('auth', () => {
     const error = ref<string | null>(null)
     const isReady = ref(false)
     let _ensureProfilePromise: Promise<void> | null = null
+    let _initPromise: Promise<void> | null = null
+    let _loadingTimeout: ReturnType<typeof setTimeout> | null = null
+
+    function startLoadingSafety() {
+        clearLoadingSafety()
+        _loadingTimeout = setTimeout(() => {
+            if (loading.value) {
+                console.warn('[AuthStore] Loading safety timeout — force-resetting loading state')
+                loading.value = false
+            }
+        }, 10000)
+    }
+
+    function clearLoadingSafety() {
+        if (_loadingTimeout) {
+            clearTimeout(_loadingTimeout)
+            _loadingTimeout = null
+        }
+    }
 
     const isAuthenticated = computed(() => !!user.value)
 
@@ -29,7 +48,14 @@ export const useAuthStore = defineStore('auth', () => {
     const isAdmin = computed(() => userRole.value === 'admin')
 
     async function initialize() {
+        if (_initPromise) return _initPromise
+        _initPromise = _performInitialize()
+        return _initPromise
+    }
+
+    async function _performInitialize() {
         loading.value = true
+        startLoadingSafety()
         try {
             const { data: { session: currentSession } } = await supabase.auth.getSession()
 
@@ -40,17 +66,21 @@ export const useAuthStore = defineStore('auth', () => {
                 await fetchCoreData()
             }
 
-            supabase.auth.onAuthStateChange(async (_event, newSession) => {
-                if (newSession?.user) {
-                    loading.value = true
-                }
+            supabase.auth.onAuthStateChange(async (event, newSession) => {
                 session.value = newSession
                 user.value = newSession?.user ?? null
 
+                if (event === 'TOKEN_REFRESHED') {
+                    return
+                }
+
                 if (newSession?.user) {
+                    loading.value = true
+                    startLoadingSafety()
                     try {
                         await fetchCoreData()
                     } finally {
+                        clearLoadingSafety()
                         loading.value = false
                     }
                 } else {
@@ -61,10 +91,39 @@ export const useAuthStore = defineStore('auth', () => {
                     loading.value = false
                 }
             })
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    if (loading.value) {
+                        console.warn('[AuthStore] Resetting stuck loading state on tab focus')
+                        clearLoadingSafety()
+                        loading.value = false
+                    }
+
+                    if (user.value) {
+                        supabase.auth.getSession().then(({ data: { session: freshSession } }) => {
+                            if (freshSession) {
+                                session.value = freshSession
+                                user.value = freshSession.user
+                            } else if (session.value) {
+                                session.value = null
+                                user.value = null
+                                profile.value = null
+                                customer.value = null
+                                provider.value = null
+                                superAdmin.value = null
+                            }
+                        }).catch((e) => {
+                            console.error('[AuthStore] Error refreshing session on visibility change:', e)
+                        })
+                    }
+                }
+            })
         } catch (e) {
             error.value = e instanceof Error ? e.message : 'Failed to initialize auth'
             console.error('Error initializing auth:', e)
         } finally {
+            clearLoadingSafety()
             loading.value = false
             isReady.value = true
         }
