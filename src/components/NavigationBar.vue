@@ -39,7 +39,6 @@ watch(() => route.path, () => {
 
 const languages = [
   { code: 'en', flag: '🇺🇸', label: 'English' },
-  { code: 'fr', flag: '🇫🇷', label: 'Français' },
   { code: 'pt', flag: '🇧🇷', label: 'Português' }
 ]
 
