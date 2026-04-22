@@ -13,6 +13,11 @@ app.use(pinia)
 app.use(router)
 app.use(i18n)
 
+app.config.errorHandler = (err, _instance, info) => {
+    console.error('[Vue Error]', err)
+    console.error('[Vue Error Info]', info)
+}
+
 // Initialize auth before mounting
 const authStore = useAuthStore()
 authStore.initialize()
