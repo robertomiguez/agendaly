@@ -23,7 +23,7 @@ export const fetchGeoInfo = async (): Promise<GeoInfo | null> => {
     }
 }
 
-export const getLanguageFromGeo = (country: string, region?: string): string => {
+export const getLanguageFromGeo = (country: string): string => {
     const code = country.toUpperCase()
 
     // Portuguese

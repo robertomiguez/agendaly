@@ -55,7 +55,7 @@ export const useSettingsStore = defineStore('settings', () => {
       }
       // 3. Country detection (IP)
       else if (geoData) {
-        finalLang = getLanguageFromGeo(geoData.country_code, geoData.region_code)
+        finalLang = getLanguageFromGeo(geoData.country_code)
       }
       // 4. Fallback
       else {
