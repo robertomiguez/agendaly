@@ -32,6 +32,9 @@ vi.mock("vue-router", () => ({
   useRouter: () => ({
     push: pushMock,
   }),
+  useRoute: () => ({
+    path: "/provider/calendar",
+  }),
 }));
 
 // Mock availabilityService

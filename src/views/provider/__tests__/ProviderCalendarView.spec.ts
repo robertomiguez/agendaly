@@ -31,6 +31,9 @@ vi.mock("vue-router", () => ({
   useRouter: () => ({
     push: pushMock,
   }),
+  useRoute: () => ({
+    path: "/provider/calendar",
+  }),
 }));
 
 // Helper to reset mocks
@@ -118,7 +121,7 @@ describe("ProviderCalendarView", () => {
         start_time: "10:00:00",
         status: "confirmed",
         services: { name: "Haircut", duration: 30 },
-        customers: { name: "John Doe" },
+        customers: { profiles: { name: "John Doe" } },
         staff: { name: "Staff A", provider_id: "p1" },
         staff_id: "s1"
       }

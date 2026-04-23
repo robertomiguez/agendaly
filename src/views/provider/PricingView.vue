@@ -13,8 +13,9 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
-import { Check, AlertCircle, RefreshCw, ArrowUp, ArrowLeft, Calendar, Lock, Users, MapPin, Scissors, AlertTriangle, ArrowRight } from 'lucide-vue-next'
+import { Check, AlertCircle, RefreshCw, ArrowUp, Calendar, Lock, Users, MapPin, Scissors, AlertTriangle, ArrowRight } from 'lucide-vue-next'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import BackButton from '@/components/common/BackButton.vue'
 
 
 import Modal from '@/components/common/Modal.vue'
@@ -301,18 +302,8 @@ function resolveLimitViolation() {
             <!-- Header -->
             <div class="text-center mb-12 relative">
                 <!-- Back Button (only in change mode) -->
-                <div v-if="isChangeMode" class="absolute left-0 top-0 hidden sm:block">
-                     <Button variant="ghost" @click="$router.push('/provider/dashboard')" class="gap-2 pl-0 hover:bg-transparent hover:text-primary-600">
-                        <ArrowLeft class="h-4 w-4" />
-                        {{ $t('common.back_to_dashboard') }}
-                    </Button>
-                </div>
-                 <!-- Mobile Back Button (only in change mode) -->
-                <div v-if="isChangeMode" class="sm:hidden mb-4 flex justify-start">
-                     <Button variant="ghost" @click="$router.push('/provider/dashboard')" class="gap-2 pl-0 hover:bg-transparent hover:text-primary-600">
-                        <ArrowLeft class="h-4 w-4" />
-                        {{ $t('common.back_to_dashboard') }}
-                    </Button>
+                <div v-if="isChangeMode" class="sm:absolute sm:left-0 sm:top-0 mb-4 sm:mb-0">
+                    <BackButton to="/provider/dashboard" />
                 </div>
                 
                 <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl mb-4">

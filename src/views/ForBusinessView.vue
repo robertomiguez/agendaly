@@ -10,6 +10,7 @@ import {
   Clock, 
   Zap 
 } from 'lucide-vue-next'
+import BackButton from '../components/common/BackButton.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -42,6 +43,7 @@ function goToDashboard() {
     <!-- Hero Section -->
     <div class="bg-gradient-to-br from-purple-600 via-primary-600 to-blue-600 text-white">
       <div class="max-w-7xl mx-auto px-6 py-20 lg:py-32">
+        <BackButton to="/" class="text-white/80 hover:text-white mb-4" />
         <div class="max-w-3xl">
           <h1 class="text-5xl lg:text-6xl font-bold mb-6">
             {{ $t('business.hero_title') }}

@@ -27,6 +27,9 @@ vi.mock("vue-router", () => ({
   useRouter: () => ({
     push: pushMock,
   }),
+  useRoute: () => ({
+    path: "/provider/calendar",
+  }),
 }));
 
 vi.mock("@/services/availabilityService", () => ({
@@ -102,7 +105,7 @@ describe("ProviderCalendarView Buffer Logic", () => {
             buffer_before: 5,
             buffer_after: 5
         },
-        customers: { name: "John Doe" },
+        customers: { profiles: { name: "John Doe" } },
         staff: { name: "Staff A", provider_id: "p1" },
         staff_id: "s1"
       }

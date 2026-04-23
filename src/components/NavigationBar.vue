@@ -229,9 +229,6 @@ function changeLanguage(lang: string) {
                     <p class="text-xs leading-none text-muted-foreground">
                       {{ authStore.user?.email }}
                     </p>
-                    <DropdownMenuLabel>{{ $t('nav.my_account') }}</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    
                     <DropdownMenuItem v-if="authStore.isSuperAdmin" @click="navigateToSuperAdmin" class="cursor-pointer font-bold text-indigo-600">
                       <LayoutDashboard class="mr-2 h-4 w-4" />
                       Super Admin
