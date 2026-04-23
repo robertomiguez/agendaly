@@ -8,9 +8,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import BackButton from '@/components/common/BackButton.vue'
 
 import { 
     Calendar, 
+    CreditCard,
     AlertTriangle,
     CheckCircle2,
     ArrowUpCircle,
@@ -133,7 +135,10 @@ function verifyChangePlan() {
 <template>
     <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">{{ $t('subscription.title') }}</h1>
+            <div class="flex items-center gap-4">
+                <BackButton to="/provider/dashboard" />
+                <h1 class="text-3xl font-bold text-gray-900">{{ $t('subscription.title') }}</h1>
+            </div>
             <p class="mt-2 text-gray-600">{{ $t('subscription.subtitle') }}</p>
         </div>
 

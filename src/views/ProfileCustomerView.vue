@@ -4,6 +4,7 @@ import { useAuthStore } from '../stores/useAuthStore'
 import { useRouter, useRoute } from 'vue-router'
 import { useNotifications } from '../composables/useNotifications'
 import { useI18n } from 'vue-i18n'
+import BackButton from '../components/common/BackButton.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -18,6 +19,10 @@ const { successMessage, errorMessage, showSuccess, showError, clearMessages } = 
 // Get redirect destination from query parameter, default to root
 const redirectDestination = computed(() => {
   return (route.query.redirect as string) || '/'
+})
+
+const isProfileComplete = computed(() => {
+  return !!(authStore.profile?.name && authStore.profile?.phone)
 })
 
 function populateForm() {
@@ -42,7 +47,6 @@ watch(
 )
 
 async function updateProfile() {
-  const wasIncomplete = !authStore.profile?.name || !authStore.profile?.phone
   loading.value = true
   clearMessages()
   
@@ -54,11 +58,10 @@ async function updateProfile() {
     
     showSuccess(t('profile.update_success'))
     
-    // Auto-redirect if they were completing a mandatory profile setup
-    // OR if there is an explicit redirect like /booking
-    if (wasIncomplete || route.query.redirect) {
+    // Always redirect after saving
+    setTimeout(() => {
       router.push(redirectDestination.value)
-    }
+    }, 1500)
 
   } catch (error) {
     console.error('Failed to update profile:', error)
@@ -72,6 +75,7 @@ async function updateProfile() {
 <template>
   <div class="min-h-screen bg-gray-50 flex items-center justify-center p-6">
     <div class="max-w-md w-full bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+      <BackButton v-if="!route.query.redirect && isProfileComplete" to="/" class="mb-4" />
       <div class="text-center mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ $t('profile.complete_title') }}</h1>
         <p class="text-gray-600">{{ $t('profile.complete_subtitle') }}</p>
@@ -120,25 +124,16 @@ async function updateProfile() {
             <span>{{ loading ? $t('common.saving') : $t('profile.save_and_continue') }}</span>
           </button>
 
-          <!-- Existing User: Save & Close -->
-          <template v-else>
-            <button
-              type="submit"
-              :disabled="loading"
-              class="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-4 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-            >
-              <div v-if="loading" class="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>{{ loading ? $t('common.saving') : $t('common.save') }}</span>
-            </button>
-
-            <button
-              type="button"
-              @click="router.push(redirectDestination)"
-              class="w-full flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-4 rounded-md border border-gray-300 transition-all shadow-sm"
-            >
-              {{ $t('common.close') }}
-            </button>
-          </template>
+          <!-- Existing User: Save -->
+          <button
+            v-else
+            type="submit"
+            :disabled="loading"
+            class="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-4 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+          >
+            <div v-if="loading" class="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <span>{{ loading ? $t('common.saving') : $t('common.save') }}</span>
+          </button>
         </div>
       </form>
     </div>

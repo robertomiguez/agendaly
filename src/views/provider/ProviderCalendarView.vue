@@ -27,9 +27,10 @@ import { useI18n } from "vue-i18n";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronLeft, ChevronRight, ArrowLeft } from "lucide-vue-next";
+import { ChevronLeft, ChevronRight } from "lucide-vue-next";
 import { rrulestr } from "rrule";
 import LoadingSpinner from "../../components/common/LoadingSpinner.vue";
+import BackButton from "../../components/common/BackButton.vue";
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -238,7 +239,7 @@ async function fetchAppointments() {
         `
         *,
         services!inner (name, duration, buffer_before, buffer_after),
-        customers (name, phone, email),
+        customers (profiles (name, phone, email)),
         staff!inner (name, provider_id)
       `,
       )
@@ -416,7 +417,7 @@ function getEventsForDate(date: Date) {
       return {
         id: apt.id,
         type: "appointment",
-        title: apt.customers?.name || "Unknown",
+        title: apt.customers?.profiles?.name || "Unknown",
         subtitle: apt.services?.name,
         start: visualStart,
         end: visualEnd,
@@ -658,13 +659,7 @@ async function handleBlockSave(data: any) {
       <!-- Header Controls -->
       <div class="flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-4 self-start md:self-auto">
-          <Button
-            variant="ghost"
-            size="icon"
-            @click="router.push('/provider/dashboard')"
-          >
-            <ArrowLeft class="h-5 w-5" />
-          </Button>
+          <BackButton to="/provider/dashboard" />
           <h1 class="text-2xl font-bold tracking-tight">
             {{ $t("calendar.title") }}
           </h1>

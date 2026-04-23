@@ -41,9 +41,9 @@ function formatDate(dateStr: string) {
     <div v-if="appointment" class="mt-4 space-y-4">
       <div class="bg-gray-50 p-4 rounded-lg">
         <p class="text-sm text-gray-500">{{ $t('modals.appointment_details.customer') }}</p>
-        <p class="font-bold text-lg">{{ appointment.customers?.name || appointment.customers?.email || 'Unknown' }}</p>
-        <p class="text-gray-600">{{ appointment.customers?.email }}</p>
-        <p class="text-gray-600">{{ appointment.customers?.phone }}</p>
+        <p class="font-bold text-lg">{{ appointment.customers?.profiles?.name || appointment.customers?.profiles?.email || 'Unknown' }}</p>
+        <p class="text-gray-600">{{ appointment.customers?.profiles?.email }}</p>
+        <p class="text-gray-600">{{ appointment.customers?.profiles?.phone }}</p>
       </div>
 
       <div class="grid grid-cols-2 gap-4">

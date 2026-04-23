@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/useAuthStore'
 import { useCurrency } from '@/composables/useCurrency'
 import { fetchRevenueReport } from '../../services/providerService'
 import { Button } from '@/components/ui/button'
 import { 
-  ArrowLeft, 
   Download,
   Share2, 
   Calendar,
@@ -14,8 +12,8 @@ import {
   TrendingUp,
 } from 'lucide-vue-next'
 import LoadingSpinner from '../../components/common/LoadingSpinner.vue'
+import BackButton from '../../components/common/BackButton.vue'
 
-const router = useRouter()
 const authStore = useAuthStore()
 const { formatPrice } = useCurrency()
 
@@ -81,9 +79,6 @@ const totalRevenue = computed(() => {
 const totalAppointments = computed(() => transactions.value.length)
 const averageValue = computed(() => totalRevenue.value / (totalAppointments.value || 1))
 
-function goBack() {
-  router.back()
-}
 
 function handleExport() {
   window.print()
@@ -97,9 +92,7 @@ function handleExport() {
       <div class="max-w-7xl mx-auto px-6 py-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
-            <Button variant="ghost" size="icon" @click="goBack">
-              <ArrowLeft class="w-5 h-5" />
-            </Button>
+            <BackButton to="/provider/dashboard" />
             <div>
               <h1 class="text-2xl font-bold text-gray-900">{{ $t('revenue_report.title', 'Revenue Report') }}</h1>
               <p class="text-gray-600 text-sm">This Week</p>

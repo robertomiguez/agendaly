@@ -201,21 +201,6 @@ function goToRevenueReport() {
           </button>
 
           <button
-            @click="goToAvailability"
-            :disabled="!hasStaff"
-            class="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            :class="hasStaff ? 'hover:border-blue-500 hover:bg-blue-50' : ''"
-          >
-            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Clock class="w-6 h-6 text-blue-600" />
-            </div>
-            <div class="text-left">
-              <p class="font-semibold text-gray-900">{{ $t('dashboard.quick_actions.availability_title') }}</p>
-              <p class="text-sm text-gray-600">{{ $t('dashboard.quick_actions.availability_desc') }}</p>
-            </div>
-          </button>
-
-          <button
             @click="goToServices"
             :disabled="!hasStaff"
             class="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -227,6 +212,21 @@ function goToRevenueReport() {
             <div class="text-left">
               <p class="font-semibold text-gray-900">{{ $t('dashboard.quick_actions.services_title') }}</p>
               <p class="text-sm text-gray-600">{{ $t('dashboard.quick_actions.services_desc') }}</p>
+            </div>
+          </button>
+
+          <button
+            @click="goToAvailability"
+            :disabled="!hasStaff"
+            class="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            :class="hasStaff ? 'hover:border-blue-500 hover:bg-blue-50' : ''"
+          >
+            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Clock class="w-6 h-6 text-blue-600" />
+            </div>
+            <div class="text-left">
+              <p class="font-semibold text-gray-900">{{ $t('dashboard.quick_actions.availability_title') }}</p>
+              <p class="text-sm text-gray-600">{{ $t('dashboard.quick_actions.availability_desc') }}</p>
             </div>
           </button>
 

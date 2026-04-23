@@ -16,6 +16,7 @@ import LoadingSpinner from '../../components/common/LoadingSpinner.vue'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-vue-next'
 import { canAddLocation } from '../../services/subscriptionService'
+import BackButton from '../../components/common/BackButton.vue'
 import LocationPicker from '../../components/common/LocationPicker.vue'
 import { geocodeAddress, reverseGeocode } from '../../services/geocoding'
 import { watch, nextTick } from 'vue'
@@ -362,11 +363,7 @@ async function handleSetPrimary(id: string) {
       <div class="max-w-7xl mx-auto px-6 py-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
-            <button @click="router.push('/provider/dashboard')" class="text-gray-500 hover:text-gray-700">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-              </svg>
-            </button>
+            <BackButton to="/provider/dashboard" />
             <h1 class="text-2xl font-bold text-gray-900">{{ $t('provider.locations.title') }}</h1>
           </div>
           <div class="flex flex-col items-end">

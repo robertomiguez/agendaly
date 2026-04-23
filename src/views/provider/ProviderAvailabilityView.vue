@@ -11,6 +11,7 @@ import { useNotifications } from '../../composables/useNotifications'
 import { useI18n } from 'vue-i18n'
 import ConfirmationModal from '../../components/common/ConfirmationModal.vue'
 import LoadingSpinner from '../../components/common/LoadingSpinner.vue'
+import BackButton from '../../components/common/BackButton.vue'
 import { useDays } from '../../composables/useDays'
 import type { Availability, Staff } from '../../types'
 
@@ -234,11 +235,7 @@ async function performSave() {
       <div class="max-w-7xl mx-auto px-6 py-4">
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div class="flex items-center gap-4 w-full sm:w-auto">
-            <button @click="router.push('/provider/dashboard')" class="text-gray-500 hover:text-gray-700">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-              </svg>
-            </button>
+            <BackButton to="/provider/dashboard" />
             <h1 class="text-2xl font-bold text-gray-900">{{ $t('provider.availability.title') }}</h1>
           </div>
           <div class="flex flex-wrap justify-end items-center gap-4 w-full sm:w-auto">

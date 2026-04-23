@@ -45,6 +45,9 @@ vi.mock("vue-router", () => ({
   useRouter: () => ({
     push: pushMock,
   }),
+  useRoute: () => ({
+    path: "/provider/availability",
+  }),
 }));
 
 // Mock Notifications
