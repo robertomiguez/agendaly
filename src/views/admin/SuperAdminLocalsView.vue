@@ -108,7 +108,8 @@ async function handleActivate(localId: string) {
 
     <!-- Locals Table -->
     <div v-else class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <div v-if="filteredLocals.length > 0" class="overflow-x-auto">
+      <!-- Desktop Table -->
+      <div v-if="filteredLocals.length > 0" class="hidden md:block overflow-x-auto">
         <table class="w-full text-left">
           <thead class="bg-slate-50 border-b border-slate-200">
             <tr>
@@ -179,6 +180,58 @@ async function handleActivate(localId: string) {
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Mobile Card Layout -->
+      <div v-if="filteredLocals.length > 0" class="md:hidden divide-y divide-slate-100">
+        <div v-for="local in filteredLocals" :key="local.id" class="p-4">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-center min-w-0">
+              <div class="h-10 w-10 rounded-lg bg-slate-100 flex items-center justify-center mr-3 shrink-0 overflow-hidden">
+                <img v-if="local.photo_url" :src="local.photo_url" class="h-full w-full object-cover" />
+                <MapPin v-else class="h-5 w-5 text-slate-400" />
+              </div>
+              <div class="min-w-0">
+                <div class="font-bold text-slate-900 truncate">{{ local.street_address }}</div>
+                <div class="flex items-center text-xs text-slate-500 mt-0.5">
+                  <Building class="h-3 w-3 mr-1 shrink-0 opacity-50" />
+                  <span class="truncate">{{ local.providers?.business_name }}</span>
+                </div>
+              </div>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <Button variant="ghost" size="icon" class="h-8 w-8 text-slate-400 shrink-0">
+                  <MoreVertical class="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem 
+                  v-if="local.active"
+                  @click="openDeactivate(local.id)"
+                  class="cursor-pointer text-rose-600"
+                >
+                  <EyeOff class="mr-2 h-4 w-4" />
+                  Deactivate
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  v-else
+                  @click="handleActivate(local.id)"
+                  class="cursor-pointer text-emerald-600"
+                >
+                  <Eye class="mr-2 h-4 w-4" />
+                  Activate
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div class="flex items-center justify-between mt-3">
+            <span class="text-xs text-slate-500">{{ local.city }}, {{ local.state || local.country }}</span>
+            <span :class="['px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider', local.active ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700']">
+              {{ local.active ? 'Active' : 'Deactivated' }}
+            </span>
+          </div>
+        </div>
       </div>
 
       <!-- Empty State -->

@@ -108,7 +108,8 @@ async function handleActivate(staffId: string) {
 
     <!-- Staff Table -->
     <div v-else class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <div v-if="filteredStaff.length > 0" class="overflow-x-auto">
+      <!-- Desktop Table -->
+      <div v-if="filteredStaff.length > 0" class="hidden md:block overflow-x-auto">
         <table class="w-full text-left">
           <thead class="bg-slate-50 border-b border-slate-200">
             <tr>
@@ -182,6 +183,65 @@ async function handleActivate(staffId: string) {
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Mobile Card Layout -->
+      <div v-if="filteredStaff.length > 0" class="md:hidden divide-y divide-slate-100">
+        <div v-for="member in filteredStaff" :key="member.id" class="p-4">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-center min-w-0">
+              <div class="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center mr-3 shrink-0 overflow-hidden">
+                <img v-if="member.photo_url" :src="member.photo_url" class="h-full w-full object-cover" />
+                <Users v-else class="h-5 w-5 text-slate-400" />
+              </div>
+              <div class="min-w-0">
+                <div class="font-bold text-slate-900 truncate">{{ member.name }}</div>
+                <div class="flex items-center text-xs text-slate-500 mt-0.5">
+                  <Building class="h-3 w-3 mr-1 shrink-0 opacity-50" />
+                  <span class="truncate">{{ member.providers?.business_name || 'Individual' }}</span>
+                </div>
+              </div>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <Button variant="ghost" size="icon" class="h-8 w-8 text-slate-400 shrink-0">
+                  <MoreVertical class="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem 
+                  v-if="member.active"
+                  @click="openDeactivate(member.id)"
+                  class="cursor-pointer text-rose-600"
+                >
+                  <UserMinus class="mr-2 h-4 w-4" />
+                  Deactivate
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  v-else
+                  @click="handleActivate(member.id)"
+                  class="cursor-pointer text-emerald-600"
+                >
+                  <UserPlus class="mr-2 h-4 w-4" />
+                  Activate
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div class="flex items-center justify-between mt-3">
+            <div class="flex items-center gap-3">
+              <span class="text-xs text-slate-500 capitalize">{{ member.role || 'Staff' }}</span>
+            </div>
+            <span 
+              :class="[
+                'px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider',
+                member.active ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+              ]"
+            >
+              {{ member.active ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
       </div>
 
       <!-- Empty State -->

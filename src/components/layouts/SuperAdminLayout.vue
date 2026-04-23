@@ -19,7 +19,7 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
-const isSidebarOpen = ref(true)
+const isSidebarOpen = ref(false)
 
 const menuItems = [
   { name: 'Dashboard', icon: LayoutDashboard, path: '/super-admin/dashboard' },
@@ -46,14 +46,19 @@ async function handleLogout() {
     <aside 
       :class="[
         'bg-slate-900 text-slate-300 w-64 fixed lg:static inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out transform',
-        isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0 lg:w-20'
+        isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       ]"
     >
       <div class="h-full flex flex-col">
         <!-- Sidebar Header -->
-        <div class="h-16 flex items-center px-6 bg-slate-950">
-          <ShieldCheck class="h-8 w-8 text-indigo-400 shrink-0" />
-          <span v-if="isSidebarOpen" class="ml-3 font-bold text-xl text-white tracking-tight">Agendaly <span class="text-indigo-400">Admin</span></span>
+        <div class="h-16 flex items-center justify-between px-6 bg-slate-950">
+          <div class="flex items-center">
+            <ShieldCheck class="h-8 w-8 text-indigo-400 shrink-0" />
+            <span class="ml-3 font-bold text-xl text-white tracking-tight">Agendaly <span class="text-indigo-400">Admin</span></span>
+          </div>
+          <button @click="isSidebarOpen = false" class="p-1 text-slate-400 hover:text-white lg:hidden">
+            <X class="h-5 w-5" />
+          </button>
         </div>
 
         <!-- Navigation -->
@@ -62,6 +67,7 @@ async function handleLogout() {
             v-for="item in menuItems" 
             :key="item.path" 
             :to="item.path"
+            @click="isSidebarOpen = false"
             class="group flex items-center px-6 py-3 text-sm font-medium transition-colors"
             :class="[
               route.path === item.path 
@@ -70,7 +76,7 @@ async function handleLogout() {
             ]"
           >
             <component :is="item.icon" class="h-5 w-5 shrink-0" :class="route.path === item.path ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'" />
-            <span v-if="isSidebarOpen" class="ml-3">{{ item.name }}</span>
+            <span class="ml-3">{{ item.name }}</span>
           </router-link>
         </nav>
 
@@ -81,11 +87,18 @@ async function handleLogout() {
             class="w-full flex items-center px-4 py-3 text-sm font-medium text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors"
           >
             <LogOut class="h-5 w-5 shrink-0" />
-            <span v-if="isSidebarOpen" class="ml-3">Sign Out</span>
+            <span class="ml-3">Sign Out</span>
           </button>
         </div>
       </div>
     </aside>
+
+    <!-- Backdrop overlay (mobile only) -->
+    <div
+      v-if="isSidebarOpen"
+      class="fixed inset-0 bg-black/50 z-40 lg:hidden"
+      @click="isSidebarOpen = false"
+    />
 
     <!-- Main Content -->
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
