@@ -17,6 +17,7 @@ export const useAuthStore = defineStore('auth', () => {
     let _ensureProfilePromise: Promise<void> | null = null
     let _initPromise: Promise<void> | null = null
     let _loadingTimeout: ReturnType<typeof setTimeout> | null = null
+    let _coreRequestId = 0
 
     function startLoadingSafety() {
         clearLoadingSafety()
@@ -53,6 +54,42 @@ export const useAuthStore = defineStore('auth', () => {
         return _initPromise
     }
 
+    function resetAll() {
+        profile.value = null
+        customer.value = null
+        provider.value = null
+        superAdmin.value = null
+        session.value = null
+        user.value = null
+    }
+
+    async function handleAuthChange(event: string, newSession: Session | null) {
+        session.value = newSession
+        user.value = newSession?.user ?? null
+
+        if (event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+            return
+        }
+
+        if (event === 'SIGNED_IN' && newSession?.user) {
+            loading.value = true
+            startLoadingSafety()
+            try {
+                await fetchCoreData()
+            } finally {
+                clearLoadingSafety()
+                loading.value = false
+            }
+            return
+        }
+
+        if (event === 'SIGNED_OUT') {
+            resetAll()
+            loading.value = false
+            return
+        }
+    }
+
     async function _performInitialize() {
         loading.value = true
         startLoadingSafety()
@@ -66,37 +103,8 @@ export const useAuthStore = defineStore('auth', () => {
                 await fetchCoreData()
             }
 
-            supabase.auth.onAuthStateChange(async (event, newSession) => {
-                session.value = newSession
-                user.value = newSession?.user ?? null
-
-                if (event === 'TOKEN_REFRESHED') {
-                    return
-                }
-
-                if (newSession?.user) {
-                    loading.value = true
-                    startLoadingSafety()
-                    try {
-                        await fetchCoreData()
-                    } finally {
-                        clearLoadingSafety()
-                        loading.value = false
-                    }
-
-                    if (user.value) {
-                        supabase.auth.getSession().then(({ data: { session: freshSession } }) => {
-                            if (freshSession) {
-                                session.value = freshSession
-                                user.value = freshSession.user
-                            } else if (session.value) {
-                                resetAll()
-                            }
-                        }).catch((e) => {
-                            console.error('[AuthStore] Error refreshing session on visibility change:', e)
-                        })
-                    }
-                }
+            supabase.auth.onAuthStateChange((event, newSession) => {
+                handleAuthChange(event, newSession)
             })
 
             document.addEventListener('visibilitychange', () => {
@@ -113,12 +121,7 @@ export const useAuthStore = defineStore('auth', () => {
                                 session.value = freshSession
                                 user.value = freshSession.user
                             } else if (session.value) {
-                                session.value = null
-                                user.value = null
-                                profile.value = null
-                                customer.value = null
-                                provider.value = null
-                                superAdmin.value = null
+                                resetAll()
                             }
                         }).catch((e) => {
                             console.error('[AuthStore] Error refreshing session on visibility change:', e)
