@@ -4,6 +4,7 @@ import { useAuthStore } from '../stores/useAuthStore'
 import { useRouter, useRoute } from 'vue-router'
 import LoginForm from '../components/auth/LoginForm.vue'
 import heroImage from '@/assets/images/hero_barber_service_1765116285430.png'
+import BackButton from '../components/common/BackButton.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -94,6 +95,7 @@ function handleLoginSuccess() {
 
     <!-- Right Panel (Login Form) -->
     <div class="p-8 lg:p-8">
+      <BackButton v-if="!route.query.redirect" to="/" />
       <div class="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
         <!-- Provider-specific header -->
         <div v-if="loginContext === 'provider'" class="flex flex-col space-y-2 text-center">

@@ -9,6 +9,7 @@ import { useNotifications } from '@/composables/useNotifications'
 import { useI18n } from 'vue-i18n'
 import { Card } from '@/components/ui/card'
 import { CheckCircle2 } from 'lucide-vue-next'
+import BackButton from '@/components/common/BackButton.vue'
 
 // Step Components
 import BookingServiceStep from '@/components/booking/BookingServiceStep.vue'
@@ -177,6 +178,7 @@ async function handleLoginSuccess() {
 <template>
   <div class="min-h-screen bg-gray-50/50 p-4 md:p-8">
     <div class="max-w-4xl mx-auto">
+      <BackButton to="/" />
       
       <!-- Provider Header -->
       <header v-if="booking.providerInfo.value" class="mb-8 text-center animate-in fade-in slide-in-from-top-4 duration-500">

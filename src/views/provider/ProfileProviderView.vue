@@ -14,6 +14,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Building, FileText, User } from 'lucide-vue-next'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import BackButton from '@/components/common/BackButton.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -129,6 +130,7 @@ async function handleSubmit() {
 <template>
   <div class="min-h-screen bg-gray-50/50 flex flex-col items-center justify-center p-6">
     <div class="w-full max-w-2xl">
+      <BackButton v-if="isEditing" to="/provider/dashboard" />
       <Card>
         <CardHeader>
           <CardTitle>{{ isEditing ? $t('provider_profile.title_edit') : $t('provider_profile.title_new') }}</CardTitle>

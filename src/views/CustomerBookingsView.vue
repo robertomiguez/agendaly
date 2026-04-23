@@ -9,6 +9,7 @@ import { useNotifications } from '../composables/useNotifications'
 import { useI18n } from 'vue-i18n'
 import ConfirmationModal from '../components/common/ConfirmationModal.vue'
 import LoadingSpinner from '../components/common/LoadingSpinner.vue'
+import BackButton from '../components/common/BackButton.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -115,6 +116,7 @@ async function handleCancel() {
 <template>
   <div class="min-h-screen bg-gray-50">
     <div class="max-w-4xl mx-auto px-4 py-8">
+      <BackButton to="/" />
       <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ $t('my_bookings.title') }}</h1>
       <p class="text-gray-600 mb-8">{{ $t('my_bookings.subtitle') }}</p>
 
@@ -158,13 +160,6 @@ async function handleCancel() {
         <p class="text-gray-500 mt-2">
           {{ activeTab === 'upcoming' ? $t('my_bookings.no_upcoming') : $t('my_bookings.no_past') }}
         </p>
-        <button
-          v-if="activeTab === 'upcoming'"
-          @click="router.push('/booking')"
-          class="mt-6 bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
-        >
-          {{ $t('my_bookings.book_now') }}
-        </button>
       </div>
 
       <!-- Booking List -->

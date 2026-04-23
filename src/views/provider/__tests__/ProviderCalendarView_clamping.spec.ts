@@ -21,6 +21,7 @@ vi.mock("@/lib/supabase", () => ({
 
 vi.mock("vue-router", () => ({
   useRouter: () => ({ push: vi.fn() }),
+  useRoute: () => ({ path: "/provider/calendar" }),
 }));
 
 vi.mock("@/services/availabilityService", () => ({
