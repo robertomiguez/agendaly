@@ -108,7 +108,8 @@ async function handleActivate(serviceId: string) {
 
     <!-- Services Table -->
     <div v-else class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <div v-if="filteredServices.length > 0" class="overflow-x-auto">
+      <!-- Desktop Table -->
+      <div v-if="filteredServices.length > 0" class="hidden md:block overflow-x-auto">
         <table class="w-full text-left">
           <thead class="bg-slate-50 border-b border-slate-200">
             <tr>
@@ -181,6 +182,65 @@ async function handleActivate(serviceId: string) {
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Mobile Card Layout -->
+      <div v-if="filteredServices.length > 0" class="md:hidden divide-y divide-slate-100">
+        <div v-for="service in filteredServices" :key="service.id" class="p-4">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-center min-w-0">
+              <div class="h-9 w-9 rounded-lg bg-indigo-50 flex items-center justify-center mr-3 shrink-0">
+                <Settings class="h-4 w-4 text-indigo-600" />
+              </div>
+              <div class="min-w-0">
+                <div class="font-bold text-slate-900 truncate">{{ service.name }}</div>
+                <div class="flex items-center text-xs text-slate-500 mt-0.5">
+                  <Building class="h-3 w-3 mr-1 shrink-0 opacity-50" />
+                  <span class="truncate">{{ service.providers?.business_name || 'Individual' }}</span>
+                </div>
+              </div>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <Button variant="ghost" size="icon" class="h-8 w-8 text-slate-400 shrink-0">
+                  <MoreVertical class="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem 
+                  v-if="service.active"
+                  @click="openDeactivate(service.id)"
+                  class="cursor-pointer text-rose-600"
+                >
+                  <EyeOff class="mr-2 h-4 w-4" />
+                  Deactivate
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  v-else
+                  @click="handleActivate(service.id)"
+                  class="cursor-pointer text-emerald-600"
+                >
+                  <Eye class="mr-2 h-4 w-4" />
+                  Activate
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div class="flex items-center justify-between mt-3">
+            <div class="flex items-center gap-3">
+              <span class="text-sm font-semibold text-slate-900">${{ service.price }}</span>
+              <span class="text-xs text-slate-400">{{ service.duration }} min</span>
+            </div>
+            <span 
+              :class="[
+                'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider',
+                service.active ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+              ]"
+            >
+              {{ service.active ? 'Active' : 'Hidden' }}
+            </span>
+          </div>
+        </div>
       </div>
 
       <!-- Empty State -->

@@ -84,7 +84,8 @@ import { computed } from 'vue'
 
     <!-- Providers Table -->
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <div class="overflow-x-auto">
+      <!-- Desktop Table -->
+      <div class="hidden md:block overflow-x-auto">
         <table class="w-full text-left">
           <thead class="bg-slate-50 border-b border-slate-200">
             <tr>
@@ -161,6 +162,64 @@ import { computed } from 'vue'
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Mobile Card Layout -->
+      <div class="md:hidden divide-y divide-slate-100">
+        <div v-for="provider in filteredProviders" :key="provider.id" class="p-4">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-center min-w-0">
+              <div class="h-10 w-10 rounded-lg bg-slate-100 flex items-center justify-center mr-3 shrink-0">
+                <Building class="h-5 w-5 text-slate-500" />
+              </div>
+              <div class="min-w-0">
+                <div class="font-bold text-slate-900 truncate">{{ provider.business_name }}</div>
+                <div class="flex items-center text-xs text-slate-500 mt-0.5">
+                  <Mail class="h-3 w-3 mr-1 shrink-0 opacity-50" />
+                  <span class="truncate">{{ provider.profiles?.email }}</span>
+                </div>
+              </div>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <Button variant="ghost" size="icon" class="h-8 w-8 text-slate-400 shrink-0">
+                  <MoreVertical class="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem 
+                  @click="toggleActive(provider.id, provider.status === 'approved')"
+                  class="cursor-pointer"
+                >
+                  <template v-if="provider.status === 'approved'">
+                    <UserX class="mr-2 h-4 w-4 text-red-500" />
+                    <span class="text-red-600">Deactivate</span>
+                  </template>
+                  <template v-else>
+                    <UserCheck class="mr-2 h-4 w-4 text-emerald-500" />
+                    <span class="text-emerald-600">Activate</span>
+                  </template>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div class="flex items-center justify-between mt-3">
+            <span 
+              :class="[
+                'px-2.5 py-1 rounded-full text-xs font-bold ring-1 ring-inset',
+                provider.status === 'approved' ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20' : 
+                provider.status === 'suspended' ? 'bg-amber-50 text-amber-700 ring-amber-600/20' : 
+                'bg-slate-50 text-slate-700 ring-slate-600/20'
+              ]"
+            >
+              {{ provider.status === 'approved' ? 'Active' : provider.status.toUpperCase() }}
+            </span>
+            <div class="flex items-center text-xs text-slate-400">
+              <Calendar class="h-3.5 w-3.5 mr-1.5 opacity-50" />
+              {{ new Date(provider.created_at || '').toLocaleDateString() }}
+            </div>
+          </div>
+        </div>
       </div>
       
       <!-- Empty State -->
