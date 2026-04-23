@@ -17,6 +17,7 @@ export const useAuthStore = defineStore('auth', () => {
     let _ensureProfilePromise: Promise<void> | null = null
     let _initPromise: Promise<void> | null = null
     let _loadingTimeout: ReturnType<typeof setTimeout> | null = null
+    let _coreRequestId = 0
 
     function startLoadingSafety() {
         clearLoadingSafety()
@@ -53,6 +54,42 @@ export const useAuthStore = defineStore('auth', () => {
         return _initPromise
     }
 
+    function resetAll() {
+        profile.value = null
+        customer.value = null
+        provider.value = null
+        superAdmin.value = null
+        session.value = null
+        user.value = null
+    }
+
+    async function handleAuthChange(event: string, newSession: Session | null) {
+        session.value = newSession
+        user.value = newSession?.user ?? null
+
+        if (event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+            return
+        }
+
+        if (event === 'SIGNED_IN' && newSession?.user) {
+            loading.value = true
+            startLoadingSafety()
+            try {
+                await fetchCoreData()
+            } finally {
+                clearLoadingSafety()
+                loading.value = false
+            }
+            return
+        }
+
+        if (event === 'SIGNED_OUT') {
+            resetAll()
+            loading.value = false
+            return
+        }
+    }
+
     async function _performInitialize() {
         loading.value = true
         startLoadingSafety()
@@ -66,30 +103,8 @@ export const useAuthStore = defineStore('auth', () => {
                 await fetchCoreData()
             }
 
-            supabase.auth.onAuthStateChange(async (event, newSession) => {
-                session.value = newSession
-                user.value = newSession?.user ?? null
-
-                if (event === 'TOKEN_REFRESHED') {
-                    return
-                }
-
-                if (newSession?.user) {
-                    loading.value = true
-                    startLoadingSafety()
-                    try {
-                        await fetchCoreData()
-                    } finally {
-                        clearLoadingSafety()
-                        loading.value = false
-                    }
-                } else {
-                    profile.value = null
-                    customer.value = null
-                    provider.value = null
-                    superAdmin.value = null
-                    loading.value = false
-                }
+            supabase.auth.onAuthStateChange((event, newSession) => {
+                handleAuthChange(event, newSession)
             })
 
             document.addEventListener('visibilitychange', () => {
@@ -106,12 +121,7 @@ export const useAuthStore = defineStore('auth', () => {
                                 session.value = freshSession
                                 user.value = freshSession.user
                             } else if (session.value) {
-                                session.value = null
-                                user.value = null
-                                profile.value = null
-                                customer.value = null
-                                provider.value = null
-                                superAdmin.value = null
+                                resetAll()
                             }
                         }).catch((e) => {
                             console.error('[AuthStore] Error refreshing session on visibility change:', e)
@@ -130,19 +140,33 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     async function fetchCoreData() {
+        const requestId = ++_coreRequestId
+
         await fetchProfile()
+        if (requestId !== _coreRequestId) return
+
         if (profile.value) {
             await fetchSuperAdminProfile()
+            if (requestId !== _coreRequestId) return
+
             await fetchProviderProfile()
+            if (requestId !== _coreRequestId) return
+
             await fetchCustomerProfile()
         } else if (user.value) {
             // Edge case: logged in but no profile. Let's ensure one exists based on email.
             if (user.value.email) {
                 await ensureProfileAndCustomer()
+                if (requestId !== _coreRequestId) return
+
                 // After creating the profile, fetch all role records
                 if (profile.value) {
                     await fetchSuperAdminProfile()
+                    if (requestId !== _coreRequestId) return
+
                     await fetchProviderProfile()
+                    if (requestId !== _coreRequestId) return
+
                     await fetchCustomerProfile()
                 }
             }
@@ -371,12 +395,7 @@ export const useAuthStore = defineStore('auth', () => {
             const { error: signOutError } = await supabase.auth.signOut()
             if (signOutError) throw signOutError
 
-            user.value = null
-            session.value = null
-            profile.value = null
-            customer.value = null
-            provider.value = null
-            superAdmin.value = null
+            resetAll()
             localStorage.removeItem('authRedirect')
         } catch (e) {
             error.value = e instanceof Error ? e.message : 'Failed to sign out'
