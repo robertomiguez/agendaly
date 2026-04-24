@@ -146,26 +146,6 @@ export async function saveProvider({
             
             if (subError) {
                 console.error('Failed to create initial subscription:', subError)
-            } else if (subData) {
-                 // Create initial payment record (Simulated)
-                 // In a real app complexity, this comes from Stripe webhook
-                 const basePrice = plan.prices?.usd || 0
-                 const amount = plan.discount_percent 
-                    ? basePrice * (1 - plan.discount_percent / 100) 
-                    : basePrice
-
-                 const { error: payError } = await supabase
-                    .from('payments')
-                    .insert({
-                        subscription_id: subData.id,
-                        amount: amount,
-                        currency: 'usd',
-                        status: 'succeeded',
-                        payment_method: amount === 0 ? null : 'card',
-                        paid_at: new Date().toISOString()
-                    })
-                
-                if (payError) console.error('Failed to create initial payment record:', payError)
             }
         }
     }

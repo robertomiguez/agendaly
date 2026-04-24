@@ -499,20 +499,6 @@ export async function changePlan(
         
         if (updateError) throw updateError
         
-        // Record payment for proration (pending = waiting for actual payment processing)
-        if (netCharge > 0) {
-            await supabase.from('payments').insert({
-                subscription_id: subscriptionId,
-                amount: netCharge,
-                currency: currency,
-                status: 'pending',
-                payment_method: 'card',
-                description: `Upgrade: ${oldPlan.display_name} → ${newPlan.display_name} (${daysRemaining}/${totalDays} days)`,
-                proration_credit: credit,
-                proration_charge: charge
-            })
-        }
-        
         return { 
             success: true, 
             charge: netCharge, 
