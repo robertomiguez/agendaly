@@ -117,7 +117,7 @@ function triggerSelect() {
       />
 
       <!-- Preview State -->
-      <div v-if="previewUrl" class="relative aspect-video w-full h-48 bg-gray-100">
+      <div v-if="previewUrl" class="relative aspect-video w-full bg-gray-100">
         <img :src="previewUrl" alt="Preview" class="w-full h-full object-cover" />
         
         <!-- Overlay Actions -->
