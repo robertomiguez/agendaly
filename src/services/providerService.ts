@@ -129,7 +129,7 @@ export async function saveProvider({
             const isFreemium = plan.name === 'freemium'
             const currentPeriodEnd = isFreemium ? null : new Date(now.setMonth(now.getMonth() + 1)).toISOString()
 
-            const { data: subData, error: subError } = await supabase
+            const { error: subError } = await supabase
                 .from('subscriptions')
                 .insert({
                     provider_id: newProviderId,

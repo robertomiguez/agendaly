@@ -479,7 +479,7 @@ export async function changePlan(
     
     if (isUpgrade) {
         // Calculate proration
-        const { credit, charge, daysRemaining, totalDays } = calculateProration(currentSub, newPlan)
+        const { credit, charge } = calculateProration(currentSub, newPlan)
         const netCharge = Math.max(0, charge - credit) // Ensure non-negative
         
         // Update subscription immediately
