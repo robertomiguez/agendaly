@@ -84,18 +84,6 @@ const router = createRouter({
         },
 
         {
-            path: '/provider/checkout/success',
-            name: 'CheckoutSuccess',
-            component: () => import('../views/provider/CheckoutSuccessView.vue'),
-            meta: { requiresAuth: true }
-        },
-        {
-            path: '/provider/checkout/cancel',
-            name: 'CheckoutCancel',
-            component: () => import('../views/provider/CheckoutCancelView.vue'),
-            meta: { requiresAuth: true }
-        },
-        {
             path: '/provider/subscription',
             name: 'ProviderSubscription',
             component: () => import('../views/provider/ProviderSubscriptionView.vue'),

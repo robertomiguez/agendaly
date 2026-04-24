@@ -479,7 +479,7 @@ export async function changePlan(
     
     if (isUpgrade) {
         // Calculate proration
-        const { credit, charge, daysRemaining, totalDays } = calculateProration(currentSub, newPlan)
+        const { credit, charge } = calculateProration(currentSub, newPlan)
         const netCharge = Math.max(0, charge - credit) // Ensure non-negative
         
         // Update subscription immediately
@@ -498,20 +498,6 @@ export async function changePlan(
             .eq('id', subscriptionId)
         
         if (updateError) throw updateError
-        
-        // Record payment for proration (pending = waiting for actual payment processing)
-        if (netCharge > 0) {
-            await supabase.from('payments').insert({
-                subscription_id: subscriptionId,
-                amount: netCharge,
-                currency: currency,
-                status: 'pending',
-                payment_method: 'card',
-                description: `Upgrade: ${oldPlan.display_name} → ${newPlan.display_name} (${daysRemaining}/${totalDays} days)`,
-                proration_credit: credit,
-                proration_charge: charge
-            })
-        }
         
         return { 
             success: true, 

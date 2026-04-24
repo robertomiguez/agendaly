@@ -216,8 +216,6 @@ export interface Subscription {
     cancelled_at?: string
     pending_downgrade_plan_id?: string // Scheduled downgrade for next cycle
     trial_plan_change_count?: number   // Track plan changes during trial
-    stripe_subscription_id?: string
-    stripe_customer_id?: string
     created_at?: string
     updated_at?: string
     plan?: Plan                     // Joined data
@@ -231,7 +229,6 @@ export interface Payment {
     currency: string
     status: PaymentStatus
     payment_method?: string
-    stripe_payment_intent_id?: string
     invoice_url?: string
     paid_at?: string
     proration_credit?: number       // Credit for old plan's unused time
