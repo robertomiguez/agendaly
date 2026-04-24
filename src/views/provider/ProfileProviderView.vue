@@ -131,7 +131,7 @@ async function handleSubmit() {
   <div class="min-h-screen bg-gray-50/50 flex flex-col items-center justify-center p-6">
     <div class="w-full max-w-2xl">
       <BackButton v-if="isEditing" to="/provider/dashboard" />
-      <Card>
+      <Card class="overflow-hidden">
         <CardHeader>
           <CardTitle>{{ isEditing ? $t('provider_profile.title_edit') : $t('provider_profile.title_new') }}</CardTitle>
           <CardDescription>
@@ -146,7 +146,7 @@ async function handleSubmit() {
             <div class="space-y-4">
               <div class="flex items-center gap-2 mb-4 text-primary-600">
                 <Building class="h-5 w-5" />
-                <h3 class="font-semibold">{{ $t('provider_profile.business_name') }}</h3>
+                <h3 class="font-semibold truncate">{{ $t('provider_profile.business') }}</h3>
               </div>
               
               <div class="grid gap-4">
@@ -161,7 +161,6 @@ async function handleSubmit() {
                 </div>
 
                 <div class="grid gap-2">
-                  <Label>{{ $t('provider_profile.logo_label') }}</Label>
                   <ImageUpload
                     v-model="form.logo_url"
                     :label="$t('provider_profile.logo_label')"
@@ -177,7 +176,7 @@ async function handleSubmit() {
             <div class="space-y-4 pt-4 border-t border-gray-100">
               <div class="flex items-center gap-2 mb-4 text-primary-600">
                 <User class="h-5 w-5" />
-                <h3 class="font-semibold">{{ $t('provider_profile.contact_section') }}</h3>
+                <h3 class="font-semibold truncate">{{ $t('provider_profile.contact_section') }}</h3>
               </div>
 
               <div class="grid gap-4">
@@ -208,7 +207,7 @@ async function handleSubmit() {
             <div class="space-y-4 pt-4 border-t border-gray-100">
               <div class="flex items-center gap-2 mb-4 text-primary-600">
                 <FileText class="h-5 w-5" />
-                <h3 class="font-semibold">{{ $t('provider_profile.description') }}</h3>
+                <h3 class="font-semibold truncate">{{ $t('provider_profile.description') }}</h3>
               </div>
 
               <div class="grid gap-4">
