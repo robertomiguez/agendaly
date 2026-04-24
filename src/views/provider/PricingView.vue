@@ -338,7 +338,7 @@ function resolveLimitViolation() {
                 <!-- No Card Required Badge -->
                 <div class="mt-4 flex items-center justify-center gap-2 text-sm text-gray-500">
                     <Lock class="h-4 w-4" />
-                    {{ $t('checkout.no_card_required') }}
+                    {{ $t('pricing.no_card_required') }}
                 </div>
             </div>
 
@@ -544,9 +544,9 @@ function resolveLimitViolation() {
             
             <!-- Implicit Terms Agreement -->
             <p class="text-center text-gray-600 text-base font-medium mt-8 max-w-4xl mx-auto px-4 text-balance">
-                {{ $t('checkout.terms_agree') }} 
+                {{ $t('pricing.terms_agree') }} 
                 <button type="button" @click="showTermsModal = true" class="underline hover:text-gray-900 font-semibold text-primary-600 whitespace-nowrap">{{ $t('auth.terms_of_service') }}</button> 
-                {{ $t('checkout.and') }}
+                {{ $t('common.and') }}
                 <button type="button" @click="showPrivacyModal = true" class="underline hover:text-gray-900 font-semibold text-primary-600 whitespace-nowrap">{{ $t('auth.privacy_policy') }}</button>.
             </p>
         </div>

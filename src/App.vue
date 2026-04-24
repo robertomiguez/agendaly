@@ -74,8 +74,6 @@ const hideNavigation = computed(() => {
     '/login', 
     '/provider/profile',
     '/provider/pricing',
-    '/provider/checkout',
-    '/provider/checkout/success',
     '/profile',
     '/super-admin'
   ]

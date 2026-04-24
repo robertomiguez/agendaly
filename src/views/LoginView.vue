@@ -61,7 +61,7 @@ function handleLoginSuccess() {
 </script>
 
 <template>
-  <div class="container relative flex min-h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
+  <div class="relative flex min-h-screen w-full flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0 overflow-x-hidden">
     <!-- Left Panel (Testimonial/Branding) -->
     <div 
       class="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex bg-cover bg-center"
@@ -93,8 +93,7 @@ function handleLoginSuccess() {
       </div>
     </div>
 
-    <!-- Right Panel (Login Form) -->
-    <div class="p-8 lg:p-8">
+    <div class="p-4 sm:p-8">
       <BackButton v-if="!route.query.redirect" to="/" />
       <div class="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
         <!-- Provider-specific header -->
@@ -102,7 +101,7 @@ function handleLoginSuccess() {
           <h1 class="text-3xl font-bold tracking-tight">
             {{ $t('auth.provider_login_title') }}
           </h1>
-          <p class="text-base text-muted-foreground whitespace-nowrap">
+          <p class="text-base text-muted-foreground">
             {{ $t('auth.provider_login_subtitle') }}
           </p>
         </div>
@@ -133,7 +132,7 @@ function handleLoginSuccess() {
         
         <!-- Customer redirect for provider login -->
         <div v-if="loginContext === 'provider'" class="pt-4 border-t text-center">
-          <p class="text-sm font-semibold text-foreground whitespace-nowrap">
+          <p class="text-sm font-semibold text-foreground">
             {{ $t('auth.customer_redirect_question') }}
           </p>
           <router-link 
@@ -146,7 +145,7 @@ function handleLoginSuccess() {
         
         <!-- Provider redirect for customer login (hidden during booking flow) -->
         <div v-else-if="!isBookingContext" class="pt-4 border-t text-center">
-          <p class="text-sm font-semibold text-foreground whitespace-nowrap">
+          <p class="text-sm font-semibold text-foreground">
             {{ $t('auth.provider_redirect_question') }}
           </p>
           <router-link 
