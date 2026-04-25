@@ -184,6 +184,8 @@
     "next_billing": "Próxima Cobrança",
     "ends_on": "Termina em",
     "auto_renew": "Renova automaticamente em",
+    "lifetime": "Vitalício",
+    "no_charge": "Sem cobrança",
     "plan_includes": "Seu plano inclui:",
     "change_plan": "Mudar Plano",
     "resume_subscription": "Retomar Assinatura",

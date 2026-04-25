@@ -185,6 +185,8 @@
     "next_billing": "Next Billing",
     "ends_on": "Ends on",
     "auto_renew": "Auto-renews on",
+    "lifetime": "Lifetime",
+    "no_charge": "No charge",
     "plan_includes": "Your plan includes:",
     "change_plan": "Change Plan",
     "resume_subscription": "Resume Subscription",
