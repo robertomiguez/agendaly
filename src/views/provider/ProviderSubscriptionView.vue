@@ -127,6 +127,10 @@ const formattedPeriodEnd = computed(() => {
     return isNaN(date.getTime()) ? '...' : date.toLocaleDateString();
 })
 
+const isFreemium = computed(() => {
+    return subscription.value?.plan?.name === 'freemium'
+})
+
 function verifyChangePlan() {
     router.push('/provider/pricing?mode=change')
 }
@@ -157,9 +161,9 @@ function verifyChangePlan() {
             <!-- Main Subscription Card -->
             <Card>
                 <CardHeader>
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <div class="flex items-center gap-3 mb-1">
+                    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex flex-wrap items-center gap-2 mb-1">
                                 <CardTitle class="text-xl">
                                     {{ subscription.plan?.display_name }} Plan
                                 </CardTitle>
@@ -174,7 +178,7 @@ function verifyChangePlan() {
                                 {{ subscription.plan?.description }}
                             </CardDescription>
                         </div>
-                        <div class="text-right">
+                        <div class="sm:text-right">
                             <div class="text-2xl font-bold text-gray-900">
                                 {{ currentPriceFormatted }}<span class="text-sm text-gray-500 font-normal">/mo</span>
                             </div>
@@ -198,7 +202,7 @@ function verifyChangePlan() {
                             <div>
                                 <p class="text-sm font-medium text-gray-500">{{ $t('subscription.current_period') }}</p>
                                 <p class="text-sm text-gray-900">
-                                    {{ formattedPeriodEnd }}
+                                    {{ isFreemium ? $t('subscription.lifetime') : formattedPeriodEnd }}
                                 </p>
                             </div>
                         </div>
@@ -208,7 +212,10 @@ function verifyChangePlan() {
                             </div>
                             <div>
                                 <p class="text-sm font-medium text-gray-500">{{ $t('subscription.next_billing') }}</p>
-                                <p v-if="isCancelled" class="text-sm text-red-600 font-medium">
+                                <p v-if="isFreemium" class="text-sm text-gray-900 font-medium">
+                                    {{ $t('subscription.no_charge') }}
+                                </p>
+                                <p v-else-if="isCancelled" class="text-sm text-red-600 font-medium">
                                     {{ $t('subscription.ends_on') }} {{ formattedPeriodEnd }}
                                 </p>
                                 <p v-else class="text-sm text-gray-900">
@@ -237,8 +244,7 @@ function verifyChangePlan() {
                         </div>
                     </div>
                 </CardContent>
-                <CardFooter class="flex flex-col sm:flex-row gap-3 border-t pt-6 bg-gray-50/50">
-                    <Button 
+                <CardFooter class="flex flex-col sm:flex-row gap-3 border-t pt-6 bg-gray-50/50" v-show="false">                    <Button 
                         variant="outline" 
                         class="w-full sm:w-auto"
                         @click="verifyChangePlan"
