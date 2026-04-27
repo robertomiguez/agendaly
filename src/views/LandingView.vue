@@ -181,16 +181,37 @@ async function fetchProviders(append = false) {
     providers.value = []
     
     // If we have a geocoded search location, use that for coordinates
-    // and DO NOT send the location name as searchTerm (so we trigger radius search)
     const hasGeocodedLocation = searchParams.value.lat !== undefined && searchParams.value.lng !== undefined
+    
+    let finalSearchTerm = null
+    let finalLat = null
+    let finalLng = null
+
+    if (hasGeocodedLocation) {
+      // User used Maps autocomplete - use strict radius search
+      finalLat = searchParams.value.lat!
+      finalLng = searchParams.value.lng!
+    } else if (searchParams.value.location) {
+      if (userCity.value && searchParams.value.location === userCity.value) {
+        // Text matches their detected city - use geolocation radius search
+        finalLat = userLatitude.value ?? null
+        finalLng = userLongitude.value ?? null
+      } else {
+        // Manual text search for a different city - ignore physical location
+        finalSearchTerm = searchParams.value.location
+      }
+    } else if (!bypassLocationFilter.value) {
+      // Empty search bar, but not 'See All' - default to user geolocation if available
+      finalLat = userLatitude.value ?? null
+      finalLng = userLongitude.value ?? null
+    }
     
     // Capture filters when starting a new search
     activeFilters.value = {
       categoryId: selectedCategory.value,
-      // Only use the text search if we DON'T have coordinates
-      searchTerm: hasGeocodedLocation ? null : searchParams.value.location,
-      userLat: hasGeocodedLocation ? searchParams.value.lat! : (userLatitude.value ?? null),
-      userLng: hasGeocodedLocation ? searchParams.value.lng! : (userLongitude.value ?? null)
+      searchTerm: finalSearchTerm,
+      userLat: finalLat,
+      userLng: finalLng
     }
   }
 
