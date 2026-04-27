@@ -79,6 +79,7 @@ function pluralize(word: string, localeCode: string): string {
 
 const searchParams = ref({ location: '', lat: undefined as number | undefined, lng: undefined as number | undefined })
 const loading = ref(false)
+const initialFetchStarted = ref(false)
 
 // Watch for location updates and apply to search automatically
 import { watch } from 'vue'
@@ -86,6 +87,11 @@ watch(userCity, (newCity) => {
   if (newCity && !searchParams.value.location) {
     searchParams.value.location = newCity
     searchedLocation.value = newCity
+    
+    // Re-fetch providers if the location was discovered asynchronously
+    if (initialFetchStarted.value) {
+      fetchProviders()
+    }
   }
 }, { immediate: true })
 
@@ -128,6 +134,7 @@ function rotateHero() {
 }
 
 onMounted(async () => {
+  initialFetchStarted.value = true
   await Promise.all([
     fetchCategories(),
     fetchProviders()
@@ -164,7 +171,11 @@ const activeFilters = ref({
   userLng: null as number | null
 })
 
+let currentFetchId = 0
+
 async function fetchProviders(append = false) {
+  const fetchId = ++currentFetchId
+
   if (!append) {
     currentPage.value = 1
     providers.value = []
@@ -194,6 +205,9 @@ async function fetchProviders(append = false) {
       pageSize
     })
     
+    // Ignore stale responses
+    if (fetchId !== currentFetchId) return
+
     if (append) {
       providers.value = [...providers.value, ...newProviders]
     } else {
@@ -206,9 +220,12 @@ async function fetchProviders(append = false) {
       totalCount.value = count
     }
   } catch (error) {
+    if (fetchId !== currentFetchId) return
     console.error('Error fetching providers:', error)
   } finally {
-    loading.value = false
+    if (fetchId === currentFetchId) {
+      loading.value = false
+    }
   }
 }
 
