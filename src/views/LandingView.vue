@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import SearchBar from '../components/SearchBar.vue'
@@ -20,7 +20,7 @@ import heroSpa from '@/assets/images/hero_spa_service_1765116318055.png'
 const router = useRouter()
 const { t, locale } = useI18n()
 
-const { location: userLocation, city: userCity, latitude: userLatitude, longitude: userLongitude } = useLocation()
+const { location: userLocation, city: userCity, latitude: userLatitude, longitude: userLongitude, loading: locationLoading } = useLocation()
 
 // Track the location string actually used for the last successful search
 const searchedLocation = ref('')
@@ -80,14 +80,25 @@ function pluralize(word: string, localeCode: string): string {
 const searchParams = ref({ location: '', lat: undefined as number | undefined, lng: undefined as number | undefined })
 const loading = ref(false)
 
-// Watch for location updates and apply to search automatically
-import { watch } from 'vue'
+// Apply city to searchParams whenever it becomes available (cache hit = immediate)
 watch(userCity, (newCity) => {
   if (newCity && !searchParams.value.location) {
     searchParams.value.location = newCity
     searchedLocation.value = newCity
   }
 }, { immediate: true })
+
+// Trigger the initial provider fetch once location detection has settled.
+// locationLoading starts true, flips to false when initLocation() finishes
+// (whether from cache, Edge Function, or fallback). This guarantees we always
+// fetch with the best available coordinates instead of racing against onMounted.
+const initialFetchDone = ref(false)
+watch(locationLoading, (isLoading) => {
+  if (!isLoading && !initialFetchDone.value) {
+    initialFetchDone.value = true
+    fetchProviders()
+  }
+})
 
 // Rotating hero content
 const heroOptions = [
@@ -128,11 +139,8 @@ function rotateHero() {
 }
 
 onMounted(async () => {
-  await Promise.all([
-    fetchCategories(),
-    fetchProviders()
-  ])
-  
+  await fetchCategories()
+
   // Start rotation
   rotationInterval = window.setInterval(rotateHero, 3000)
 })
