@@ -275,3 +275,43 @@ export async function fetchRevenueReport(providerId: string) {
     if (error) throw error
     return data
 }
+
+/**
+ * Fetch providers for discovery (landing page) with server-side filtering and pagination.
+ */
+export async function fetchDiscoverableProviders({
+    categoryId,
+    searchTerm,
+    userLat,
+    userLng,
+    page = 1,
+    pageSize = 12
+}: {
+    categoryId?: string | null
+    searchTerm?: string | null
+    userLat?: number | null
+    userLng?: number | null
+    page?: number
+    pageSize?: number
+} = {}) {
+    const { data, error } = await supabase.rpc('discover_providers', {
+        p_user_lat: userLat,
+        p_user_lng: userLng,
+        p_category_id: categoryId || null,
+        p_search_term: searchTerm || null,
+        p_page: page,
+        p_page_size: pageSize
+    })
+
+    if (error) {
+        console.error('Error fetching discoverable providers:', error)
+        return { providers: [], totalCount: 0 }
+    }
+
+    const totalCount = (data && data.length > 0) ? Number(data[0].total_count) : 0
+    
+    return { 
+        providers: data || [], 
+        totalCount 
+    }
+}
