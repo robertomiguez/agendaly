@@ -19,7 +19,8 @@ vi.mock('@/lib/supabase', () => ({
                     }))
                 }))
             }))
-        }))
+        })),
+        rpc: vi.fn(() => Promise.resolve({ data: [], error: null }))
     }
 }))
 
@@ -39,7 +40,9 @@ import { ref } from 'vue'
 vi.mock('@/composables/useLocation', () => ({
     useLocation: () => ({
         location: ref('Test City, TC'),
-        city: ref('Test City')
+        city: ref('Test City'),
+        latitude: ref(null),
+        longitude: ref(null)
     })
 }))
 
