@@ -233,6 +233,7 @@ export function useLocation() {
         await initLocation()
     },
     latitude,
-    longitude
+    longitude,
+    initialized
   }
 }
