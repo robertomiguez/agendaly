@@ -20,7 +20,7 @@ import heroSpa from '@/assets/images/hero_spa_service_1765116318055.png'
 const router = useRouter()
 const { t, locale } = useI18n()
 
-const { location: userLocation, city: userCity, latitude: userLatitude, longitude: userLongitude, initialized: locationInitialized } = useLocation()
+const { location: userLocation, city: userCity, latitude: userLatitude, longitude: userLongitude } = useLocation()
 
 // Track the location string actually used for the last successful search
 const searchedLocation = ref('')
@@ -95,13 +95,6 @@ watch(userCity, (newCity) => {
   }
 }, { immediate: true })
 
-watch(locationInitialized, (isInit) => {
-  if (isInit && !initialFetchStarted.value) {
-    initialFetchStarted.value = true
-    fetchProviders()
-  }
-}, { immediate: true })
-
 // Rotating hero content
 const heroOptions = [
   {
@@ -141,7 +134,11 @@ function rotateHero() {
 }
 
 onMounted(async () => {
-  await fetchCategories()
+  initialFetchStarted.value = true
+  await Promise.all([
+    fetchCategories(),
+    fetchProviders()
+  ])
   
   // Start rotation
   rotationInterval = window.setInterval(rotateHero, 3000)
@@ -178,10 +175,6 @@ let currentFetchId = 0
 
 async function fetchProviders(append = false) {
   const fetchId = ++currentFetchId
-
-  if (!locationInitialized.value && !bypassLocationFilter.value && !searchParams.value.location) {
-    return
-  }
 
   if (!append) {
     currentPage.value = 1
@@ -383,7 +376,7 @@ function handleSeeAll() {
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading || (!locationInitialized && !bypassLocationFilter && !searchParams.location)" class="text-center py-12">
+      <div v-if="loading" class="text-center py-12">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
         <p class="text-gray-500 mt-4">{{ $t('common.loading') }}</p>
       </div>
