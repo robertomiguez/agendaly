@@ -22,6 +22,8 @@ import { geocodeAddress, reverseGeocode } from '../../services/geocoding'
 import { watch, nextTick } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import ImageUpload from '../../components/ImageUpload.vue'
+import { useCountryDisplayName } from '../../composables/useCountryDisplayName'
+import { useLocation } from '../../composables/useLocation'
 
 
 
@@ -29,9 +31,9 @@ const authStore = useAuthStore()
 const addressStore = useAddressStore()
 const router = useRouter()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { showSuccess, showError } = useNotifications()
-import { useLocation } from '../../composables/useLocation'
+const { getCountryName, normalizeCountryCode } = useCountryDisplayName(locale)
 
 const modal = useModal<ProviderAddress>()
 
@@ -205,6 +207,23 @@ const autoGeocode = useDebounceFn(async () => {
     form.value.longitude = coords.longitude
   }
 }, 500)
+
+watch(
+  () => form.value.country_code,
+  (countryCode) => {
+    const normalizedCode = normalizeCountryCode(countryCode)
+
+    if (countryCode !== normalizedCode) {
+      form.value.country_code = normalizedCode
+      return
+    }
+
+    const countryName = getCountryName(normalizedCode)
+    if (countryName) {
+      form.value.country_name = countryName
+    }
+  }
+)
 
 
 
