@@ -7,7 +7,13 @@ import * as geoService from '../../services/geo'
 vi.mock('../../services/geo', () => ({
     fetchGeoInfo: vi.fn(),
     getLanguageFromGeo: vi.fn(),
-    getCurrencyFromGeo: vi.fn()
+    getCurrencyFromGeo: vi.fn(),
+    getCountryCodeFromLocale: vi.fn((locale?: string | null) => {
+        if (!locale) return null
+        const [, region] = locale.replace('_', '-').split('-')
+        return region?.toUpperCase() || null
+    }),
+    saveCountryCode: vi.fn()
 }))
 
 // Mock i18n

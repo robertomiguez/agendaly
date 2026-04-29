@@ -5,6 +5,8 @@ export interface GeoInfo {
     currency: string
 }
 
+const COUNTRY_CODE_STORAGE_KEY = 'country_code'
+
 export const fetchGeoInfo = async (): Promise<GeoInfo | null> => {
     try {
         const response = await fetch('https://ipapi.co/json/')
@@ -23,8 +25,61 @@ export const fetchGeoInfo = async (): Promise<GeoInfo | null> => {
     }
 }
 
-export const getLanguageFromGeo = (country: string): string => {
-    const code = country.toUpperCase()
+export const getCountryCodeFromLocale = (locale?: string | null): string | null => {
+    if (!locale) return null
+
+    const [, region] = locale.replace('_', '-').split('-')
+    if (region && /^[a-z]{2}$/i.test(region)) return region.toUpperCase()
+
+    return null
+}
+
+export const getSavedCountryCode = (): string | null => {
+    try {
+        const countryCode = localStorage.getItem(COUNTRY_CODE_STORAGE_KEY)
+        return countryCode && /^[a-z]{2}$/i.test(countryCode) ? countryCode.toUpperCase() : null
+    } catch {
+        return null
+    }
+}
+
+export const saveCountryCode = (countryCode: string): void => {
+    try {
+        localStorage.setItem(COUNTRY_CODE_STORAGE_KEY, countryCode.toUpperCase())
+    } catch {
+        // localStorage might be unavailable
+    }
+}
+
+export const detectCountryCode = async (): Promise<string> => {
+    const savedCountryCode = getSavedCountryCode()
+    if (savedCountryCode) return savedCountryCode
+
+    const savedLanguageCountry = getCountryCodeFromLocale(localStorage.getItem('language'))
+    if (savedLanguageCountry) {
+        saveCountryCode(savedLanguageCountry)
+        return savedLanguageCountry
+    }
+
+    const browserCountry = getCountryCodeFromLocale(navigator.language)
+    if (browserCountry) {
+        saveCountryCode(browserCountry)
+        return browserCountry
+    }
+
+    const geoInfo = await fetchGeoInfo()
+    if (geoInfo?.country_code) {
+        const countryCode = geoInfo.country_code.toUpperCase()
+        saveCountryCode(countryCode)
+        return countryCode
+    }
+
+    saveCountryCode('US')
+    return 'US'
+}
+
+export const getLanguageFromGeo = (countryCode: string): string => {
+    const code = countryCode.toUpperCase()
 
     // Portuguese
     const portugueseCountries = ['PT', 'BR', 'AO', 'MZ', 'CV', 'GW', 'ST', 'TL']
@@ -37,12 +92,12 @@ export const getLanguageFromGeo = (country: string): string => {
     return 'en'
 }
 
-export const getCurrencyFromGeo = (country: string, apiCurrency?: string): string => {
+export const getCurrencyFromGeo = (countryCode: string, apiCurrency?: string): string => {
     // Priority: hardcoded rules -> api provided -> fallback
-    const code = country.toUpperCase()
+    const code = countryCode.toUpperCase()
 
     // Explicit overrides/confirmations based on user requirements
-    if (code === 'FR' || code === 'PT') return 'EUR' // France, Portugal
+    if (code === 'PT') return 'EUR' // Portugal
     if (code === 'BR') return 'BRL' // Brazil
     if (code === 'CA') return 'CAD' // Canada
     if (code === 'US') return 'USD' // USA
@@ -53,7 +108,7 @@ export const getCurrencyFromGeo = (country: string, apiCurrency?: string): strin
     }
 
     // Fallback based on region if API fails or empty
-    const euroZone = ['DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'GR', 'FI', 'IE']
+    const euroZone = ['FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'GR', 'FI', 'IE']
     if (euroZone.includes(code)) return 'EUR'
 
     return 'USD' // Final fallback

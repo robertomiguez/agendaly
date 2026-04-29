@@ -240,7 +240,7 @@ Deno.serve(async (req) => {
     
     // Build full address for map URL (include country for better accuracy)
     const fullAddressForMap = addressObj
-      ? [addressObj.street_address, addressObj.city, addressObj.state, addressObj.postal_code, addressObj.country].filter(Boolean).join(', ')
+      ? [addressObj.street_address, addressObj.city, addressObj.state, addressObj.postal_code, addressObj.country_name || addressObj.country_code].filter(Boolean).join(', ')
       : '';
       
     const emailQueue: (() => Promise<any>)[] = [];

@@ -62,13 +62,15 @@ describe('useLocation', () => {
     localStorageMock.clear()
     
     // Reset singleton state manually
-    const { city, region, country, location, error, loading } = useLocation()
+    const { city, region, country_name, country_code, location, error, loading, isPreciseLocation } = useLocation()
     city.value = null
     region.value = null
-    country.value = null
+    country_name.value = null
+    country_code.value = null
     location.value = null
     error.value = null
     loading.value = false
+    isPreciseLocation.value = false
     
     // We also need to hack the 'initialized' ref if possible, 
     // but since it's not exported, we rely on 'refresh()' 
@@ -80,7 +82,8 @@ describe('useLocation', () => {
     const cachedData = {
       city: 'Cached City',
       region: 'Cached Region',
-      country: 'Cached Country',
+      country_name: 'Cached Country',
+      country_code: 'CC',
       location: 'Cached City, Cached Region',
       latitude: 10,
       longitude: 20
@@ -102,15 +105,17 @@ describe('useLocation', () => {
     const edgeData = {
       city: 'Edge City',
       region: 'Edge Region',
-      country: 'Edge Country',
+      country_name: 'Edge Country',
+      country_code: 'EC',
       location: 'Edge City, Edge Region'
     };
     (supabase.functions.invoke as any).mockResolvedValue({ data: edgeData, error: null })
 
-    const { city, refresh } = useLocation()
+    const { city, refresh, isPreciseLocation } = useLocation()
     await refresh()
 
     expect(city.value).toBe('Edge City')
+    expect(isPreciseLocation.value).toBe(false)
     expect(supabase.functions.invoke).toHaveBeenCalledWith('get-location')
   })
 
@@ -132,16 +137,37 @@ describe('useLocation', () => {
         address: {
           city: 'Browser City',
           state: 'Browser Region',
-          country: 'Browser Country'
+          country_name: 'Browser Country',
+          country_code: 'BC'
         }
       })
     })
 
-    const { city, refresh } = useLocation()
+    const { city, refresh, isPreciseLocation } = useLocation()
     await refresh()
 
     expect(city.value).toBe('Browser City')
+    expect(isPreciseLocation.value).toBe(true)
     expect(geolocationMock.getCurrentPosition).toHaveBeenCalled()
+  })
+
+  it('marks browser coordinates precise before reverse geocoding succeeds', async () => {
+    (supabase.functions.invoke as any).mockResolvedValue({ data: { location: null }, error: null })
+
+    geolocationMock.getCurrentPosition.mockImplementation((success) => {
+      success({
+        coords: { latitude: 10, longitude: 20 }
+      })
+    })
+
+    ;(globalThis.fetch as any).mockResolvedValue({ ok: false })
+
+    const { latitude, longitude, isPreciseLocation, refresh } = useLocation()
+    await refresh()
+
+    expect(latitude.value).toBe(10)
+    expect(longitude.value).toBe(20)
+    expect(isPreciseLocation.value).toBe(true)
   })
 
   it('4. Singleton Behavior: State is shared', async () => {

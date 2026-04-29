@@ -29,9 +29,9 @@ Deno.serve(async (req) => {
                    req.headers.get("x-vercel-ip-country-region") ||
                    null;
     
-    const country = req.headers.get("cf-ipcountry") ||
-                    req.headers.get("x-vercel-ip-country") ||
-                    null;
+    const countryCode = req.headers.get("cf-ipcountry") ||
+                        req.headers.get("x-vercel-ip-country") ||
+                        null;
     
     const latitude = req.headers.get("cf-iplatitude") ||
                      req.headers.get("x-vercel-ip-latitude") ||
@@ -45,8 +45,8 @@ Deno.serve(async (req) => {
     let location = null;
     if (city && region) {
       location = `${city}, ${region}`;
-    } else if (city && country) {
-      location = `${city}, ${country}`;
+    } else if (city && countryCode) {
+      location = `${city}, ${countryCode}`;
     } else if (city) {
       location = city;
     }
@@ -55,7 +55,8 @@ Deno.serve(async (req) => {
       JSON.stringify({
         city,
         region,
-        country,
+        country_code: countryCode ? countryCode.toUpperCase() : null,
+        country_name: null,
         latitude: latitude ? parseFloat(latitude) : null,
         longitude: longitude ? parseFloat(longitude) : null,
         location, // Formatted string ready for display
@@ -73,7 +74,8 @@ Deno.serve(async (req) => {
         error: error.message || "Failed to get location",
         city: null,
         region: null,
-        country: null,
+        country_code: null,
+        country_name: null,
         location: null
       }),
       { 

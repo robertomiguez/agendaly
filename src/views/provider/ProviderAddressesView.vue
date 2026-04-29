@@ -22,6 +22,8 @@ import { geocodeAddress, reverseGeocode } from '../../services/geocoding'
 import { watch, nextTick } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import ImageUpload from '../../components/ImageUpload.vue'
+import { useCountryDisplayName } from '../../composables/useCountryDisplayName'
+import { useLocation } from '../../composables/useLocation'
 
 
 
@@ -29,9 +31,9 @@ const authStore = useAuthStore()
 const addressStore = useAddressStore()
 const router = useRouter()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { showSuccess, showError } = useNotifications()
-import { useLocation } from '../../composables/useLocation'
+const { getCountryName, normalizeCountryCode } = useCountryDisplayName(locale)
 
 const modal = useModal<ProviderAddress>()
 
@@ -66,7 +68,7 @@ async function handleConfirmDelete() {
 
 
 
-const { country: userCountry } = useLocation()
+const { country_name: userCountry, country_code: userCountryCode } = useLocation()
 
 const form = ref({
   label: '',
@@ -75,7 +77,8 @@ const form = ref({
   city: '',
   state: '',
   postal_code: '',
-  country: userCountry.value || 'USA',
+  country_code: userCountryCode.value || 'US',
+  country_name: userCountry.value || 'United States',
   latitude: null as number | null,
   longitude: null as number | null,
   photo_url: null as string | null
@@ -122,7 +125,8 @@ function openAddModal() {
     city: '',
     state: '',
     postal_code: '',
-    country: userCountry.value || 'USA',
+    country_code: userCountryCode.value || 'US',
+    country_name: userCountry.value || 'United States',
     latitude: null,
     longitude: null,
     photo_url: null
@@ -140,7 +144,8 @@ function openEditModal(address: ProviderAddress) {
     state: address.state || '',
 
     postal_code: address.postal_code,
-    country: address.country,
+    country_code: address.country_code,
+    country_name: address.country_name || '',
     latitude: address.latitude || null,
     longitude: address.longitude || null,
     photo_url: address.photo_url || null
@@ -160,7 +165,7 @@ const autoGeocode = useDebounceFn(async () => {
 
 
   let structuredQuery: any = {
-    country: form.value.country
+    country_code: form.value.country_code
   }
 
   // If we have a street address, use everything for maximum precision
@@ -177,21 +182,21 @@ const autoGeocode = useDebounceFn(async () => {
       city: form.value.city,
       state: form.value.state,
       postal_code: form.value.postal_code,
-      country: form.value.country
+      country_code: form.value.country_code
     }
   } else if (form.value.postal_code) {
     // If no street but we have a zip, usage ONLY zip + country to avoid Nominatim
     // returning the city centroid (which happens if we include city/state in the query)
     structuredQuery = {
       postal_code: form.value.postal_code,
-      country: form.value.country
+      country_code: form.value.country_code
     }
   } else {
     // Fallback: City/State + Country
     structuredQuery = {
       city: form.value.city,
       state: form.value.state,
-      country: form.value.country
+      country_code: form.value.country_code
     }
   }
 
@@ -203,17 +208,34 @@ const autoGeocode = useDebounceFn(async () => {
   }
 }, 500)
 
+watch(
+  () => form.value.country_code,
+  (countryCode) => {
+    const normalizedCode = normalizeCountryCode(countryCode)
+
+    if (countryCode !== normalizedCode) {
+      form.value.country_code = normalizedCode
+      return
+    }
+
+    const countryName = getCountryName(normalizedCode)
+    if (countryName) {
+      form.value.country_name = countryName
+    }
+  }
+)
+
 
 
 // Watch for postal code and country changes to auto-fill city/state
 watch(
-  () => [form.value.postal_code, form.value.country],
-  async ([newPostal, newCountry]) => {
-    if (newPostal && newCountry && newPostal.length > 3) {
+  () => [form.value.postal_code, form.value.country_code],
+  async ([newPostal, newCountryCode]) => {
+    if (newPostal && newCountryCode && newPostal.length > 3) {
       // Use structured query for higher accuracy (avoids Argentina/Brazil confusion)
       const structuredQuery = {
         postal_code: newPostal,
-        country: newCountry
+        country_code: newCountryCode as string
       }
       
       const result = await geocodeAddress(structuredQuery)
@@ -238,7 +260,7 @@ watch(
     form.value.city, 
     form.value.state, 
     form.value.postal_code, 
-    form.value.country
+    form.value.country_code
   ], 
   () => {
     if (!isUpdatingFromMap.value) {
@@ -264,7 +286,8 @@ async function handleLocationUpdate(loc: { latitude: number; longitude: number }
       form.value.city = result.address.city || ''
       form.value.state = result.address.state || ''
       form.value.postal_code = result.address.postal_code || ''
-      form.value.country = result.address.country || ''
+      form.value.country_code = result.address.country_code?.toUpperCase() || ''
+      form.value.country_name = result.address.country_name || ''
       
       // Keep streets2 (apt, etc) as is, or clear it? Keeping it.
     }
@@ -292,7 +315,7 @@ async function handleSave() {
         city: form.value.city,
         state: form.value.state,
         postal_code: form.value.postal_code,
-        country: form.value.country
+        country_code: form.value.country_code
       }
       const coords = await geocodeAddress(structuredQuery)
       if (coords) {
@@ -452,7 +475,7 @@ async function handleSetPrimary(id: string) {
               <p>{{ address.street_address }}</p>
               <p v-if="address.street_address_2" class="text-gray-500">{{ address.street_address_2 }}</p>
               <p>{{ address.city }}<span v-if="address.state">, {{ address.state }}</span> {{ address.postal_code }}</p>
-              <p class="text-gray-500">{{ address.country }}</p>
+              <p class="text-gray-500">{{ address.country_name || address.country_code }}</p>
             </div>
 
             <!-- Actions -->
@@ -524,26 +547,35 @@ async function handleSetPrimary(id: string) {
 
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700">{{ $t('provider.locations.form.country') }}</label>
+            <label class="block text-sm font-medium text-gray-700">{{ $t('provider.locations.form.country_code') }}</label>
             <input
-              v-model="form.country"
+              v-model="form.country_code"
               type="text"
               required
+              maxlength="2"
+              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm uppercase"
               :placeholder="$t('provider.locations.form.country_placeholder')"
-              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
             />
           </div>
-
           <div>
-            <label class="block text-sm font-medium text-gray-700">{{ $t('provider.locations.form.postal') }}</label>
+            <label class="block text-sm font-medium text-gray-700">{{ $t('provider.locations.form.country_name') }}</label>
             <input
-              v-model="form.postal_code"
+              v-model="form.country_name"
               type="text"
-              required
-              :placeholder="$t('provider.locations.form.postal_placeholder')"
               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
             />
           </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">{{ $t('provider.locations.form.postal') }}</label>
+          <input
+            v-model="form.postal_code"
+            type="text"
+            required
+            :placeholder="$t('provider.locations.form.postal_placeholder')"
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+          />
         </div>
 
         <div class="grid grid-cols-2 gap-4">
