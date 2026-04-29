@@ -23,5 +23,13 @@ images/
 *.njsproj
 *.sln
 *.sw?
-GEMINI.md
+
+# Environment variables
 .env
+
+# AI
+GEMINI.md
+AGENTS.md
+ARCHITECTURE.md
+.agent/skills/
+.codex/config.toml
