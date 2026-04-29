@@ -8,6 +8,7 @@ interface LocationData {
   latitude: number | null
   longitude: number | null
   location: string | null // Pre-formatted "City, Region" string
+  source?: 'edge' | 'browser'
 }
 
 const CACHE_KEY = 'user_location'
@@ -24,6 +25,7 @@ const longitude = ref<number | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
 const initialized = ref(false)
+const isPreciseLocation = ref(false)
 
 /**
  * Composable for getting user's location.
@@ -87,6 +89,7 @@ export function useLocation() {
     location.value = data.location
     latitude.value = data.latitude
     longitude.value = data.longitude
+    isPreciseLocation.value = data.source === 'browser'
   }
 
   /**
@@ -150,7 +153,8 @@ export function useLocation() {
                 country: data.address?.country || null,
                 latitude,
                 longitude,
-                location: preciseLocation
+                location: preciseLocation,
+                source: 'browser' as const
               }
               
               applyLocation(locationData)
@@ -196,8 +200,9 @@ export function useLocation() {
       // Step 2: Fetch from Edge Function
       const edgeData = await fetchFromEdge()
       if (edgeData?.location) {
-        applyLocation(edgeData)
-        saveToCache(edgeData)
+        const locationData = { ...edgeData, source: 'edge' as const }
+        applyLocation(locationData)
+        saveToCache(locationData)
         loading.value = false
         initialized.value = true
         return
@@ -233,6 +238,7 @@ export function useLocation() {
         await initLocation()
     },
     latitude,
-    longitude
+    longitude,
+    isPreciseLocation
   }
 }

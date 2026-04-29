@@ -62,13 +62,14 @@ describe('useLocation', () => {
     localStorageMock.clear()
     
     // Reset singleton state manually
-    const { city, region, country, location, error, loading } = useLocation()
+    const { city, region, country, location, error, loading, isPreciseLocation } = useLocation()
     city.value = null
     region.value = null
     country.value = null
     location.value = null
     error.value = null
     loading.value = false
+    isPreciseLocation.value = false
     
     // We also need to hack the 'initialized' ref if possible, 
     // but since it's not exported, we rely on 'refresh()' 
@@ -107,10 +108,11 @@ describe('useLocation', () => {
     };
     (supabase.functions.invoke as any).mockResolvedValue({ data: edgeData, error: null })
 
-    const { city, refresh } = useLocation()
+    const { city, refresh, isPreciseLocation } = useLocation()
     await refresh()
 
     expect(city.value).toBe('Edge City')
+    expect(isPreciseLocation.value).toBe(false)
     expect(supabase.functions.invoke).toHaveBeenCalledWith('get-location')
   })
 
@@ -137,10 +139,11 @@ describe('useLocation', () => {
       })
     })
 
-    const { city, refresh } = useLocation()
+    const { city, refresh, isPreciseLocation } = useLocation()
     await refresh()
 
     expect(city.value).toBe('Browser City')
+    expect(isPreciseLocation.value).toBe(true)
     expect(geolocationMock.getCurrentPosition).toHaveBeenCalled()
   })
 

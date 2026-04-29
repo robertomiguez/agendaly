@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import SearchBar from '../components/SearchBar.vue'
@@ -8,6 +8,7 @@ import ProviderCard from '../components/ProviderCard.vue'
 import { supabase } from '../lib/supabase'
 import { useLocation } from '../composables/useLocation'
 import { fetchDiscoverableProviders } from '../services/providerService'
+import { fetchGeoInfo } from '../services/geo'
 import type { Provider, ProviderAddress, Category } from '../types'
 import { Search, ChevronDown } from 'lucide-vue-next'
 
@@ -20,7 +21,7 @@ import heroSpa from '@/assets/images/hero_spa_service_1765116318055.png'
 const router = useRouter()
 const { t, locale } = useI18n()
 
-const { location: userLocation, city: userCity, latitude: userLatitude, longitude: userLongitude } = useLocation()
+const { location: userLocation, latitude: userLatitude, longitude: userLongitude, isPreciseLocation } = useLocation()
 
 // Track the location string actually used for the last successful search
 const searchedLocation = ref('')
@@ -79,21 +80,15 @@ function pluralize(word: string, localeCode: string): string {
 
 const searchParams = ref({ location: '', lat: undefined as number | undefined, lng: undefined as number | undefined })
 const loading = ref(false)
-const initialFetchStarted = ref(false)
+const detectedCountryCode = ref<string | null>(null)
 
-// Watch for location updates and apply to search automatically
-import { watch } from 'vue'
-watch(userCity, (newCity) => {
-  if (newCity && !searchParams.value.location) {
-    searchParams.value.location = newCity
-    searchedLocation.value = newCity
-    
-    // Re-fetch providers if the location was discovered asynchronously
-    if (initialFetchStarted.value) {
-      fetchProviders()
-    }
-  }
-}, { immediate: true })
+watch([isPreciseLocation, userLatitude, userLongitude], ([isPrecise, lat, lng]) => {
+  if (!isPrecise || lat === null || lng === null) return
+  if (searchParams.value.location || bypassLocationFilter.value) return
+
+  searchedLocation.value = userLocation.value || ''
+  fetchProviders()
+})
 
 // Rotating hero content
 const heroOptions = [
@@ -134,11 +129,11 @@ function rotateHero() {
 }
 
 onMounted(async () => {
-  initialFetchStarted.value = true
   await Promise.all([
     fetchCategories(),
-    fetchProviders()
+    detectCountry()
   ])
+  await fetchProviders()
   
   // Start rotation
   rotationInterval = window.setInterval(rotateHero, 3000)
@@ -163,12 +158,18 @@ async function fetchCategories() {
   }
 }
 
+async function detectCountry() {
+  const geoInfo = await fetchGeoInfo()
+  detectedCountryCode.value = geoInfo?.country_code ?? null
+}
+
 // Store the active filters used for the current search so pagination doesn't break if inputs change mid-way
 const activeFilters = ref({
   categoryId: null as string | null,
   searchTerm: '' as string | null,
   userLat: null as number | null,
-  userLng: null as number | null
+  userLng: null as number | null,
+  countryCode: null as string | null
 })
 
 let currentFetchId = 0
@@ -186,24 +187,23 @@ async function fetchProviders(append = false) {
     let finalSearchTerm = null
     let finalLat = null
     let finalLng = null
+    let finalCountryCode = null
 
     if (hasGeocodedLocation) {
       // User used Maps autocomplete - use strict radius search
       finalLat = searchParams.value.lat!
       finalLng = searchParams.value.lng!
     } else if (searchParams.value.location) {
-      if (userCity.value && searchParams.value.location === userCity.value) {
-        // Text matches their detected city - use geolocation radius search
-        finalLat = userLatitude.value ?? null
-        finalLng = userLongitude.value ?? null
-      } else {
-        // Manual text search for a different city - ignore physical location
-        finalSearchTerm = searchParams.value.location
-      }
+      // Manual text search - ignore system country filter
+      finalSearchTerm = searchParams.value.location
     } else if (!bypassLocationFilter.value) {
-      // Empty search bar, but not 'See All' - default to user geolocation if available
-      finalLat = userLatitude.value ?? null
-      finalLng = userLongitude.value ?? null
+      if (isPreciseLocation.value && userLatitude.value !== null && userLongitude.value !== null) {
+        finalLat = userLatitude.value
+        finalLng = userLongitude.value
+      } else {
+        // Empty search bar, but not 'See All' - default to system/IP country detection
+        finalCountryCode = detectedCountryCode.value
+      }
     }
     
     // Capture filters when starting a new search
@@ -211,7 +211,8 @@ async function fetchProviders(append = false) {
       categoryId: selectedCategory.value,
       searchTerm: finalSearchTerm,
       userLat: finalLat,
-      userLng: finalLng
+      userLng: finalLng,
+      countryCode: finalCountryCode
     }
   }
 
@@ -222,6 +223,7 @@ async function fetchProviders(append = false) {
       searchTerm: activeFilters.value.searchTerm,
       userLat: activeFilters.value.userLat,
       userLng: activeFilters.value.userLng,
+      countryCode: activeFilters.value.countryCode,
       page: currentPage.value,
       pageSize
     })
@@ -262,7 +264,7 @@ const shouldShowFunnyEmptyState = computed(() => {
   if (bypassLocationFilter.value) return false
   
   // Only show funny state if we have a location context (search or geo) AND no providers found
-  const hasLocationContext = !!searchParams.value.location || (!!userLatitude.value && !!userLongitude.value)
+  const hasLocationContext = !!searchParams.value.location || !!detectedCountryCode.value
   return hasLocationContext && providers.value.length === 0
 })
 

@@ -34,6 +34,9 @@ vi.mock('@/assets/images/hero_spa_service_1765116318055.png', () => ({ default: 
 vi.mock('@/components/SearchBar.vue', () => ({ default: { template: '<div>Search Bar</div>' } }))
 vi.mock('@/components/CategoryPills.vue', () => ({ default: { template: '<div>Category Pills</div>' } }))
 vi.mock('@/components/ProviderCard.vue', () => ({ default: { template: '<div>Provider Card</div>' } }))
+vi.mock('@/services/geo', () => ({
+    fetchGeoInfo: vi.fn(() => Promise.resolve({ country_code: 'BR', region_code: 'SP', currency: 'BRL' }))
+}))
 
 // Mock useLocation
 import { ref } from 'vue'
@@ -42,7 +45,8 @@ vi.mock('@/composables/useLocation', () => ({
         location: ref('Test City, TC'),
         city: ref('Test City'),
         latitude: ref(null),
-        longitude: ref(null)
+        longitude: ref(null),
+        isPreciseLocation: ref(false)
     })
 }))
 

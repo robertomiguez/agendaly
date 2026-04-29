@@ -284,6 +284,7 @@ export async function fetchDiscoverableProviders({
     searchTerm,
     userLat,
     userLng,
+    countryCode,
     page = 1,
     pageSize = 12
 }: {
@@ -291,6 +292,7 @@ export async function fetchDiscoverableProviders({
     searchTerm?: string | null
     userLat?: number | null
     userLng?: number | null
+    countryCode?: string | null
     page?: number
     pageSize?: number
 } = {}) {
@@ -300,7 +302,8 @@ export async function fetchDiscoverableProviders({
         p_category_id: categoryId || null,
         p_search_term: searchTerm || null,
         p_page: page,
-        p_page_size: pageSize
+        p_page_size: pageSize,
+        p_country_code: countryCode || null
     })
 
     if (error) {
