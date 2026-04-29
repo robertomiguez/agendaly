@@ -125,8 +125,18 @@ export function useLocation() {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           try {
-            // Use OpenStreetMap Nominatim for reverse geocoding (free)
             const { latitude, longitude } = position.coords
+            applyLocation({
+              city: city.value,
+              region: region.value,
+              country: country.value,
+              latitude,
+              longitude,
+              location: location.value,
+              source: 'browser'
+            })
+
+            // Use OpenStreetMap Nominatim for reverse geocoding (free)
             const response = await fetch(
               `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
               { headers: { 'Accept-Language': navigator.language || 'en' } }

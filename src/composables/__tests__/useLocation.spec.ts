@@ -147,6 +147,25 @@ describe('useLocation', () => {
     expect(geolocationMock.getCurrentPosition).toHaveBeenCalled()
   })
 
+  it('marks browser coordinates precise before reverse geocoding succeeds', async () => {
+    (supabase.functions.invoke as any).mockResolvedValue({ data: { location: null }, error: null })
+
+    geolocationMock.getCurrentPosition.mockImplementation((success) => {
+      success({
+        coords: { latitude: 10, longitude: 20 }
+      })
+    })
+
+    ;(globalThis.fetch as any).mockResolvedValue({ ok: false })
+
+    const { latitude, longitude, isPreciseLocation, refresh } = useLocation()
+    await refresh()
+
+    expect(latitude.value).toBe(10)
+    expect(longitude.value).toBe(20)
+    expect(isPreciseLocation.value).toBe(true)
+  })
+
   it('4. Singleton Behavior: State is shared', async () => {
     const { city } = useLocation()
     
