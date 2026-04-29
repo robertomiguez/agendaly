@@ -1,8 +1,9 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import LandingView from '../LandingView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia, setActivePinia } from 'pinia'
+import { supabase } from '@/lib/supabase'
 
 // Mock dependencies
 vi.mock('@/lib/supabase', () => ({
@@ -35,7 +36,7 @@ vi.mock('@/components/SearchBar.vue', () => ({ default: { template: '<div>Search
 vi.mock('@/components/CategoryPills.vue', () => ({ default: { template: '<div>Category Pills</div>' } }))
 vi.mock('@/components/ProviderCard.vue', () => ({ default: { template: '<div>Provider Card</div>' } }))
 vi.mock('@/services/geo', () => ({
-    fetchGeoInfo: vi.fn(() => Promise.resolve({ country_code: 'BR', region_code: 'SP', currency: 'BRL' }))
+    detectCountryCode: vi.fn(() => Promise.resolve('BR'))
 }))
 
 // Mock useLocation
@@ -63,7 +64,12 @@ describe('LandingView', () => {
         routes: [{ path: '/', component: LandingView }]
     })
 
-    it('renders correctly', () => {
+    beforeEach(() => {
+        vi.clearAllMocks()
+        setActivePinia(createPinia())
+    })
+
+    it('renders correctly', async () => {
         setActivePinia(createPinia())
         const wrapper = mount(LandingView, {
             global: {
@@ -78,7 +84,12 @@ describe('LandingView', () => {
                 }
             }
         })
+        await new Promise(resolve => setTimeout(resolve, 0))
+
         expect(wrapper.exists()).toBe(true)
+        expect(supabase.rpc).toHaveBeenCalledWith('discover_providers', expect.objectContaining({
+            p_country_code: 'BR'
+        }))
     })
 
     it('has hero images loaded correctly', async () => {

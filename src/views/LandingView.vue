@@ -8,7 +8,7 @@ import ProviderCard from '../components/ProviderCard.vue'
 import { supabase } from '../lib/supabase'
 import { useLocation } from '../composables/useLocation'
 import { fetchDiscoverableProviders } from '../services/providerService'
-import { fetchGeoInfo } from '../services/geo'
+import { detectCountryCode } from '../services/geo'
 import type { Provider, ProviderAddress, Category } from '../types'
 import { Search, ChevronDown } from 'lucide-vue-next'
 
@@ -159,8 +159,7 @@ async function fetchCategories() {
 }
 
 async function detectCountry() {
-  const geoInfo = await fetchGeoInfo()
-  detectedCountryCode.value = geoInfo?.country_code ?? null
+  detectedCountryCode.value = await detectCountryCode()
 }
 
 // Store the active filters used for the current search so pagination doesn't break if inputs change mid-way
