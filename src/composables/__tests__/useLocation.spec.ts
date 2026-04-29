@@ -62,10 +62,11 @@ describe('useLocation', () => {
     localStorageMock.clear()
     
     // Reset singleton state manually
-    const { city, region, country, location, error, loading, isPreciseLocation } = useLocation()
+    const { city, region, country_name, country_code, location, error, loading, isPreciseLocation } = useLocation()
     city.value = null
     region.value = null
-    country.value = null
+    country_name.value = null
+    country_code.value = null
     location.value = null
     error.value = null
     loading.value = false
@@ -81,7 +82,8 @@ describe('useLocation', () => {
     const cachedData = {
       city: 'Cached City',
       region: 'Cached Region',
-      country: 'Cached Country',
+      country_name: 'Cached Country',
+      country_code: 'CC',
       location: 'Cached City, Cached Region',
       latitude: 10,
       longitude: 20
@@ -103,7 +105,8 @@ describe('useLocation', () => {
     const edgeData = {
       city: 'Edge City',
       region: 'Edge Region',
-      country: 'Edge Country',
+      country_name: 'Edge Country',
+      country_code: 'EC',
       location: 'Edge City, Edge Region'
     };
     (supabase.functions.invoke as any).mockResolvedValue({ data: edgeData, error: null })
@@ -134,7 +137,8 @@ describe('useLocation', () => {
         address: {
           city: 'Browser City',
           state: 'Browser Region',
-          country: 'Browser Country'
+          country_name: 'Browser Country',
+          country_code: 'BC'
         }
       })
     })

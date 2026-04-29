@@ -141,9 +141,7 @@ async function handleActivate(localId: string) {
                 </div>
               </td>
               <td class="px-6 py-4">
-                <div class="text-sm text-slate-600">
-                  {{ local.city }}, {{ local.state || local.country }}
-                </div>
+                  {{ local.city }}, {{ local.state || local.country_name || local.country_code }}
               </td>
               <td class="px-6 py-4">
                 <span :class="['px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider', local.active ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700']">
@@ -226,7 +224,7 @@ async function handleActivate(localId: string) {
             </DropdownMenu>
           </div>
           <div class="flex items-center justify-between mt-3">
-            <span class="text-xs text-slate-500">{{ local.city }}, {{ local.state || local.country }}</span>
+            <span class="text-xs text-slate-500">{{ local.city }}, {{ local.state || local.country_name || local.country_code }}</span>
             <span :class="['px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider', local.active ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700']">
               {{ local.active ? 'Active' : 'Deactivated' }}
             </span>

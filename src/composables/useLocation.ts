@@ -4,7 +4,8 @@ import { supabase } from '../lib/supabase'
 interface LocationData {
   city: string | null
   region: string | null
-  country: string | null
+  country_name: string | null
+  country_code: string | null
   latitude: number | null
   longitude: number | null
   location: string | null // Pre-formatted "City, Region" string
@@ -17,7 +18,8 @@ const CACHE_DURATION = 24 * 60 * 60 * 1000 // 24 hours
 // Global state (Singleton) - Defined outside the function to share state
 const city = ref<string | null>(null)
 const region = ref<string | null>(null)
-const country = ref<string | null>(null)
+const country_name = ref<string | null>(null)
+const country_code = ref<string | null>(null)
 
 const location = ref<string | null>(null) // Formatted "City, Region"
 const latitude = ref<number | null>(null)
@@ -85,7 +87,8 @@ export function useLocation() {
     city.value = data.city
     region.value = data.region
 
-    country.value = data.country
+    country_name.value = data.country_name
+    country_code.value = data.country_code
     location.value = data.location
     latitude.value = data.latitude
     longitude.value = data.longitude
@@ -129,7 +132,8 @@ export function useLocation() {
             applyLocation({
               city: city.value,
               region: region.value,
-              country: country.value,
+              country_name: country_name.value,
+              country_code: country_code.value,
               latitude,
               longitude,
               location: location.value,
@@ -160,7 +164,8 @@ export function useLocation() {
               const locationData = {
                 city: preciseCity,
                 region: preciseRegion || null,
-                country: data.address?.country || null,
+                country_name: data.address?.country || null,
+                country_code: data.address?.country_code?.toUpperCase() || null,
                 latitude,
                 longitude,
                 location: preciseLocation,
@@ -237,7 +242,8 @@ export function useLocation() {
   return {
     city,
     region,
-    country,
+    country_name,
+    country_code,
     location,
     loading,
     error,

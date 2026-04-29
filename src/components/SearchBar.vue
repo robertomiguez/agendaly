@@ -38,7 +38,7 @@ interface PhotonFeature {
     name: string
     city?: string
     state?: string
-    country?: string
+    country_name?: string
     osm_id: number
   }
 }
@@ -51,7 +51,7 @@ let searchTimeout: ReturnType<typeof setTimeout> | null = null
 function formatAddress(props: any) {
   const parts = [props.name]
   if (props.state && props.state !== props.name) parts.push(props.state)
-  if (props.country) parts.push(props.country)
+  if (props.country_name) parts.push(props.country_name)
   return parts.join(', ')
 }
 

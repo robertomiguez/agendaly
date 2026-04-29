@@ -78,8 +78,8 @@ export const detectCountryCode = async (): Promise<string> => {
     return 'US'
 }
 
-export const getLanguageFromGeo = (country: string): string => {
-    const code = country.toUpperCase()
+export const getLanguageFromGeo = (countryCode: string): string => {
+    const code = countryCode.toUpperCase()
 
     // Portuguese
     const portugueseCountries = ['PT', 'BR', 'AO', 'MZ', 'CV', 'GW', 'ST', 'TL']
@@ -92,12 +92,12 @@ export const getLanguageFromGeo = (country: string): string => {
     return 'en'
 }
 
-export const getCurrencyFromGeo = (country: string, apiCurrency?: string): string => {
+export const getCurrencyFromGeo = (countryCode: string, apiCurrency?: string): string => {
     // Priority: hardcoded rules -> api provided -> fallback
-    const code = country.toUpperCase()
+    const code = countryCode.toUpperCase()
 
     // Explicit overrides/confirmations based on user requirements
-    if (code === 'FR' || code === 'PT') return 'EUR' // France, Portugal
+    if (code === 'PT') return 'EUR' // Portugal
     if (code === 'BR') return 'BRL' // Brazil
     if (code === 'CA') return 'CAD' // Canada
     if (code === 'US') return 'USD' // USA
@@ -108,7 +108,7 @@ export const getCurrencyFromGeo = (country: string, apiCurrency?: string): strin
     }
 
     // Fallback based on region if API fails or empty
-    const euroZone = ['DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'GR', 'FI', 'IE']
+    const euroZone = ['FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'GR', 'FI', 'IE']
     if (euroZone.includes(code)) return 'EUR'
 
     return 'USD' // Final fallback

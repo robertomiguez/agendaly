@@ -527,8 +527,9 @@
         "state_placeholder": "NY",
         "postal": "Postal Code *",
         "postal_placeholder": "10001",
-        "country": "Country *",
-        "country_placeholder": "USA"
+        "country_code": "Country Code *",
+        "country_name": "Country Name",
+        "country_placeholder": "US"
       }
     }
   },

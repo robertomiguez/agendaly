@@ -524,8 +524,9 @@
         "state_placeholder": "SP",
         "postal": "CEP *",
         "postal_placeholder": "01234-567",
-        "country": "País *",
-        "country_placeholder": "Brasil"
+        "country_code": "Código do País *",
+        "country_name": "Nome do País",
+        "country_placeholder": "BR"
       }
     }
   },
