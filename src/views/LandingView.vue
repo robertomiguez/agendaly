@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import SearchBar from '../components/SearchBar.vue'
@@ -7,8 +7,10 @@ import CategoryPills from '../components/CategoryPills.vue'
 import ProviderCard from '../components/ProviderCard.vue'
 import { supabase } from '../lib/supabase'
 import { useLocation } from '../composables/useLocation'
+import { fetchDiscoverableProviders } from '../services/providerService'
+import { detectCountryCode } from '../services/geo'
 import type { Provider, ProviderAddress, Category } from '../types'
-import { Search } from 'lucide-vue-next'
+import { Search, ChevronDown } from 'lucide-vue-next'
 
 // Import images
 import heroManicure from '@/assets/images/hero_background_manicure_1765115664380.png'
@@ -19,14 +21,21 @@ import heroSpa from '@/assets/images/hero_spa_service_1765116318055.png'
 const router = useRouter()
 const { t, locale } = useI18n()
 
-const { location: userLocation, city: userCity, latitude: userLatitude, longitude: userLongitude } = useLocation()
+const { location: userLocation, latitude: userLatitude, longitude: userLongitude, isPreciseLocation } = useLocation()
 
-// Computed property for display location with fallback
-const displayLocation = computed(() => searchParams.value.location || userLocation.value || t('landing.your_area'))
+// Track the location string actually used for the last successful search
+const searchedLocation = ref('')
+const displayLocation = computed(() => searchedLocation.value || searchParams.value.location || userLocation.value || t('landing.your_area'))
 
 const providers = ref<(Provider & { provider_addresses?: ProviderAddress[]; categories?: string[] })[]>([])
 const categories = ref<Category[]>([])
 const selectedCategory = ref<string | null>(null)
+
+const currentPage = ref(1)
+const pageSize = 8
+const totalCount = ref(0)
+const hasMore = computed(() => providers.value.length < totalCount.value)
+
 const selectedCategoryName = computed(() => {
   const category = categories.value.find(c => c.id === selectedCategory.value)
   return category ? category.name : ''
@@ -69,16 +78,17 @@ function pluralize(word: string, localeCode: string): string {
   return word + 's'
 }
 
-const searchParams = ref({ location: '', service: '' })
+const searchParams = ref({ location: '', lat: undefined as number | undefined, lng: undefined as number | undefined })
 const loading = ref(false)
+const detectedCountryCode = ref<string | null>(null)
 
-// Watch for location updates and apply to search automatically
-import { watch } from 'vue'
-watch(userCity, (newCity) => {
-  if (newCity && !searchParams.value.location) {
-    searchParams.value.location = newCity
-  }
-}, { immediate: true })
+watch([isPreciseLocation, userLatitude, userLongitude], ([isPrecise, lat, lng]) => {
+  if (!isPrecise || lat === null || lng === null) return
+  if (searchParams.value.location || bypassLocationFilter.value) return
+
+  searchedLocation.value = userLocation.value || ''
+  fetchProviders()
+})
 
 // Rotating hero content
 const heroOptions = [
@@ -121,8 +131,9 @@ function rotateHero() {
 onMounted(async () => {
   await Promise.all([
     fetchCategories(),
-    fetchProviders()
+    detectCountry()
   ])
+  await fetchProviders()
   
   // Start rotation
   rotationInterval = window.setInterval(rotateHero, 3000)
@@ -147,147 +158,120 @@ async function fetchCategories() {
   }
 }
 
-async function fetchProviders() {
+async function detectCountry() {
+  detectedCountryCode.value = await detectCountryCode()
+}
+
+// Store the active filters used for the current search so pagination doesn't break if inputs change mid-way
+const activeFilters = ref({
+  categoryId: null as string | null,
+  searchTerm: '' as string | null,
+  userLat: null as number | null,
+  userLng: null as number | null,
+  countryCode: null as string | null
+})
+
+let currentFetchId = 0
+
+async function fetchProviders(append = false) {
+  const fetchId = ++currentFetchId
+
+  if (!append) {
+    currentPage.value = 1
+    providers.value = []
+    
+    // If we have a geocoded search location, use that for coordinates
+    const hasGeocodedLocation = searchParams.value.lat !== undefined && searchParams.value.lng !== undefined
+    
+    let finalSearchTerm = null
+    let finalLat = null
+    let finalLng = null
+    let finalCountryCode = null
+
+    if (hasGeocodedLocation) {
+      // User used Maps autocomplete - use strict radius search
+      finalLat = searchParams.value.lat!
+      finalLng = searchParams.value.lng!
+    } else if (searchParams.value.location) {
+      // Manual text search - ignore system country filter
+      finalSearchTerm = searchParams.value.location
+    } else if (!bypassLocationFilter.value) {
+      if (isPreciseLocation.value && userLatitude.value !== null && userLongitude.value !== null) {
+        finalLat = userLatitude.value
+        finalLng = userLongitude.value
+      } else {
+        // Empty search bar, but not 'See All' - default to system/IP country detection
+        finalCountryCode = detectedCountryCode.value
+      }
+    }
+    
+    // Capture filters when starting a new search
+    activeFilters.value = {
+      categoryId: selectedCategory.value,
+      searchTerm: finalSearchTerm,
+      userLat: finalLat,
+      userLng: finalLng,
+      countryCode: finalCountryCode
+    }
+  }
+
   loading.value = true
   try {
-    // Fetch approved providers with their addresses
-    const { data } = await supabase
-      .from('providers')
-      .select(`
-        *,
-        provider_addresses (*),
-        services (
-          categories (name)
-        )
-      `)
-      .eq('status', 'approved')
-      .order('created_at', { ascending: false })
-      .limit(12)
+    const { providers: newProviders, totalCount: count } = await fetchDiscoverableProviders({
+      categoryId: activeFilters.value.categoryId,
+      searchTerm: activeFilters.value.searchTerm,
+      userLat: activeFilters.value.userLat,
+      userLng: activeFilters.value.userLng,
+      countryCode: activeFilters.value.countryCode,
+      page: currentPage.value,
+      pageSize
+    })
     
+    // Ignore stale responses
+    if (fetchId !== currentFetchId) return
 
-    // Process providers to extract unique categories
-    providers.value = (data || []).map(provider => ({
-      ...provider,
-      categories: Array.from(new Set(
-        provider.services
-          ?.map((s: any) => s.categories?.name)
-          .filter(Boolean) || []
-      ))
-    }))
+    if (append) {
+      providers.value = [...providers.value, ...newProviders]
+    } else {
+      providers.value = newProviders
+    }
+    
+    // Only update totalCount if we got a valid count, or if this is the initial load.
+    // This prevents the "Load More" button from vanishing if a pagination call returns empty.
+    if (count > 0 || !append) {
+      totalCount.value = count
+    }
   } catch (error) {
+    if (fetchId !== currentFetchId) return
     console.error('Error fetching providers:', error)
   } finally {
-    loading.value = false
+    if (fetchId === currentFetchId) {
+      loading.value = false
+    }
   }
 }
 
-// Haversine formula to calculate distance in km
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371 // Radius of the earth in km
-  const dLat = deg2rad(lat2 - lat1)
-  const dLon = deg2rad(lon2 - lon1)
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2)
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  return R * c
+async function loadMore() {
+  if (loading.value || !hasMore.value) return
+  currentPage.value++
+  await fetchProviders(true)
 }
-
-function deg2rad(deg: number): number {
-  return deg * (Math.PI/180)
-}
-
-
 
 const bypassLocationFilter = ref(false)
-
-// 1. Get providers filtered by category (base set)
-const categoryFilteredProviders = computed(() => {
-  let result = providers.value
-  if (selectedCategory.value) {
-    result = result.filter(p => 
-      p.categories?.includes(
-        categories.value.find(c => c.id === selectedCategory.value)?.name || ''
-      )
-    )
-  }
-  return result
-})
-
-// 2. Get providers strictly matching the location context
-const localProviders = computed(() => {
-  let result = categoryFilteredProviders.value
-
-  // Text search filter
-  if (searchParams.value.location) {
-    return result.filter(p => 
-      p.business_name.toLowerCase().includes(searchParams.value.location.toLowerCase()) ||
-      p.provider_addresses?.some(a => 
-        a.city.toLowerCase().includes(searchParams.value.location.toLowerCase()) ||
-        a.state?.toLowerCase().includes(searchParams.value.location.toLowerCase())
-      )
-    )
-  } 
-  
-  // Geolocation filter
-  if (userLatitude.value && userLongitude.value) {
-    const MAX_DISTANCE_KM = 50
-    
-    return result.map(p => {
-      const address = p.provider_addresses?.find(a => a.is_primary) || p.provider_addresses?.[0]
-      
-      if (!address || !address.latitude || !address.longitude) {
-        return { ...p, distance: Infinity }
-      }
-      
-      const distance = calculateDistance(
-        userLatitude.value!, 
-        userLongitude.value!, 
-        address.latitude, 
-        address.longitude
-      )
-      
-      return { ...p, distance }
-    })
-    .filter(p => p.distance <= MAX_DISTANCE_KM)
-    .sort((a, b) => a.distance - b.distance)
-  }
-
-  // No location context
-  return result
-})
-
-const hasLocalProviders = computed(() => localProviders.value.length > 0)
 
 const shouldShowFunnyEmptyState = computed(() => {
   if (bypassLocationFilter.value) return false
   
-  // Only show funny state if we have a location context (search or geo) AND no local providers
-  const hasLocationContext = !!searchParams.value.location || (!!userLatitude.value && !!userLongitude.value)
-  return hasLocationContext && !hasLocalProviders.value
+  // Only show funny state if we have a location context (search or geo) AND no providers found
+  const hasLocationContext = !!searchParams.value.location || !!detectedCountryCode.value
+  return hasLocationContext && providers.value.length === 0
 })
 
-// 3. Determine what to actually display
 const displayedProviders = computed(() => {
-  // If bypassing location filter (user clicked See All), show everything
-  if (bypassLocationFilter.value) {
-    return categoryFilteredProviders.value
-  }
-
-  // If there are local providers, show them
-  if (hasLocalProviders.value) {
-    return localProviders.value
-  }
-
-  // If filter is active (search service) but no providers, logic handles it naturally 
-  // (categoryFilteredProviders handles service filtering via category logic if we map it, 
-  // but wait - service param is actually handled separately in original logic. 
-  // let's restore service filtering)
-  
-  // Wait, the original logic had a separate service filter at the end.
-  // We need to ensure service filtering is applied to whatever we return.
-  return categoryFilteredProviders.value
+  return providers.value.map(p => ({
+    ...p,
+    distance: (p as any).distance_meters ? (p as any).distance_meters / 1000 : null
+  }))
 })
 
 // Apply service filter (if strict match needed beyond category) - 
@@ -307,24 +291,29 @@ function scrollToResults() {
 
 
 
-function handleSearch(params: { location: string }) {
+function handleSearch(params: { location: string, lat?: number, lng?: number }) {
   searchParams.value.location = params.location
-  bypassLocationFilter.value = false // Reset bypass on new search
+  searchParams.value.lat = params.lat
+  searchParams.value.lng = params.lng
+  searchedLocation.value = params.location
+  bypassLocationFilter.value = false
+  fetchProviders()
   scrollToResults()
 }
 
 function handleCategorySelect(categoryId: string | null) {
   selectedCategory.value = categoryId
-  // Also clear service if deselecting
-  if (!categoryId) {
-    searchParams.value.service = ''
-  }
+  fetchProviders()
   scrollToResults()
 }
 
 function handleSeeAll() {
   searchParams.value.location = ''
+  searchParams.value.lat = undefined
+  searchParams.value.lng = undefined
+  selectedCategory.value = null
   bypassLocationFilter.value = true
+  fetchProviders()
   scrollToResults()
 }
 </script>
@@ -401,16 +390,36 @@ function handleSeeAll() {
       </div>
 
       <!-- Provider Grid -->
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <ProviderCard
-          v-for="provider in displayedProviders"
-          :key="provider.id"
-          :provider="provider"
-          :rating="5.0"
-          :review-count="Math.floor(Math.random() * 100) + 10"
-          :categories="provider.categories"
-          @click="router.push(`/booking?provider=${provider.id}`)"
-        />
+      <div v-else>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <ProviderCard
+            v-for="provider in displayedProviders"
+            :key="provider.id"
+            :provider="provider"
+            :rating="5.0"
+            :review-count="Math.floor(Math.random() * 100) + 10"
+            :categories="provider.categories"
+            @click="router.push(`/booking?provider=${provider.id}`)"
+          />
+        </div>
+
+        <!-- Load More -->
+        <div v-if="hasMore" class="mt-12 text-center">
+          <button 
+            @click="loadMore"
+            :disabled="loading"
+            class="inline-flex items-center gap-2 px-8 py-3 bg-white border border-gray-300 rounded-full text-gray-700 font-semibold hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            <template v-if="loading">
+              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700"></div>
+              {{ $t('common.loading') }}
+            </template>
+            <template v-else>
+              {{ $t('common.load_more') }}
+              <ChevronDown class="w-4 h-4" />
+            </template>
+          </button>
+        </div>
       </div>
     </div>
 

@@ -112,7 +112,8 @@ export interface ProviderAddress {
     city: string
     state?: string
     postal_code: string
-    country: string
+    country_code: string
+    country_name?: string
     is_primary: boolean
     active?: boolean
     deactivation_reason?: string

@@ -10,7 +10,8 @@ interface GeocodingResult {
   address?: {
     city?: string
     state?: string
-    country?: string
+    country_name?: string
+    country_code?: string
     postal_code?: string
     road?: string
   }
@@ -22,7 +23,8 @@ interface StructuredAddress {
   city?: string
   state?: string
   postal_code?: string
-  country?: string
+  country_name?: string
+  country_code?: string
 }
 
 /**
@@ -42,7 +44,8 @@ export async function geocodeAddress(address: string | StructuredAddress): Promi
       if (address.city) url += `&city=${encodeURIComponent(address.city)}`
       if (address.state) url += `&state=${encodeURIComponent(address.state)}`
       if (address.postal_code) url += `&postalcode=${encodeURIComponent(address.postal_code)}`
-      if (address.country) url += `&country=${encodeURIComponent(address.country)}`
+      if (address.country_name) url += `&country=${encodeURIComponent(address.country_name)}`
+      if (address.country_code) url += `&countrycodes=${encodeURIComponent(address.country_code)}`
     }
 
     const response = await fetch(url, {
@@ -68,7 +71,8 @@ export async function geocodeAddress(address: string | StructuredAddress): Promi
         address: {
           city: addr.city || addr.town || addr.village || addr.municipality,
           state: addr.state || addr.region,
-          country: addr.country,
+          country_name: addr.country,
+          country_code: addr.country_code,
           postal_code: addr.postcode,
           road: addr.road
         }
@@ -116,7 +120,8 @@ export async function reverseGeocode(latitude: number, longitude: number): Promi
         address: {
           city: addr.city || addr.town || addr.village || addr.municipality,
           state: addr.state || addr.region,
-          country: addr.country,
+          country_name: addr.country,
+          country_code: addr.country_code,
           postal_code: addr.postcode,
           road: addr.road || addr.pedestrian || addr.footway || addr.path || addr.suburb
         }

@@ -4,10 +4,13 @@ import { supabase } from '../lib/supabase'
 interface LocationData {
   city: string | null
   region: string | null
-  country: string | null
+  country_name: string | null
+  country_code: string | null
+  country?: string | null
   latitude: number | null
   longitude: number | null
   location: string | null // Pre-formatted "City, Region" string
+  source?: 'edge' | 'browser'
 }
 
 const CACHE_KEY = 'user_location'
@@ -16,7 +19,8 @@ const CACHE_DURATION = 24 * 60 * 60 * 1000 // 24 hours
 // Global state (Singleton) - Defined outside the function to share state
 const city = ref<string | null>(null)
 const region = ref<string | null>(null)
-const country = ref<string | null>(null)
+const country_name = ref<string | null>(null)
+const country_code = ref<string | null>(null)
 
 const location = ref<string | null>(null) // Formatted "City, Region"
 const latitude = ref<number | null>(null)
@@ -24,6 +28,7 @@ const longitude = ref<number | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
 const initialized = ref(false)
+const isPreciseLocation = ref(false)
 
 /**
  * Composable for getting user's location.
@@ -80,13 +85,15 @@ export function useLocation() {
    * Apply location data to refs
    */
   function applyLocation(data: LocationData): void {
-    city.value = data.city
-    region.value = data.region
+    city.value = data.city || null
+    region.value = data.region || null
 
-    country.value = data.country
-    location.value = data.location
-    latitude.value = data.latitude
-    longitude.value = data.longitude
+    country_name.value = data.country_name || null
+    country_code.value = data.country_code || data.country?.toUpperCase() || null
+    location.value = data.location || null
+    latitude.value = data.latitude ?? null
+    longitude.value = data.longitude ?? null
+    isPreciseLocation.value = data.source === 'browser'
   }
 
   /**
@@ -122,8 +129,19 @@ export function useLocation() {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           try {
-            // Use OpenStreetMap Nominatim for reverse geocoding (free)
             const { latitude, longitude } = position.coords
+            applyLocation({
+              city: city.value,
+              region: region.value,
+              country_name: country_name.value,
+              country_code: country_code.value,
+              latitude,
+              longitude,
+              location: location.value,
+              source: 'browser'
+            })
+
+            // Use OpenStreetMap Nominatim for reverse geocoding (free)
             const response = await fetch(
               `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
               { headers: { 'Accept-Language': navigator.language || 'en' } }
@@ -147,10 +165,12 @@ export function useLocation() {
               const locationData = {
                 city: preciseCity,
                 region: preciseRegion || null,
-                country: data.address?.country || null,
+                country_name: data.address?.country || null,
+                country_code: data.address?.country_code?.toUpperCase() || null,
                 latitude,
                 longitude,
-                location: preciseLocation
+                location: preciseLocation,
+                source: 'browser' as const
               }
               
               applyLocation(locationData)
@@ -196,8 +216,9 @@ export function useLocation() {
       // Step 2: Fetch from Edge Function
       const edgeData = await fetchFromEdge()
       if (edgeData?.location) {
-        applyLocation(edgeData)
-        saveToCache(edgeData)
+        const locationData = { ...edgeData, source: 'edge' as const }
+        applyLocation(locationData)
+        saveToCache(locationData)
         loading.value = false
         initialized.value = true
         return
@@ -222,7 +243,8 @@ export function useLocation() {
   return {
     city,
     region,
-    country,
+    country_name,
+    country_code,
     location,
     loading,
     error,
@@ -233,6 +255,7 @@ export function useLocation() {
         await initLocation()
     },
     latitude,
-    longitude
+    longitude,
+    isPreciseLocation
   }
 }
