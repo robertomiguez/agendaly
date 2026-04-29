@@ -6,6 +6,7 @@ interface LocationData {
   region: string | null
   country_name: string | null
   country_code: string | null
+  country?: string | null
   latitude: number | null
   longitude: number | null
   location: string | null // Pre-formatted "City, Region" string
@@ -84,14 +85,14 @@ export function useLocation() {
    * Apply location data to refs
    */
   function applyLocation(data: LocationData): void {
-    city.value = data.city
-    region.value = data.region
+    city.value = data.city || null
+    region.value = data.region || null
 
-    country_name.value = data.country_name
-    country_code.value = data.country_code
-    location.value = data.location
-    latitude.value = data.latitude
-    longitude.value = data.longitude
+    country_name.value = data.country_name || null
+    country_code.value = data.country_code || data.country?.toUpperCase() || null
+    location.value = data.location || null
+    latitude.value = data.latitude ?? null
+    longitude.value = data.longitude ?? null
     isPreciseLocation.value = data.source === 'browser'
   }
 

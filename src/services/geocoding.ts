@@ -120,7 +120,8 @@ export async function reverseGeocode(latitude: number, longitude: number): Promi
         address: {
           city: addr.city || addr.town || addr.village || addr.municipality,
           state: addr.state || addr.region,
-          country_code: addr.country,
+          country_name: addr.country,
+          country_code: addr.country_code,
           postal_code: addr.postcode,
           road: addr.road || addr.pedestrian || addr.footway || addr.path || addr.suburb
         }
