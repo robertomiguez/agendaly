@@ -165,6 +165,11 @@ const router = createRouter({
                     path: 'locals',
                     name: 'SuperAdminLocals',
                     component: () => import('../views/admin/SuperAdminLocalsView.vue')
+                },
+                {
+                    path: 'ads',
+                    name: 'SuperAdminAds',
+                    component: () => import('../views/admin/SuperAdminAdsView.vue')
                 }
             ]
         },
