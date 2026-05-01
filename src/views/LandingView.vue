@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import SearchBar from '../components/SearchBar.vue'
 import CategoryPills from '../components/CategoryPills.vue'
 import ProviderCard from '../components/ProviderCard.vue'
+import AdBanner from '@/components/common/AdBanner.vue'
 import { supabase } from '../lib/supabase'
 import { useLocation } from '../composables/useLocation'
 import { fetchDiscoverableProviders } from '../services/providerService'
@@ -392,15 +393,22 @@ function handleSeeAll() {
       <!-- Provider Grid -->
       <div v-else>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          <ProviderCard
-            v-for="provider in displayedProviders"
+          <template
+            v-for="(provider, index) in displayedProviders"
             :key="provider.id"
-            :provider="provider"
-            :rating="5.0"
-            :review-count="Math.floor(Math.random() * 100) + 10"
-            :categories="provider.categories"
-            @click="router.push(`/booking?provider=${provider.id}`)"
-          />
+          >
+            <ProviderCard
+              :provider="provider"
+              :rating="5.0"
+              :review-count="Math.floor(Math.random() * 100) + 10"
+              :categories="provider.categories"
+              @click="router.push(`/booking?provider=${provider.id}`)"
+            />
+            <AdBanner
+              v-if="(index + 1) % 4 === 0"
+              placement="landing"
+            />
+          </template>
         </div>
 
         <!-- Load More -->

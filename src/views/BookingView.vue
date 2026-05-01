@@ -18,6 +18,7 @@ import BookingLocationStep from '@/components/booking/BookingLocationStep.vue'
 import BookingDateTimeStep from '@/components/booking/BookingDateTimeStep.vue'
 import BookingConfirmStep from '@/components/booking/BookingConfirmStep.vue'
 import BookingSuccessCard from '@/components/booking/BookingSuccessCard.vue'
+import AdBanner from '@/components/common/AdBanner.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -191,20 +192,22 @@ async function handleLoginSuccess() {
       </header>
 
       <!-- Confirmation Success -->
-      <BookingSuccessCard
-        v-if="booking.bookingConfirmed.value"
-        :selected-service="booking.selectedService.value"
-        :selected-staff="booking.selectedStaff.value"
-        :confirmed-date="booking.confirmedDate.value"
-        :confirmed-time="booking.confirmedTime.value"
-        :provider-info="booking.providerInfo.value"
-        :selected-address-object="booking.selectedAddressObject.value"
-        :format-date-display="booking.formatDateDisplay"
-        :format-address="booking.formatAddress"
-        :get-map-url="booking.getMapUrl"
-        :get-directions-url="booking.getDirectionsUrl"
-        @reset="booking.resetBooking"
-      />
+      <template v-if="booking.bookingConfirmed.value">
+        <BookingSuccessCard
+          :selected-service="booking.selectedService.value"
+          :selected-staff="booking.selectedStaff.value"
+          :confirmed-date="booking.confirmedDate.value"
+          :confirmed-time="booking.confirmedTime.value"
+          :provider-info="booking.providerInfo.value"
+          :selected-address-object="booking.selectedAddressObject.value"
+          :format-date-display="booking.formatDateDisplay"
+          :format-address="booking.formatAddress"
+          :get-map-url="booking.getMapUrl"
+          :get-directions-url="booking.getDirectionsUrl"
+          @reset="booking.resetBooking"
+        />
+        <AdBanner placement="booking" />
+      </template>
 
       <!-- Auto-submitting after OAuth restore -->
       <div v-else-if="isAutoSubmitting || isLoading" class="flex flex-col items-center justify-center py-20 animate-in fade-in duration-300">
