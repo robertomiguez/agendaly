@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { superAdminService } from '../services/superAdminService'
-import type { Provider, Service, Staff, ProviderAddress } from '../types'
+import type { Provider, Service, Staff, ProviderAddress, Ad } from '../types'
 import { useAuthStore } from './useAuthStore'
 
 export const useSuperAdminStore = defineStore('superAdmin', () => {
     const authStore = useAuthStore()
-    
+
     const stats = ref<{
         totalProviders: number
         totalServices: number
@@ -18,9 +18,74 @@ export const useSuperAdminStore = defineStore('superAdmin', () => {
     const services = ref<(Service & { providers: { business_name: string } })[]>([])
     const staff = ref<(Staff & { providers: { business_name: string } })[]>([])
     const locals = ref<(ProviderAddress & { providers: { business_name: string } })[]>([])
-    
+    const ads = ref<Ad[]>([])
+
     const loading = ref(false)
     const error = ref<string | null>(null)
+
+    async function fetchAds() {
+        loading.value = true
+        error.value = null
+        try {
+            ads.value = await superAdminService.listAllAds()
+        } catch (e: any) {
+            error.value = e?.message || 'Failed to fetch ads'
+        } finally {
+            loading.value = false
+        }
+    }
+
+    async function saveAd(adData: Partial<Ad>, imageFile?: File) {
+        if (!authStore.superAdmin) return
+
+        loading.value = true
+        error.value = null
+        try {
+            if (adData.id) {
+                await superAdminService.updateAd(authStore.superAdmin.id, adData.id, adData, imageFile)
+            } else {
+                await superAdminService.createAd(authStore.superAdmin.id, adData, imageFile)
+            }
+            await fetchAds()
+        } catch (e: any) {
+            error.value = e?.message || 'Failed to save ad'
+            throw e
+        } finally {
+            loading.value = false
+        }
+    }
+
+    async function removeAd(ad: Ad) {
+        if (!authStore.superAdmin) return
+
+        loading.value = true
+        error.value = null
+        try {
+            await superAdminService.deleteAd(authStore.superAdmin.id, ad)
+            await fetchAds()
+        } catch (e: any) {
+            error.value = e?.message || 'Failed to delete ad'
+            throw e
+        } finally {
+            loading.value = false
+        }
+    }
+
+    async function toggleAdActive(ad: Ad, is_active: boolean) {
+        if (!authStore.superAdmin) return
+
+        loading.value = true
+        error.value = null
+        try {
+            await superAdminService.updateAd(authStore.superAdmin.id, ad.id, { is_active })
+            await fetchAds()
+        } catch (e: any) {
+            error.value = e?.message || 'Failed to update ad status'
+            throw e
+        } finally {
+            loading.value = false
+        }
+    }
 
     async function fetchStats() {
         loading.value = true
@@ -84,14 +149,14 @@ export const useSuperAdminStore = defineStore('superAdmin', () => {
 
     async function toggleProviderActive(providerId: string, active: boolean, reason?: string) {
         if (!authStore.superAdmin) return
-        
+
         loading.value = true
         error.value = null
         try {
-            await superAdminService.updateProviderStatus(authStore.superAdmin.id, providerId, { 
-                active, 
+            await superAdminService.updateProviderStatus(authStore.superAdmin.id, providerId, {
+                active,
                 status: active ? 'approved' : 'suspended',
-                deactivation_reason: reason 
+                deactivation_reason: reason
             })
             await fetchProviders()
         } catch (e: any) {
@@ -104,7 +169,7 @@ export const useSuperAdminStore = defineStore('superAdmin', () => {
 
     async function toggleServiceActive(serviceId: string, active: boolean, reason?: string) {
         if (!authStore.superAdmin) return
-        
+
         loading.value = true
         error.value = null
         try {
@@ -120,7 +185,7 @@ export const useSuperAdminStore = defineStore('superAdmin', () => {
 
     async function toggleStaffActive(staffId: string, active: boolean, reason?: string) {
         if (!authStore.superAdmin) return
-        
+
         loading.value = true
         error.value = null
         try {
@@ -136,7 +201,7 @@ export const useSuperAdminStore = defineStore('superAdmin', () => {
 
     async function toggleLocalActive(localId: string, active: boolean, reason?: string) {
         if (!authStore.superAdmin) return
-        
+
         loading.value = true
         error.value = null
         try {
@@ -156,6 +221,7 @@ export const useSuperAdminStore = defineStore('superAdmin', () => {
         services,
         staff,
         locals,
+        ads,
         loading,
         error,
         fetchStats,
@@ -163,9 +229,13 @@ export const useSuperAdminStore = defineStore('superAdmin', () => {
         fetchServices,
         fetchStaff,
         fetchLocals,
+        fetchAds,
         toggleProviderActive,
         toggleServiceActive,
         toggleStaffActive,
-        toggleLocalActive
+        toggleLocalActive,
+        saveAd,
+        removeAd,
+        toggleAdActive
     }
 })

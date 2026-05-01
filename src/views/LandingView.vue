@@ -51,7 +51,7 @@ const selectedCategoryPluralName = computed(() => {
 function pluralize(word: string, localeCode: string): string {
   if (!word) return ''
   const lower = word.toLowerCase()
-  
+
   if (localeCode.startsWith('pt')) {
     // Portuguese rules
     if (lower.endsWith('m')) return word.slice(0, -1) + 'ns'
@@ -74,7 +74,7 @@ function pluralize(word: string, localeCode: string): string {
     if (lower.endsWith('eu')) return word + 'x'
     if (lower.endsWith('s') || lower.endsWith('x') || lower.endsWith('z')) return word
   }
-  
+
   // Default for all: add 's'
   return word + 's'
 }
@@ -116,7 +116,7 @@ let rotationInterval: number | null = null
 
 const currentHero = computed(() => (heroOptions[currentHeroIndex.value] ?? heroOptions[0])!)
 
-const heroBackgroundImage = computed(() => 
+const heroBackgroundImage = computed(() =>
   `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('${currentHero.value.image}')`
 )
 
@@ -135,7 +135,7 @@ onMounted(async () => {
     detectCountry()
   ])
   await fetchProviders()
-  
+
   // Start rotation
   rotationInterval = window.setInterval(rotateHero, 3000)
 })
@@ -152,7 +152,7 @@ async function fetchCategories() {
       .from('categories')
       .select('*')
       .order('name')
-    
+
     categories.value = data || []
   } catch (error) {
     console.error('Error fetching categories:', error)
@@ -180,10 +180,10 @@ async function fetchProviders(append = false) {
   if (!append) {
     currentPage.value = 1
     providers.value = []
-    
+
     // If we have a geocoded search location, use that for coordinates
     const hasGeocodedLocation = searchParams.value.lat !== undefined && searchParams.value.lng !== undefined
-    
+
     let finalSearchTerm = null
     let finalLat = null
     let finalLng = null
@@ -205,7 +205,7 @@ async function fetchProviders(append = false) {
         finalCountryCode = detectedCountryCode.value
       }
     }
-    
+
     // Capture filters when starting a new search
     activeFilters.value = {
       categoryId: selectedCategory.value,
@@ -227,7 +227,7 @@ async function fetchProviders(append = false) {
       page: currentPage.value,
       pageSize
     })
-    
+
     // Ignore stale responses
     if (fetchId !== currentFetchId) return
 
@@ -236,7 +236,7 @@ async function fetchProviders(append = false) {
     } else {
       providers.value = newProviders
     }
-    
+
     // Only update totalCount if we got a valid count, or if this is the initial load.
     // This prevents the "Load More" button from vanishing if a pagination call returns empty.
     if (count > 0 || !append) {
@@ -262,7 +262,7 @@ const bypassLocationFilter = ref(false)
 
 const shouldShowFunnyEmptyState = computed(() => {
   if (bypassLocationFilter.value) return false
-  
+
   // Only show funny state if we have a location context (search or geo) AND no providers found
   const hasLocationContext = !!searchParams.value.location || !!detectedCountryCode.value
   return hasLocationContext && providers.value.length === 0
@@ -275,10 +275,10 @@ const displayedProviders = computed(() => {
   }))
 })
 
-// Apply service filter (if strict match needed beyond category) - 
-// actually the original logic filtered by category OR service param. 
+// Apply service filter (if strict match needed beyond category) -
+// actually the original logic filtered by category OR service param.
 // The prompt removed service input, but code might still rely on searchParams.service if passed?
-// Assuming searchParams.service is effectively cleared or unused now based on previous steps, 
+// Assuming searchParams.service is effectively cleared or unused now based on previous steps,
 // but let's keep consistency with `categoryFilteredProviders`.
 
 
@@ -322,26 +322,26 @@ function handleSeeAll() {
 <template>
   <div class="min-h-screen bg-white">
     <!-- Hero Section with Background Image -->
-    <div 
+    <div
       class="relative bg-cover bg-center min-h-[600px] md:h-[500px] flex items-center transition-all duration-1000"
       :style="{ backgroundImage: heroBackgroundImage }"
     >
       <div class="max-w-7xl mx-auto px-6 w-full py-16 md:py-0">
         <div class="max-w-3xl">
           <h1 class="text-5xl lg:text-6xl font-bold text-white mb-6 min-h-[3.6em] lg:min-h-[2.4em] flex flex-col justify-center">
-            {{ $t('landing.hero_title') }} 
+            {{ $t('landing.hero_title') }}
             <span class="inline-block transition-all duration-500">{{ $t(`landing.hero_services.${currentHero.service}`) }}</span>
           </h1>
-          
+
           <!-- Search Bar -->
-          <SearchBar 
-            :initial-location="searchParams.location" 
-            @search="handleSearch" 
+          <SearchBar
+            :initial-location="searchParams.location"
+            @search="handleSearch"
           />
-          
+
           <!-- Category Pills -->
           <div class="mt-10">
-            <CategoryPills 
+            <CategoryPills
               :categories="categories"
               :selected-category="selectedCategory"
               @select="handleCategorySelect"
@@ -367,7 +367,7 @@ function handleSeeAll() {
           <template v-else>
             {{ selectedCategoryName ? $t('landing.popular_service_in', { service: selectedCategoryPluralName, location: displayLocation }) : $t('landing.popular_in', { location: displayLocation }) }}
           </template>
-          <span 
+          <span
             v-if="!bypassLocationFilter"
             @click="handleSeeAll"
             class="text-base font-normal text-primary-600 hover:text-primary-700 ml-4 cursor-pointer hover:underline"
@@ -394,7 +394,7 @@ function handleSeeAll() {
       <div v-else>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           <template
-            v-for="(provider, index) in displayedProviders"
+            v-for="provider in displayedProviders"
             :key="provider.id"
           >
             <ProviderCard
@@ -404,16 +404,19 @@ function handleSeeAll() {
               :categories="provider.categories"
               @click="router.push(`/booking?provider=${provider.id}`)"
             />
-            <AdBanner
-              v-if="(index + 1) % 4 === 0"
-              placement="landing"
-            />
           </template>
         </div>
 
+        <!-- Ad Banner (Single, after the grid) -->
+        <AdBanner
+          v-if="displayedProviders.length > 0"
+          placement="landing"
+          class="mt-12"
+        />
+
         <!-- Load More -->
         <div v-if="hasMore" class="mt-12 text-center">
-          <button 
+          <button
             @click="loadMore"
             :disabled="loading"
             class="inline-flex items-center gap-2 px-8 py-3 bg-white border border-gray-300 rounded-full text-gray-700 font-semibold hover:bg-gray-50 transition-colors disabled:opacity-50"

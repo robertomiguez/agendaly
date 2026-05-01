@@ -12,7 +12,8 @@ import {
   Menu, 
   X,
   ShieldCheck,
-  ChevronRight
+  ChevronRight,
+  Megaphone
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -26,7 +27,8 @@ const menuItems = [
   { name: 'Providers', icon: Briefcase, path: '/super-admin/providers' },
   { name: 'Services', icon: Settings, path: '/super-admin/services' },
   { name: 'Staff', icon: Users, path: '/super-admin/staff' },
-  { name: 'Locals', icon: MapPin, path: '/super-admin/locals' }
+  { name: 'Locals', icon: MapPin, path: '/super-admin/locals' },
+  { name: 'Ads', icon: Megaphone, path: '/super-admin/ads' }
 ]
 
 const currentRouteName = computed(() => {

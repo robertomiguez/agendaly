@@ -238,3 +238,20 @@ export interface Payment {
     created_at?: string
     subscription?: Subscription     // Joined data
 }
+
+export interface Ad {
+    id: string
+    title: string
+    description?: string
+    link_url: string | null;
+    image_url: string | null;
+    image_path: string | null;
+    placement: string[];
+    is_active: boolean;
+    priority: number
+    click_count: number
+    start_at?: string
+    end_at?: string
+    created_at?: string
+    updated_at?: string
+}
