@@ -172,6 +172,74 @@ describe("ProviderCalendarView", () => {
     expect(wrapper.text()).toContain("10:00");
     expect(wrapper.text()).toContain("10:30");
   });
+
+  it("lays out overlapping appointments side by side in week view", async () => {
+    const authStore = useAuthStore();
+    authStore.provider = { id: "p1", name: "Provider" } as any;
+
+    const today = new Date().toISOString().split("T")[0];
+    const mockAppointments = [
+      {
+        id: "a1",
+        appointment_date: today,
+        start_time: "10:00:00",
+        status: "confirmed",
+        services: { name: "Haircut", duration: 30 },
+        customers: { profiles: { name: "John Doe" } },
+        staff: { name: "Staff A", provider_id: "p1" },
+        staff_id: "s1"
+      },
+      {
+        id: "a2",
+        appointment_date: today,
+        start_time: "10:00:00",
+        status: "confirmed",
+        services: { name: "Manicure", duration: 30 },
+        customers: { profiles: { name: "Jane Doe" } },
+        staff: { name: "Staff B", provider_id: "p1" },
+        staff_id: "s2"
+      }
+    ];
+
+    const chain = {
+        eq: vi.fn().mockReturnThis(),
+        in: vi.fn().mockReturnThis(),
+        gte: vi.fn().mockReturnThis(),
+        lte: vi.fn().mockResolvedValue({ data: mockAppointments }),
+        order: vi.fn().mockResolvedValue({ data: [] }),
+    };
+    selectMock.mockReturnValue(chain);
+
+    const wrapper = mount(ProviderCalendarView, {
+      global: {
+        mocks: { $t: (key: string) => key },
+        stubs: {
+          Button: { template: "<button><slot /></button>" },
+          Card: { template: "<div><slot /></div>" },
+          CardContent: { template: "<div><slot /></div>" },
+          CardHeader: { template: "<div><slot /></div>" },
+          Tabs: { template: "<div><slot /></div>" },
+          TabsList: { template: "<div><slot /></div>" },
+          TabsTrigger: { template: "<button><slot /></button>" },
+          BlockTimeModal: true,
+          AppointmentDetailsModal: true,
+        },
+      },
+    });
+
+    await flushPromises();
+
+    const events = wrapper.findAll("button.absolute");
+    const johnEvent = events.find((event) => event.text().includes("John Doe"));
+    const janeEvent = events.find((event) => event.text().includes("Jane Doe"));
+
+    expect(johnEvent).toBeDefined();
+    expect(janeEvent).toBeDefined();
+    expect(johnEvent?.attributes("style")).toContain("width: calc(50% - 4px)");
+    expect(janeEvent?.attributes("style")).toContain("width: calc(50% - 4px)");
+    expect(johnEvent?.attributes("style")).toContain("left: calc(0% + 2px)");
+    expect(janeEvent?.attributes("style")).toContain("left: calc(50% + 2px)");
+  });
   
   it("opens block modal on grid click", async () => {
       // ... setup ...

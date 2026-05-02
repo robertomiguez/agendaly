@@ -142,12 +142,25 @@ function getEventStyle(event: any) {
   const topMinutes = clampedStartMinutes - gridStartMinutes;
   const durationMinutes = clampedEndMinutes - clampedStartMinutes;
 
+  const columnCount = event.columnCount || 1;
+  const columnIndex = event.columnIndex || 0;
+  const columnWidth = 100 / columnCount;
+  const horizontalStyle = columnCount > 1
+    ? {
+        left: `calc(${columnIndex * columnWidth}% + 2px)`,
+        width: `calc(${columnWidth}% - 4px)`,
+        right: "auto",
+      }
+    : {
+        left: "2px",
+        right: "2px",
+      };
+
   return {
     top: `${(topMinutes / 60) * PIXELS_PER_HOUR}px`,
     height: `${(durationMinutes / 60) * PIXELS_PER_HOUR}px`,
     position: "absolute" as const,
-    left: "2px",
-    right: "2px",
+    ...horizontalStyle,
   };
 }
 
@@ -468,6 +481,57 @@ function getEventsForDate(date: Date) {
   return [...apts, ...blocks].sort(
     (a, b) => a.start.getTime() - b.start.getTime(),
   );
+}
+
+function getLaidOutEventsForDate(date: Date) {
+  const events = getEventsForDate(date).map((event) => ({
+    ...event,
+    columnIndex: 0,
+    columnCount: 1,
+  }));
+
+  const groups: any[][] = [];
+  let currentGroup: any[] = [];
+  let currentGroupEnd = 0;
+
+  events.forEach((event) => {
+    const startTime = event.start.getTime();
+    const endTime = event.end.getTime();
+
+    if (currentGroup.length === 0 || startTime < currentGroupEnd) {
+      currentGroup.push(event);
+      currentGroupEnd = Math.max(currentGroupEnd, endTime);
+      return;
+    }
+
+    groups.push(currentGroup);
+    currentGroup = [event];
+    currentGroupEnd = endTime;
+  });
+
+  if (currentGroup.length > 0) {
+    groups.push(currentGroup);
+  }
+
+  groups.forEach((group) => {
+    const columnEnds: number[] = [];
+
+    group.forEach((event) => {
+      const startTime = event.start.getTime();
+      const availableColumn = columnEnds.findIndex((endTime) => endTime <= startTime);
+      const columnIndex = availableColumn === -1 ? columnEnds.length : availableColumn;
+
+      event.columnIndex = columnIndex;
+      columnEnds[columnIndex] = event.end.getTime();
+    });
+
+    const columnCount = columnEnds.length;
+    group.forEach((event) => {
+      event.columnCount = columnCount;
+    });
+  });
+
+  return events;
 }
 
 function formatTimeDisplay(date: Date) {
@@ -824,7 +888,7 @@ async function handleBlockSave(data: any) {
 
                       <!-- Events -->
                       <button
-                        v-for="event in getEventsForDate(day)"
+                        v-for="event in getLaidOutEventsForDate(day)"
                         :key="event.id"
                         :style="getEventStyle(event)"
                         @click.stop="openEventDetails(event)"
@@ -1037,7 +1101,7 @@ async function handleBlockSave(data: any) {
 
                     <!-- Events -->
                     <button
-                      v-for="event in getEventsForDate(currentDate)"
+                      v-for="event in getLaidOutEventsForDate(currentDate)"
                       :key="event.id"
                       :style="getEventStyle(event)"
                       @click.stop="openEventDetails(event)"
