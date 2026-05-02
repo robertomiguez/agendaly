@@ -421,8 +421,10 @@ export function useBookingFlow(initialProviderId?: string, initialStaffId?: stri
       if (e.code === '23P01' || e.message?.includes('no_overlapping_appointments')) {
         errorCallback(t('booking.slot_taken_error'))
         await loadAvailableSlots()
+      } else if (e.message === 'BOOKING_LIMIT_REACHED') {
+        errorCallback(t('booking.limit_reached'))
       } else {
-        errorCallback(t('booking.booking_failed'))
+        errorCallback(e.message || t('booking.booking_failed'))
       }
       return false
     } finally {
