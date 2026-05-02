@@ -80,6 +80,20 @@ export const useAppointmentStore = defineStore('appointment', () => {
         loading.value = true
         error.value = null
         try {
+            // Check for existing upcoming appointments (limit to 3)
+            const today = format(new Date(), 'yyyy-MM-dd')
+            const { count, error: countError } = await supabase
+                .from('appointments')
+                .select('*', { count: 'exact', head: true })
+                .eq('customer_id', appointment.customer_id)
+                .gte('appointment_date', today)
+                .in('status', ['confirmed', 'pending'])
+
+            if (countError) throw countError
+            if (count !== null && count >= 3) {
+                throw new Error('BOOKING_LIMIT_REACHED')
+            }
+
             const { data, error: createError } = await supabase
                 .from('appointments')
                 .insert([appointment])

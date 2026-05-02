@@ -10,7 +10,7 @@ export function useNotifications() {
         // Optional: auto-clear after some time
         setTimeout(() => {
             successMessage.value = null
-        }, 3000)
+        }, 5000)
     }
 
     function showError(message: string) {
@@ -19,7 +19,7 @@ export function useNotifications() {
         // Optional: auto-clear after some time
         setTimeout(() => {
             errorMessage.value = null
-        }, 5000)
+        }, 10000)
     }
 
     function clearMessages() {

@@ -31,6 +31,7 @@ defineProps<{
   notes: string
   showLogin: boolean
   errorMessage?: string | null
+  isLimitReached?: boolean
   loading?: boolean
   formatDateDisplay: (date: Date) => string
   formatAddress: (provider: Provider | null) => string
@@ -44,6 +45,7 @@ const emit = defineEmits<{
   submit: []
   back: []
   loginSuccess: []
+  'go-to-bookings': []
 }>()
 
 const settingsStore = useSettingsStore()
@@ -59,9 +61,20 @@ const settingsStore = useSettingsStore()
       {{ $t('booking.confirm_title') }}
     </h2>
 
-    <Alert v-if="errorMessage" variant="destructive" class="mb-6">
+    <Alert v-if="errorMessage" variant="destructive" class="booking-error-alert">
       <AlertTitle>Error</AlertTitle>
-      <AlertDescription>{{ errorMessage }}</AlertDescription>
+      <AlertDescription class="booking-error-description">
+        <span>{{ errorMessage }}</span>
+        <Button 
+          v-if="isLimitReached" 
+          variant="outline" 
+          size="sm"
+          class="booking-limit-button"
+          @click="emit('go-to-bookings')"
+        >
+          {{ $t('nav.my_bookings') }}
+        </Button>
+      </AlertDescription>
     </Alert>
 
     <div class="bg-gray-50 rounded-lg p-6 mb-6 border border-gray-200">
@@ -150,3 +163,19 @@ const settingsStore = useSettingsStore()
     </form>
   </div>
 </template>
+
+<style scoped>
+@reference "../../style.css";
+
+.booking-error-alert {
+  @apply mb-6;
+}
+
+.booking-error-description {
+  @apply flex flex-col gap-4;
+}
+
+.booking-limit-button {
+  @apply w-full bg-white text-destructive border-destructive hover:bg-destructive/10 font-bold;
+}
+</style>

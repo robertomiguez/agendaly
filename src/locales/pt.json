@@ -329,6 +329,7 @@
     "notes_placeholder": "Quaisquer pedidos especiais ou notas...",
     "confirm_button": "Confirmar Agendamento",
     "slot_taken_error": "Este horário acabou de ser reservado por outro cliente. Por favor, escolha outro horário.",
+    "limit_reached": "Você já tem 3 agendamentos futuros. Por favor, complete ou cancele um antes de agendar mais.",
     "booking_failed": "Falha ao agendar compromisso. Por favor, tente novamente.",
     "summary_title": "Resumo do Agendamento",
     "closed": "Fechado",

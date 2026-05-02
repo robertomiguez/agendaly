@@ -1,22 +1,24 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { isFuture, parseISO, isPast } from 'date-fns'
 import { useAuthStore } from '../stores/useAuthStore'
 import { useAppointmentStore } from '../stores/useAppointmentStore'
 import { useSettingsStore } from '../stores/useSettingsStore'
 import { useNotifications } from '../composables/useNotifications'
 import { useI18n } from 'vue-i18n'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import ConfirmationModal from '../components/common/ConfirmationModal.vue'
 import LoadingSpinner from '../components/common/LoadingSpinner.vue'
 import BackButton from '../components/common/BackButton.vue'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const appointmentStore = useAppointmentStore()
 const settingsStore = useSettingsStore()
 const { t } = useI18n()
-const { showSuccess, showError } = useNotifications()
+const { errorMessage, showSuccess, showError } = useNotifications()
 
 const activeTab = ref<'upcoming' | 'past'>('upcoming')
 const showConfirmModal = ref(false)
@@ -66,6 +68,13 @@ onMounted(async () => {
     router.push('/login')
     return
   }
+
+  if (route.query.bookingLimitReached === '1') {
+    showError(t('booking.limit_reached'))
+    const { bookingLimitReached, ...query } = route.query
+    router.replace({ path: '/my-bookings', query })
+  }
+
   await appointmentStore.fetchCustomerAppointments(authStore.customer.id)
 })
 
@@ -119,6 +128,10 @@ async function handleCancel() {
       <BackButton to="/" />
       <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ $t('my_bookings.title') }}</h1>
       <p class="text-gray-600 mb-8">{{ $t('my_bookings.subtitle') }}</p>
+
+      <Alert v-if="errorMessage" variant="destructive" class="bookings-alert">
+        <AlertDescription>{{ errorMessage }}</AlertDescription>
+      </Alert>
 
       <!-- Tabs -->
       <div class="bg-white rounded-lg shadow-sm mb-6">
@@ -242,3 +255,11 @@ async function handleCancel() {
     />
   </div>
 </template>
+
+<style scoped>
+@reference "../style.css";
+
+.bookings-alert {
+  @apply mb-6;
+}
+</style>

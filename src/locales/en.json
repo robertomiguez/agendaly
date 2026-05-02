@@ -332,6 +332,7 @@
     "notes_placeholder": "Any special requests or notes...",
     "confirm_button": "Confirm Booking",
     "slot_taken_error": "This time slot was just booked by another customer. Please choose another time.",
+    "limit_reached": "You already have 3 upcoming appointments. Please complete or cancel one before booking more.",
     "booking_failed": "Failed to book appointment. Please try again.",
     "summary_title": "Booking Summary",
     "closed": "Closed",
