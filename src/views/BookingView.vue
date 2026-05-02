@@ -125,7 +125,11 @@ onMounted(async () => {
         }
 
         // Submit the booking
-        await handleSubmit()
+        const booked = await handleSubmit()
+        if (!booked && booking.isLimitReached.value) {
+          router.push('/my-bookings?bookingLimitReached=1')
+          return
+        }
 
         // Stop the auto-submit spinner regardless of outcome
         // (if confirmed, the success step will take precedence anyway, 
@@ -149,7 +153,7 @@ async function handleSubmit() {
     if (!authStore.profile?.name || !authStore.profile?.phone) {
       booking.saveBookingState()
       router.push('/profile?redirect=/booking')
-      return
+      return false
     }
 
     if (!authStore.customer) {
@@ -157,7 +161,7 @@ async function handleSubmit() {
     }
   }
 
-  await booking.submitBooking(showError, t)
+  return await booking.submitBooking(showError, t)
 }
 
 async function handleLoginSuccess() {
@@ -172,7 +176,10 @@ async function handleLoginSuccess() {
   }
   
   // Existing user with complete profile - proceed with booking
-  await handleSubmit()
+  const booked = await handleSubmit()
+  if (!booked && booking.isLimitReached.value) {
+    router.push('/my-bookings?bookingLimitReached=1')
+  }
 }
 </script>
 
@@ -308,6 +315,7 @@ async function handleLoginSuccess() {
               :notes="booking.notes.value"
               :show-login="booking.showLogin.value"
               :error-message="errorMessage"
+              :is-limit-reached="booking.isLimitReached.value"
               :loading="booking.isSubmitting.value"
               :format-date-display="booking.formatDateDisplay"
               :format-address="booking.formatAddress"
@@ -318,6 +326,7 @@ async function handleLoginSuccess() {
               @submit="handleSubmit"
               @back="booking.goBack"
               @login-success="handleLoginSuccess"
+              @go-to-bookings="router.push('/my-bookings')"
             />
           </div>
         </Card>

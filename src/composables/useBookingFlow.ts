@@ -333,6 +333,8 @@ export function useBookingFlow(initialProviderId?: string, initialStaffId?: stri
     ].filter(p => p).join(', ')
   }
 
+  const isLimitReached = ref(false)
+
   async function submitBooking(errorCallback: (msg: string) => void, t: (key: string) => string) {
     if (!selectedService.value) {
       errorCallback('Missing selected service')
@@ -366,6 +368,7 @@ export function useBookingFlow(initialProviderId?: string, initialStaffId?: stri
     }
 
     isSubmitting.value = true
+    isLimitReached.value = false
     try {
       const timeParts = selectedTime.value.split(':')
       const hours = parseInt(timeParts[0]!)
@@ -422,6 +425,7 @@ export function useBookingFlow(initialProviderId?: string, initialStaffId?: stri
         errorCallback(t('booking.slot_taken_error'))
         await loadAvailableSlots()
       } else if (e.message === 'BOOKING_LIMIT_REACHED') {
+        isLimitReached.value = true
         errorCallback(t('booking.limit_reached'))
       } else {
         errorCallback(e.message || t('booking.booking_failed'))
@@ -657,6 +661,7 @@ export function useBookingFlow(initialProviderId?: string, initialStaffId?: stri
     saveBookingState,
     restoreBookingState,
     finishRestoringState,
-    clearPendingBookingState
+    clearPendingBookingState,
+    isLimitReached
   }
 }
