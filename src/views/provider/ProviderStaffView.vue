@@ -100,8 +100,8 @@ async function copyStaffLink(member: Staff) {
   if (navigator.share) {
     try {
       await navigator.share({
-        title: `Book with ${member.name}`,
-        text: `Book an appointment with ${member.name}`,
+        title: t('provider.staff.share_title', { name: member.name }),
+        text: t('provider.staff.share_text', { name: member.name }),
         url: url
       })
       return // Success!
@@ -116,7 +116,7 @@ async function copyStaffLink(member: Staff) {
     setCopiedState(member.id)
   } catch (err) {
     console.error('Failed to copy link', err)
-    showError('Failed to copy link (requires secure connection)')
+    showError(t('provider.staff.copy_error'))
   }
 }
 
