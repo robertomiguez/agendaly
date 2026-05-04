@@ -2,8 +2,33 @@ import { supabase } from '../lib/supabase'
 import type { Staff } from '../types'
 import { canAddStaff } from './subscriptionService'
 import { uploadImage, deleteImage } from '../lib/storage'
+import { appendSlugSuffix, slugify } from '../lib/slug'
 
 const BUCKET = 'staff-photos'
+
+async function createUniqueStaffSlug(providerId: string, name: string, staffId?: string) {
+    const baseSlug = slugify(name)
+
+    for (let suffix = 0; suffix < 100; suffix++) {
+        const slug = appendSlugSuffix(baseSlug, suffix)
+        let query = supabase
+            .from('staff')
+            .select('id')
+            .eq('provider_id', providerId)
+            .eq('slug', slug)
+            .limit(1)
+
+        if (staffId) {
+            query = query.neq('id', staffId)
+        }
+
+        const { data, error } = await query
+        if (error) throw error
+        if (!data?.length) return slug
+    }
+
+    return `${baseSlug}-${Date.now()}`
+}
 
 export async function fetchStaff(providerId: string) {
     const { data, error } = await supabase
@@ -45,6 +70,7 @@ export async function createStaff({
         .from('staff')
         .insert([{
             ...staff,
+            slug: await createUniqueStaffSlug(staff.provider_id, staff.name),
             photo_url,
             photo_path
         }])
@@ -56,6 +82,22 @@ export async function createStaff({
         if (photo_path) await deleteImage(BUCKET, photo_path)
         throw error
     }
+    return data
+}
+
+export async function fetchStaffMemberBySlug(providerSlug: string, staffSlug: string): Promise<Staff | null> {
+    const { data, error } = await supabase
+        .from('staff')
+        .select(`
+            *,
+            providers!inner(id, slug)
+        `)
+        .eq('slug', staffSlug)
+        .eq('providers.slug', providerSlug)
+        .eq('active', true)
+        .maybeSingle()
+
+    if (error) throw error
     return data
 }
 

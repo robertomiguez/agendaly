@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { supabase } from '../lib/supabase'
+import * as staffService from '../services/staffService'
 import type { Staff, Availability, BlockedDate, ProviderAddress } from '../types'
 
 export const useStaffStore = defineStore('staff', () => {
@@ -211,6 +212,15 @@ export const useStaffStore = defineStore('staff', () => {
         }
     }
 
+    async function fetchStaffMemberBySlug(providerSlug: string, staffSlug: string): Promise<Staff | null> {
+        try {
+            return await staffService.fetchStaffMemberBySlug(providerSlug, staffSlug)
+        } catch (e) {
+            console.error('Error fetching staff member by slug:', e)
+            return null
+        }
+    }
+
     return {
         staff,
         availability,
@@ -225,6 +235,7 @@ export const useStaffStore = defineStore('staff', () => {
         deleteBlockedDate,
         fetchStaffAddresses,
         syncStaffAddresses,
-        fetchStaffMember
+        fetchStaffMember,
+        fetchStaffMemberBySlug
     }
 })
