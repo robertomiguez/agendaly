@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="118" height="118" viewBox="0 0 118 118" role="img" aria-labelledby="title desc">
+  <title id="title">Agendaly logo</title>
+  <desc id="desc">Amber calendar mark for Agendaly.</desc>
+  <defs>
+    <linearGradient id="mark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f59e0b"/>
+      <stop offset="1" stop-color="#b45309"/>
+    </linearGradient>
+  </defs>
+  <rect width="118" height="118" rx="28" fill="url(#mark)"/>
+  <rect x="22" y="28" width="74" height="66" rx="12" fill="#ffffff"/>
+  <rect x="22" y="28" width="74" height="18" rx="8" fill="#fef3c7"/>
+  <circle cx="42" cy="64" r="7" fill="#f59e0b"/>
+  <circle cx="59" cy="64" r="7" fill="#d97706"/>
+  <circle cx="76" cy="64" r="7" fill="#b45309"/>
+  <path d="M42 6v26M76 6v26" stroke="#ffffff" stroke-width="12" stroke-linecap="round"/>
+</svg>
