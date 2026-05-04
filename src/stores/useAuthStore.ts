@@ -63,6 +63,24 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = null
     }
 
+    async function refreshAuthenticatedUser() {
+        const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser()
+
+        if (userError || !currentUser) {
+            await supabase.auth.signOut().catch((e) => {
+                console.error('[AuthStore] Error clearing invalid session:', e)
+            })
+            resetAll()
+            return null
+        }
+
+        const { data: { session: currentSession } } = await supabase.auth.getSession()
+        session.value = currentSession
+        user.value = currentUser
+
+        return currentUser
+    }
+
     async function handleAuthChange(event: string, newSession: Session | null) {
         session.value = newSession
         user.value = newSession?.user ?? null
@@ -75,7 +93,10 @@ export const useAuthStore = defineStore('auth', () => {
             loading.value = true
             startLoadingSafety()
             try {
-                await fetchCoreData()
+                const currentUser = await refreshAuthenticatedUser()
+                if (currentUser) {
+                    await fetchCoreData()
+                }
             } finally {
                 clearLoadingSafety()
                 loading.value = false
@@ -97,10 +118,10 @@ export const useAuthStore = defineStore('auth', () => {
             const { data: { session: currentSession } } = await supabase.auth.getSession()
 
             if (currentSession) {
-                session.value = currentSession
-                user.value = currentSession.user
-                
-                await fetchCoreData()
+                const currentUser = await refreshAuthenticatedUser()
+                if (currentUser) {
+                    await fetchCoreData()
+                }
             }
 
             supabase.auth.onAuthStateChange((event, newSession) => {
@@ -116,11 +137,8 @@ export const useAuthStore = defineStore('auth', () => {
                     }
 
                     if (user.value) {
-                        supabase.auth.getSession().then(({ data: { session: freshSession } }) => {
-                            if (freshSession) {
-                                session.value = freshSession
-                                user.value = freshSession.user
-                            } else if (session.value) {
+                        refreshAuthenticatedUser().then((currentUser) => {
+                            if (!currentUser && session.value) {
                                 resetAll()
                             }
                         }).catch((e) => {
@@ -257,6 +275,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     async function _doEnsureProfileAndCustomer(initialData?: { name?: string; phone?: string }) {
+        await refreshAuthenticatedUser()
         if (!user.value?.email) return
         if (superAdmin.value) return
 
