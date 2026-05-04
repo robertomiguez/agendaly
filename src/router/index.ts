@@ -48,6 +48,11 @@ const router = createRouter({
             component: () => import('../views/BookingView.vue')
         },
         {
+            path: '/p/:providerSlug/s/:staffSlug',
+            name: 'StaffBooking',
+            component: () => import('../views/BookingView.vue')
+        },
+        {
             path: '/profile',
             name: 'Profile',
             component: () => import('../views/ProfileCustomerView.vue'),

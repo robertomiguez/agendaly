@@ -41,8 +41,17 @@ onMounted(async () => {
     if (!wasRestored) {
       const providerId = route.query.provider as string
       const staffId = route.query.staff as string
+      const providerSlug = route.params.providerSlug as string
+      const staffSlug = route.params.staffSlug as string
 
-      if (staffId) {
+      if (providerSlug && staffSlug) {
+        const staffMember = await staffStore.fetchStaffMemberBySlug(providerSlug, staffSlug)
+        if (staffMember && staffMember.provider_id) {
+          booking.selectedProviderId.value = staffMember.provider_id
+          booking.selectedStaffId.value = staffMember.id
+          await booking.fetchProviderInfo(staffMember.provider_id)
+        }
+      } else if (staffId) {
         const staffMember = await staffStore.fetchStaffMember(staffId)
         if (staffMember && staffMember.provider_id) {
           booking.selectedProviderId.value = staffMember.provider_id
@@ -59,7 +68,7 @@ onMounted(async () => {
       }
       await staffStore.fetchStaff()
 
-      if (staffId && booking.filteredServices.value.length === 1) {
+      if ((staffId || staffSlug) && booking.filteredServices.value.length === 1) {
         booking.selectService(booking.filteredServices.value[0]!.id)
       }
     } else {

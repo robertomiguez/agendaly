@@ -66,6 +66,7 @@ export interface Provider {
     id: string
     profile_id: string
     business_name: string
+    slug?: string | null
     description?: string
     logo_url?: string
     logo_path?: string
@@ -84,6 +85,7 @@ export interface Provider {
 export interface Staff {
     id: string
     name: string
+    slug?: string | null
     email: string
     role: 'admin' | 'staff'
     active: boolean
