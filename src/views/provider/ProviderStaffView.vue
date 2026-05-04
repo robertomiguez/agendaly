@@ -94,7 +94,9 @@ const copiedStaffId = ref<string | null>(null)
 const isShareSupported = ref(false)
 
 async function copyStaffLink(member: Staff) {
-  const url = `${window.location.origin}/booking?staff=${member.id}`
+  const url = authStore.provider?.slug && member.slug
+    ? `${window.location.origin}/p/${authStore.provider.slug}/s/${member.slug}`
+    : `${window.location.origin}/booking?staff=${member.id}`
   
   // Try native share first (Mobile/Supported Browsers)
   if (navigator.share) {

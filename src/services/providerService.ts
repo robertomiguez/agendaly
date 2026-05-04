@@ -1,7 +1,31 @@
 import { supabase } from '../lib/supabase'
 import { uploadImage, deleteImage } from '../lib/storage'
+import { appendSlugSuffix, slugify } from '../lib/slug'
 
 import { getPlanByName } from './subscriptionService'
+
+async function createUniqueProviderSlug(name: string, providerId?: string) {
+    const baseSlug = slugify(name)
+
+    for (let suffix = 0; suffix < 100; suffix++) {
+        const slug = appendSlugSuffix(baseSlug, suffix)
+        let query = supabase
+            .from('providers')
+            .select('id')
+            .eq('slug', slug)
+            .limit(1)
+
+        if (providerId) {
+            query = query.neq('id', providerId)
+        }
+
+        const { data, error } = await query
+        if (error) throw error
+        if (!data?.length) return slug
+    }
+
+    return `${baseSlug}-${Date.now()}`
+}
 
 /**
  * Create a minimal provider record for checkout flow.
@@ -73,6 +97,10 @@ export async function saveProvider({
             logo_path
         }
 
+        if (!provider.slug) {
+            updateData.slug = await createUniqueProviderSlug(form.business_name, provider.id)
+        }
+
         // Auto-approve if currently pending
         if (provider.status === 'pending') {
             updateData.status = 'approved'
@@ -92,6 +120,7 @@ export async function saveProvider({
             .insert({
                 profile_id: profile.id,
                 business_name: form.business_name,
+                slug: await createUniqueProviderSlug(form.business_name),
                 description: form.description,
                 logo_url,
                 logo_path,

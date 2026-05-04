@@ -97,6 +97,7 @@ describe("ProviderStaffView", () => {
         id: "staff-1",
         provider_id: "provider-1",
         name: "Ana",
+        slug: "ana",
         email: "ana@example.com",
         role: "staff",
         active: true,
@@ -104,7 +105,7 @@ describe("ProviderStaffView", () => {
     ]);
 
     const authStore = useAuthStore();
-    authStore.provider = { id: "provider-1", name: "Provider" } as any;
+    authStore.provider = { id: "provider-1", name: "Provider", slug: "provider" } as any;
 
     const wrapper = mount(ProviderStaffView, {
       global: {
@@ -119,7 +120,7 @@ describe("ProviderStaffView", () => {
     expect(shareMock).toHaveBeenCalledWith({
       title: "provider.staff.share_title:Ana",
       text: "provider.staff.share_text:Ana",
-      url: "https://app.test/booking?staff=staff-1",
+      url: "https://app.test/p/provider/s/ana",
     });
   });
 });
