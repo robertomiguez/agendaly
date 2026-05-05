@@ -28,10 +28,11 @@ const authStore = useAuthStore()
 const categoryStore = useCategoryStore()
 const appointmentStore = useAppointmentStore()
 const settingsStore = useSettingsStore()
+const allCategoriesValue = '__all__'
 
 const modal = useModal<Service>()
 const searchQuery = ref('')
-const categoryFilter = ref(t('category_pills.all'))
+const categoryFilter = ref(allCategoriesValue)
 const saving = ref(false)
 const isLoading = ref(true)
 const canAdd = ref(false)
@@ -80,7 +81,10 @@ function formatTime(time: string) {
 
 // Categories from store
 const categories = computed(() => {
-  return [t('category_pills.all'), ...categoryStore.categories.map(c => c.name)]
+  return [
+    { value: allCategoriesValue, label: t('category_pills.all') },
+    ...categoryStore.categories.map(c => ({ value: c.name, label: c.name }))
+  ]
 })
 
 // Filtered services
@@ -88,7 +92,7 @@ const filteredServices = computed(() => {
   return serviceStore.services.filter(service => {
     const matchesSearch = service.name.toLowerCase().includes(searchQuery.value.toLowerCase())
     const serviceCategoryName = service.categories?.name || 'Uncategorized'
-    const matchesCategory = categoryFilter.value === t('category_pills.all') || serviceCategoryName === categoryFilter.value
+    const matchesCategory = categoryFilter.value === allCategoriesValue || serviceCategoryName === categoryFilter.value
     // Only show services belonging to this provider
     const matchesProvider = service.provider_id === authStore.provider?.id
     return matchesSearch && matchesCategory && matchesProvider
@@ -326,7 +330,7 @@ async function confirmDeactivation() {
             v-model="categoryFilter"
             class="w-full md:w-48 border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           >
-            <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+            <option v-for="cat in categories" :key="cat.value" :value="cat.value">{{ cat.label }}</option>
           </select>
         </div>
       </div>
