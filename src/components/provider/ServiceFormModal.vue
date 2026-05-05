@@ -26,6 +26,7 @@ const { currencySymbol } = useCurrency()
 
 const uploading = ref(false)
 const imageError = ref<string | null>(null)
+const staffError = ref<string | null>(null)
 const images = ref<{ id: string, url: string, file?: File }[]>([])
 
 const form = ref({
@@ -119,8 +120,14 @@ function removeImage(index: number) {
 }
 
 async function handleSubmit() {
+  if (form.value.staff_ids.length === 0) {
+    staffError.value = 'modals.service.staff_required'
+    return
+  }
+
   uploading.value = true
   imageError.value = null
+  staffError.value = null
   
   try {
     const finalUrls: string[] = []
@@ -312,12 +319,14 @@ async function handleSubmit() {
               :value="member.id"
               v-model="form.staff_ids"
               class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+              @change="staffError = null"
             />
             <label :for="'staff-' + member.id" class="ml-2 block text-sm text-foreground select-none cursor-pointer flex-1">
               {{ member.name }}
             </label>
           </div>
         </div>
+        <p v-if="staffError" class="text-sm text-red-600">{{ $t(staffError) }}</p>
         <p class="text-xs text-muted-foreground">{{ $t('modals.service.assign_staff_help') }}</p>
       </div>
 

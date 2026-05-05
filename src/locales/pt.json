@@ -605,6 +605,7 @@
       "description_placeholder": "Descreva o serviço...",
       "assign_staff": "Atribuir Equipe",
       "no_staff": "Nenhum membro da equipe ativo encontrado.",
+      "staff_required": "Selecione pelo menos um membro da equipe.",
       "assign_staff_help": "Selecione quais membros da equipe podem realizar este serviço.",
       "buffer_before": "Intervalo Antes (min)",
       "buffer_after": "Intervalo Depois (min)",
