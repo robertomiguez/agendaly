@@ -61,22 +61,6 @@ const settingsStore = useSettingsStore()
       {{ $t('booking.confirm_title') }}
     </h2>
 
-    <Alert v-if="errorMessage" variant="destructive" class="booking-error-alert">
-      <AlertTitle>Error</AlertTitle>
-      <AlertDescription class="booking-error-description">
-        <span>{{ errorMessage }}</span>
-        <Button 
-          v-if="isLimitReached" 
-          variant="outline" 
-          size="sm"
-          class="booking-limit-button"
-          @click="emit('go-to-bookings')"
-        >
-          {{ $t('nav.my_bookings') }}
-        </Button>
-      </AlertDescription>
-    </Alert>
-
     <div class="bg-gray-50 rounded-lg p-6 mb-6 border border-gray-200">
       <h3 class="font-semibold text-gray-900 mb-4 border-b pb-2">{{ $t('booking.summary_title') }}</h3>
       <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4 text-sm">
@@ -155,6 +139,22 @@ const settingsStore = useSettingsStore()
           :placeholder="$t('booking.notes_placeholder')"
         />
       </div>
+
+      <Alert v-if="errorMessage" variant="destructive" class="booking-error-alert">
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription class="booking-error-description">
+          <span>{{ errorMessage }}</span>
+          <Button
+            v-if="isLimitReached"
+            variant="outline"
+            size="sm"
+            class="booking-limit-button"
+            @click="emit('go-to-bookings')"
+          >
+            {{ $t('nav.my_bookings') }}
+          </Button>
+        </AlertDescription>
+      </Alert>
 
       <Button type="submit" size="lg" class="w-full font-bold" :disabled="loading">
         <LoadingSpinner v-if="loading" inline size="sm" class="mr-2" color="text-white" />

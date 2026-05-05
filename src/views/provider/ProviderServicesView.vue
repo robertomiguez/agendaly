@@ -21,7 +21,7 @@ import BackButton from '../../components/common/BackButton.vue'
 
 const router = useRouter()
 const { t } = useI18n()
-const { showSuccess, showError } = useNotifications()
+const { showSuccess } = useNotifications()
 
 const serviceStore = useServiceStore()
 const authStore = useAuthStore()
@@ -34,6 +34,8 @@ const modal = useModal<Service>()
 const searchQuery = ref('')
 const categoryFilter = ref(allCategoriesValue)
 const saving = ref(false)
+const serviceFormError = ref<string | null>(null)
+const serviceActionErrors = ref<Record<string, string>>({})
 const isLoading = ref(true)
 const canAdd = ref(false)
 const limitState = ref<{
@@ -124,20 +126,29 @@ onMounted(async () => {
 })
 
 function openAddModal() {
+  serviceFormError.value = null
   modal.open(null)
 }
 
 function openEditModal(service: Service) {
+  serviceFormError.value = null
   modal.open({ ...service })
 }
 
+function closeServiceModal() {
+  serviceFormError.value = null
+  modal.close()
+}
+
 async function handleSave(serviceData: any) {
+  serviceFormError.value = null
+
   // Check limits if activating an inactive service
   if (modal.data.value && !modal.data.value.active && serviceData.active) {
     if (!authStore.provider?.id) return
     const limitCheck = await canAddService(authStore.provider.id)
     if (!limitCheck.allowed) {
-      showError(limitCheck.message || t('pricing.limits.upgrade'))
+      serviceFormError.value = limitCheck.message || t('pricing.limits.upgrade')
       return
     }
   }
@@ -208,24 +219,32 @@ async function executeSave(serviceData: any) {
       await serviceStore.createService(newService)
       showSuccess(t('provider.services.add_success'))
     }
-    modal.close()
+    closeServiceModal()
     showConflictModal.value = false
     await checkLimits()
   } catch (err) {
     console.error('Error in handleSave:', err)
-    showError(t('provider.services.save_error') + ': ' + (err instanceof Error ? err.message : String(err)))
+    serviceFormError.value = t('provider.services.save_error') + ': ' + (err instanceof Error ? err.message : String(err))
   } finally {
     saving.value = false
   }
 }
 
 async function toggleActive(service: Service) {
+  serviceActionErrors.value = {
+    ...serviceActionErrors.value,
+    [service.id]: ''
+  }
+
   // Check limits if activating an inactive service
   if (!service.active) {
     if (!authStore.provider?.id) return
     const limitCheck = await canAddService(authStore.provider.id)
     if (!limitCheck.allowed) {
-      showError(limitCheck.message || t('pricing.limits.upgrade'))
+      serviceActionErrors.value = {
+        ...serviceActionErrors.value,
+        [service.id]: limitCheck.message || t('pricing.limits.upgrade')
+      }
       return
     }
   }
@@ -249,11 +268,18 @@ async function executeToggleActive(service: Service) {
   try {
     await serviceStore.updateService(service.id, { active: !service.active })
     showSuccess(t('provider.staff.toggle_success'))
+    serviceActionErrors.value = {
+      ...serviceActionErrors.value,
+      [service.id]: ''
+    }
     showConflictModal.value = false
     await checkLimits()
   } catch (err) {
     console.error('Error in toggleActive:', err)
-    showError(t('provider.services.toggle_error'))
+    serviceActionErrors.value = {
+      ...serviceActionErrors.value,
+      [service.id]: t('provider.services.toggle_error')
+    }
   }
 }
 
@@ -408,6 +434,14 @@ async function confirmDeactivation() {
               {{ service.description || $t('provider.services.description_fallback') }}
             </p>
 
+            <div
+              v-if="serviceActionErrors[service.id]"
+              class="service-card-feedback"
+              role="alert"
+            >
+              {{ serviceActionErrors[service.id] }}
+            </div>
+
             <div class="flex items-center justify-between pt-4 border-t border-gray-100">
               <!-- Toggle Switch -->
               <div class="flex items-center gap-3">
@@ -449,7 +483,8 @@ async function confirmDeactivation() {
       v-if="modal.isOpen.value"
       :service="modal.data.value"
       :loading="saving"
-      @close="modal.close()"
+      :submit-error="serviceFormError"
+      @close="closeServiceModal"
       @save="handleSave"
     />
 
@@ -500,6 +535,8 @@ async function confirmDeactivation() {
 </template>
 
 <style scoped>
+@reference "../../style.css";
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }
@@ -513,5 +550,9 @@ async function confirmDeactivation() {
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #ccc;
+}
+
+.service-card-feedback {
+  @apply mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700;
 }
 </style>
