@@ -608,6 +608,7 @@
       "description_placeholder": "Describe the service...",
       "assign_staff": "Assign Staff",
       "no_staff": "No active staff members found.",
+      "staff_required": "Select at least one staff member.",
       "assign_staff_help": "Select which staff members can perform this service.",
       "buffer_before": "Buffer Before (min)",
       "buffer_after": "Buffer After (min)",

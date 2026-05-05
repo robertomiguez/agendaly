@@ -44,6 +44,10 @@ export async function fetchServices(providerId?: string) {
 
 export async function createService(service: Omit<Service, 'id' | 'created_at' | 'updated_at' | 'categories' | 'staff' | 'provider' | 'images'> & { staff_ids?: string[], image_urls?: string[] }) {
     if (!service.provider_id) throw new Error('Provider ID is required');
+    if (!service.staff_ids || service.staff_ids.length === 0) {
+        throw new Error('At least one staff member is required for a service.')
+    }
+
     const limitCheck = await canAddService(service.provider_id)
     if (!limitCheck.allowed && service.active !== false) {
       throw new Error(limitCheck.message || 'Service limit reached for your plan.')
@@ -137,6 +141,9 @@ export async function createService(service: Omit<Service, 'id' | 'created_at' |
 export async function updateService(id: string, updates: Partial<Service> & { staff_ids?: string[], image_urls?: string[] }) {
     // Remove joined data from updates if present
     const { categories, staff, provider, images, staff_ids, image_urls, ...cleanUpdates } = updates
+    if (staff_ids !== undefined && staff_ids.length === 0) {
+        throw new Error('At least one staff member is required for a service.')
+    }
 
     // 1. Update basic service info
     if (Object.keys(cleanUpdates).length > 0) {
