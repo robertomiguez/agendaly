@@ -32,6 +32,7 @@ const actionError = ref<string | null>(null)
 const images = ref<{ id: string, url: string, file?: File }[]>([])
 
 const actionFeedback = computed(() => actionError.value || props.submitError || null)
+const requiresStaffSelection = computed(() => staffStore.staff.length > 0 && form.value.staff_ids.length === 0)
 
 const form = ref({
   name: '',
@@ -340,7 +341,7 @@ async function handleSubmit() {
             </label>
           </div>
         </div>
-        <p v-if="staffError" class="text-sm text-red-600">{{ $t(staffError) }}</p>
+        <p v-if="requiresStaffSelection || staffError" class="text-sm text-red-600">{{ $t('modals.service.staff_required') }}</p>
         <p class="text-xs text-muted-foreground">{{ $t('modals.service.assign_staff_help') }}</p>
       </div>
 
@@ -391,7 +392,7 @@ async function handleSubmit() {
         </Button>
         <Button
           type="submit"
-          :disabled="props.loading || uploading"
+          :disabled="props.loading || uploading || requiresStaffSelection"
           class="flex-1 sm:flex-none bg-primary-600 hover:bg-primary-700"
         >
           <LoadingSpinner v-if="props.loading || uploading" inline size="sm" class="mr-2" color="text-white" />
