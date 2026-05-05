@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useCategoryStore } from '../../stores/useCategoryStore'
 import { useStaffStore } from '../../stores/useStaffStore'
 import { useAuthStore } from '../../stores/useAuthStore'
@@ -16,6 +16,7 @@ import { MAX_SERVICE_IMAGES, MAX_IMAGE_SIZE_BYTES, MAX_IMAGE_SIZE_MB, SERVICE_IM
 const props = defineProps<{
   service: any // Temporarily using any to debug potential type import issues
   loading?: boolean
+  submitError?: string | null
 }>()
 
 const emit = defineEmits(['close', 'save'])
@@ -27,7 +28,10 @@ const { currencySymbol } = useCurrency()
 const uploading = ref(false)
 const imageError = ref<string | null>(null)
 const staffError = ref<string | null>(null)
+const actionError = ref<string | null>(null)
 const images = ref<{ id: string, url: string, file?: File }[]>([])
+
+const actionFeedback = computed(() => actionError.value || props.submitError || null)
 
 const form = ref({
   name: '',
@@ -86,6 +90,7 @@ function handleFileSelect(event: Event) {
   if (!input.files?.length) return
 
   imageError.value = null
+  actionError.value = null
   const remainingSlots = MAX_SERVICE_IMAGES - images.value.length
   
   if (remainingSlots <= 0) {
@@ -119,9 +124,17 @@ function removeImage(index: number) {
     images.value.splice(index, 1)
 }
 
+function clearStaffSelectionError() {
+  staffError.value = null
+  actionError.value = null
+}
+
 async function handleSubmit() {
+  actionError.value = null
+
   if (form.value.staff_ids.length === 0) {
     staffError.value = 'modals.service.staff_required'
+    actionError.value = 'modals.service.staff_required'
     return
   }
 
@@ -165,6 +178,7 @@ async function handleSubmit() {
   } catch (error: any) {
       console.error('Error uploading images:', error)
       imageError.value = 'Failed to upload images: ' + error.message
+      actionError.value = imageError.value
       uploading.value = false // Stop loading if error, otherwise parent handles loading state
       // If parent handles loading, we should probably not set loading=true in parent if we fail here?
       // But parent sets saving=true ONLY when 'save' is emitted. 
@@ -319,7 +333,7 @@ async function handleSubmit() {
               :value="member.id"
               v-model="form.staff_ids"
               class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-              @change="staffError = null"
+              @change="clearStaffSelectionError"
             />
             <label :for="'staff-' + member.id" class="ml-2 block text-sm text-foreground select-none cursor-pointer flex-1">
               {{ member.name }}
@@ -357,7 +371,16 @@ async function handleSubmit() {
       </div>
 
       <!-- Actions -->
-      <div class="mt-5 flex gap-3 sm:justify-end">
+      <div class="service-form-actions">
+        <div
+          v-if="actionFeedback"
+          class="service-form-actions__feedback"
+          role="alert"
+        >
+          {{ actionFeedback.startsWith('modals.') ? $t(actionFeedback) : actionFeedback }}
+        </div>
+
+        <div class="service-form-actions__buttons">
         <Button
           type="button"
           variant="outline"
@@ -374,7 +397,24 @@ async function handleSubmit() {
           <LoadingSpinner v-if="props.loading || uploading" inline size="sm" class="mr-2" color="text-white" />
           {{ props.loading || uploading ? $t('modals.service.saving') : $t('modals.service.save_button') }}
         </Button>
+        </div>
       </div>
     </form>
   </Modal>
 </template>
+
+<style scoped>
+@reference "../../style.css";
+
+.service-form-actions {
+  @apply mt-5 space-y-3;
+}
+
+.service-form-actions__feedback {
+  @apply rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700;
+}
+
+.service-form-actions__buttons {
+  @apply flex gap-3 sm:justify-end;
+}
+</style>
