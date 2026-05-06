@@ -14,7 +14,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'delete', id: string): void
+  (e: 'delete', payload: { id: string; scope: 'series' | 'occurrence'; date?: Date }): void
 }>()
 
 const settingsStore = useSettingsStore()
@@ -61,9 +61,13 @@ function formatTime(time: string) {
     return d.toLocaleTimeString(settingsStore.language, { hour: 'numeric', minute: '2-digit' })
 }
 
-function handleDelete() {
+function handleDelete(scope: 'series' | 'occurrence') {
     // Confirmation removed as requested
-    emit('delete', props.block.original.id)
+    emit('delete', {
+      id: props.block.original.id,
+      scope,
+      date: scope === 'occurrence' ? props.block.start : undefined
+    })
 }
 </script>
 
@@ -106,18 +110,38 @@ function handleDelete() {
       </div>
 
       <!-- Actions -->
-      <div class="flex justify-between items-center pt-4 border-t">
+      <div class="flex justify-between items-center pt-4 border-t gap-3">
+        <div class="flex flex-wrap gap-2">
          <button
           type="button"
           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
           :disabled="loading"
           :class="{ 'opacity-75 cursor-not-allowed': loading }"
-          @click="handleDelete"
+          @click="handleDelete(block.isRecurring ? 'occurrence' : 'series')"
         >
           <LoadingSpinner v-if="loading" inline size="sm" class="mr-2" />
           <Trash2 v-else class="w-4 h-4 mr-2" />
-          {{ loading ? $t('common.deleting') : $t('common.delete') }}
+          {{
+            loading
+              ? $t('common.deleting')
+              : block.isRecurring
+                ? 'Delete this occurrence'
+                : $t('common.delete')
+          }}
         </button>
+
+        <button
+          v-if="block.isRecurring"
+          type="button"
+          class="inline-flex items-center px-4 py-2 border border-red-200 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+          :disabled="loading"
+          :class="{ 'opacity-75 cursor-not-allowed': loading }"
+          @click="handleDelete('series')"
+        >
+          <Trash2 class="w-4 h-4 mr-2" />
+          Delete entire series
+        </button>
+        </div>
 
         <button
           type="button"

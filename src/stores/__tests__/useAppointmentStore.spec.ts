@@ -183,4 +183,124 @@ describe('useAppointmentStore Conflict Checks', () => {
 
         expect(conflicts).toEqual([])
     })
+
+    it('blocks only slots overlapping a recurring timed block', async () => {
+        const serviceChain = {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({
+                data: {
+                    id: 'service-1',
+                    duration: 30,
+                    buffer_before: 0,
+                    buffer_after: 0,
+                },
+                error: null,
+            }),
+        }
+        const availabilityChain = createChain([
+            {
+                staff_id: 'staff-1',
+                day_of_week: 2,
+                start_time: '10:00:00',
+                end_time: '15:00:00',
+                is_available: true,
+            },
+        ])
+        const blockedDatesChain = createChain([
+            {
+                id: 'block-1',
+                staff_id: 'staff-1',
+                start_date: '2099-05-12',
+                end_date: '2099-05-12',
+                start_time: '12:00:00',
+                end_time: '13:30:00',
+                recurrence_rule: 'DTSTART:20990512T120000\nRRULE:FREQ=DAILY',
+            },
+        ])
+        const exceptionsChain = createChain([])
+        const appointmentsChain = createChain([])
+
+        mocks.from
+            .mockReturnValueOnce(serviceChain)
+            .mockReturnValueOnce(availabilityChain)
+            .mockReturnValueOnce(blockedDatesChain)
+            .mockReturnValueOnce(exceptionsChain)
+            .mockReturnValueOnce(appointmentsChain)
+
+        const store = useAppointmentStore()
+        const slots = await store.getAvailableSlots(
+            'service-1',
+            'staff-1',
+            new Date(2099, 4, 12),
+        )
+
+        expect(slots.find((slot) => slot.time === '11:30')?.available).toBe(true)
+        expect(slots.find((slot) => slot.time === '12:00')?.available).toBe(false)
+        expect(slots.find((slot) => slot.time === '12:30')?.available).toBe(false)
+        expect(slots.find((slot) => slot.time === '13:00')?.available).toBe(false)
+        expect(slots.find((slot) => slot.time === '13:30')?.available).toBe(true)
+    })
+
+    it('does not block slots for a cancelled recurring occurrence', async () => {
+        const serviceChain = {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            single: vi.fn().mockResolvedValue({
+                data: {
+                    id: 'service-1',
+                    duration: 30,
+                    buffer_before: 0,
+                    buffer_after: 0,
+                },
+                error: null,
+            }),
+        }
+        const availabilityChain = createChain([
+            {
+                staff_id: 'staff-1',
+                day_of_week: 2,
+                start_time: '10:00:00',
+                end_time: '15:00:00',
+                is_available: true,
+            },
+        ])
+        const blockedDatesChain = createChain([
+            {
+                id: 'block-1',
+                staff_id: 'staff-1',
+                start_date: '2099-05-12',
+                end_date: '2099-05-12',
+                start_time: '12:00:00',
+                end_time: '13:30:00',
+                recurrence_rule: 'DTSTART:20990512T120000\nRRULE:FREQ=DAILY',
+            },
+        ])
+        const exceptionsChain = createChain([
+            {
+                blocked_date_id: 'block-1',
+                exception_date: '2099-05-12',
+                type: 'cancelled',
+            },
+        ])
+        const appointmentsChain = createChain([])
+
+        mocks.from
+            .mockReturnValueOnce(serviceChain)
+            .mockReturnValueOnce(availabilityChain)
+            .mockReturnValueOnce(blockedDatesChain)
+            .mockReturnValueOnce(exceptionsChain)
+            .mockReturnValueOnce(appointmentsChain)
+
+        const store = useAppointmentStore()
+        const slots = await store.getAvailableSlots(
+            'service-1',
+            'staff-1',
+            new Date(2099, 4, 12),
+        )
+
+        expect(slots.find((slot) => slot.time === '12:00')?.available).toBe(true)
+        expect(slots.find((slot) => slot.time === '12:30')?.available).toBe(true)
+        expect(slots.find((slot) => slot.time === '13:00')?.available).toBe(true)
+    })
 })

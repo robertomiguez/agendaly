@@ -40,11 +40,13 @@ vi.mock("vue-router", () => ({
 // Mock availabilityService
 vi.mock("@/services/availabilityService", () => ({
   fetchBlockedDates: vi.fn().mockResolvedValue([]),
+  fetchBlockedDateExceptions: vi.fn().mockResolvedValue([]),
   fetchAvailability: vi.fn().mockResolvedValue([
     // Mock availability: Monday (1) is available, Sunday (0) is NOT available
     { day_of_week: 1, is_available: true, start_time: '09:00', end_time: '17:00', staff_id: 's1' }
   ]),
   createBlockedDate: vi.fn().mockResolvedValue({}),
+  createBlockedDateException: vi.fn().mockResolvedValue({}),
   deleteBlockedDate: vi.fn().mockResolvedValue({}),
 }));
 

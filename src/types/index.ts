@@ -150,6 +150,15 @@ export interface BlockedDate {
     reason?: string
 }
 
+export interface BlockedDateException {
+    id: string
+    blocked_date_id: string
+    provider_id: string
+    exception_date: string
+    type: 'cancelled'
+    created_at?: string
+}
+
 export type AppointmentStatus = 'confirmed' | 'pending' | 'cancelled' | 'no-show' | 'completed'
 
 export interface Appointment {

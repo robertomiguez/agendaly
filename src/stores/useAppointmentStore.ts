@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { supabase } from '../lib/supabase'
-import { addMinutes, format, parse, isAfter, isBefore } from 'date-fns'
+import { addDays, addMinutes, format, parse, parseISO, isAfter, isBefore, startOfDay } from 'date-fns'
+import { rrulestr } from 'rrule'
 import type { Appointment, TimeSlot } from '../types'
 
 export const useAppointmentStore = defineStore('appointment', () => {
@@ -298,6 +299,61 @@ export const useAppointmentStore = defineStore('appointment', () => {
         return slots
     }
 
+    function blockAppliesToDate(block: any, date: Date, dateStr: string) {
+        if (!block.recurrence_rule) {
+            return block.start_date <= dateStr && block.end_date >= dateStr
+        }
+
+        try {
+            const blockStart = parseISO(
+                `${block.start_date}T${block.start_time || '00:00:00'}`
+            )
+            const rule = rrulestr(block.recurrence_rule, { dtstart: blockStart })
+            const dayStart = startOfDay(date)
+            const dayEnd = addDays(dayStart, 1)
+
+            return rule.between(dayStart, dayEnd, true).length > 0
+        } catch (e) {
+            console.error('Error checking recurring blocked date:', e)
+            return false
+        }
+    }
+
+    function hasCancelledBlockException(exceptions: any[], blockId: string, dateStr: string) {
+        return exceptions.some(
+            (exception) =>
+                exception.blocked_date_id === blockId &&
+                exception.exception_date === dateStr &&
+                exception.type === 'cancelled'
+        )
+    }
+
+    function blocksForSlotConflicts(blockedDates: any[], exceptions: any[], date: Date) {
+        const dateStr = format(date, 'yyyy-MM-dd')
+        const matchingBlocks = blockedDates.filter(
+            (block) =>
+                blockAppliesToDate(block, date, dateStr) &&
+                !hasCancelledBlockException(exceptions, block.id, dateStr)
+        )
+
+        const hasAllDayBlock = matchingBlocks.some(
+            (block) => !block.start_time || !block.end_time
+        )
+
+        if (hasAllDayBlock) {
+            return { blocksWholeDay: true, timedBlocks: [] }
+        }
+
+        return {
+            blocksWholeDay: false,
+            timedBlocks: matchingBlocks.map((block) => ({
+                id: block.id,
+                start_time: block.start_time,
+                end_time: block.end_time,
+            })),
+        }
+    }
+
     function checkAvailability(
         service: any,
         availability: any[],
@@ -404,10 +460,26 @@ export const useAppointmentStore = defineStore('appointment', () => {
                 .from('blocked_dates')
                 .select('*')
                 .eq('staff_id', staffId)
-                .lte('start_date', dateStr)
-                .gte('end_date', dateStr)
 
-            if (blockedDates && blockedDates.length > 0) {
+            const blockedDateIds = (blockedDates || []).map((block) => block.id)
+            let blockedDateExceptions: any[] = []
+
+            if (blockedDateIds.length > 0) {
+                const { data: exceptions } = await supabase
+                    .from('blocked_date_exceptions')
+                    .select('*')
+                    .in('blocked_date_id', blockedDateIds)
+
+                blockedDateExceptions = exceptions || []
+            }
+
+            const { blocksWholeDay, timedBlocks } = blocksForSlotConflicts(
+                blockedDates || [],
+                blockedDateExceptions,
+                date
+            )
+
+            if (blocksWholeDay) {
                 return []
             }
 
@@ -415,7 +487,12 @@ export const useAppointmentStore = defineStore('appointment', () => {
             const existingAppointments = await fetchStaffAppointments(staffId, dateStr, dateStr)
 
             // 5. Generate slots using shared logic
-            return generateSlots(service, availability, existingAppointments, date)
+            return generateSlots(
+                service,
+                availability,
+                [...existingAppointments, ...timedBlocks],
+                date
+            )
 
         } catch (e) {
             console.error('Error calculating available slots:', e)

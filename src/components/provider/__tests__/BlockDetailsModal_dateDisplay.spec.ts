@@ -140,4 +140,51 @@ describe("BlockDetailsModal Date Display", () => {
     expect(dateDiv.text()).toContain("February 1, 2024");
     expect(dateDiv.text()).not.toContain("January 1");
   });
+
+  it("emits occurrence delete for a recurring block", async () => {
+    const block = {
+        title: "Recurring Instance",
+        start: new Date("2024-02-01T12:00:00"),
+        isRecurring: true,
+        original: {
+            id: "3",
+            start_date: "2024-01-01",
+            end_date: "2024-01-01",
+            reason: ""
+        }
+    };
+
+    const wrapper = mount(BlockDetailsModal, {
+      props: {
+        isOpen: true,
+        block: block,
+      },
+      global: {
+        plugins: [createTestingPinia({
+            initialState: {
+                settings: { language: 'en-US' }
+            }
+        })],
+        mocks: {
+          $t: mockT,
+        },
+        stubs: {
+            Modal: { template: "<div><slot /></div>" }
+        }
+      },
+    });
+
+    const occurrenceButton = wrapper.findAll("button").find((button) =>
+      button.text().includes("Delete this occurrence")
+    );
+    if (!occurrenceButton) throw new Error("Occurrence delete button not found");
+
+    await occurrenceButton.trigger("click");
+
+    expect(wrapper.emitted("delete")?.[0]?.[0]).toEqual({
+      id: "3",
+      scope: "occurrence",
+      date: block.start,
+    });
+  });
 });

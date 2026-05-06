@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from "vue";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useRouter } from "vue-router";
 import { supabase } from "../../lib/supabase";
-import type { Staff, BlockedDate, Availability, AppointmentStatus } from "../../types";
+import type { Staff, BlockedDate, BlockedDateException, Availability, AppointmentStatus } from "../../types";
 import {
   format,
   parseISO,
@@ -13,6 +13,7 @@ import {
   getDay,
   isBefore,
   startOfDay,
+  endOfDay,
   addDays,
 } from "date-fns";
 import { useSettingsStore } from "../../stores/useSettingsStore";
@@ -44,6 +45,7 @@ const currentDate = ref(new Date());
 const view = ref<"month" | "week" | "day">("week");
 const appointments = ref<any[]>([]);
 const blockedDates = ref<BlockedDate[]>([]);
+const blockedDateExceptions = ref<BlockedDateException[]>([]);
 const availabilities = ref<Availability[]>([]);
 const expandedBlocks = ref<any[]>([]);
 const loading = ref(false);
@@ -220,11 +222,8 @@ async function fetchStaff() {
 }
 
 async function refreshData() {
-  await Promise.all([
-    fetchAppointments(),
-    fetchBlockedDates(),
-    fetchAvailabilities(),
-  ]);
+  await Promise.all([fetchAppointments(), fetchBlockedDates(), fetchAvailabilities()]);
+  await fetchBlockedDateExceptions();
   expandBlockedDates();
 }
 
@@ -294,19 +293,35 @@ async function fetchBlockedDates() {
   }
 }
 
+async function fetchBlockedDateExceptions() {
+  blockedDateExceptions.value =
+    await availabilityService.fetchBlockedDateExceptions(
+      blockedDates.value
+        .filter((block) => block.recurrence_rule)
+        .map((block) => block.id),
+    );
+}
+
 function getViewDateRange() {
   const start = new Date(currentDate.value);
   const end = new Date(currentDate.value);
 
   if (view.value === "month") {
     start.setDate(1);
+    start.setHours(0, 0, 0, 0);
     end.setMonth(end.getMonth() + 1);
     end.setDate(0);
+    end.setHours(23, 59, 59, 999);
   } else if (view.value === "week") {
     start.setDate(start.getDate() - start.getDay());
+    start.setHours(0, 0, 0, 0);
     end.setDate(end.getDate() + (6 - end.getDay()));
+    end.setHours(23, 59, 59, 999);
   } else {
-    // Day view
+    return {
+      start: startOfDay(start),
+      end: endOfDay(end),
+    };
   }
   return { start, end };
 }
@@ -325,6 +340,46 @@ function isPast(date: Date) {
   return isBefore(date, startOfDay(new Date()));
 }
 
+function isToday(date: Date) {
+  return isSameDay(date, new Date());
+}
+
+function getPastTimeOverlayStyle(date: Date) {
+  if (!isToday(date)) return { display: "none" };
+
+  const now = new Date();
+  const gridStartMinutes = calendarStartHour.value * 60;
+  const gridEndMinutes = (calendarEndHour.value + 1) * 60;
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const pastMinutes = Math.min(
+    Math.max(nowMinutes - gridStartMinutes, 0),
+    gridEndMinutes - gridStartMinutes,
+  );
+
+  if (pastMinutes <= 0) return { display: "none" };
+
+  return {
+    height: `${(pastMinutes / 60) * PIXELS_PER_HOUR}px`,
+  };
+}
+
+function getCurrentTimeIndicatorStyle(date: Date) {
+  if (!isToday(date)) return { display: "none" };
+
+  const now = new Date();
+  const gridStartMinutes = calendarStartHour.value * 60;
+  const gridEndMinutes = (calendarEndHour.value + 1) * 60;
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+  if (nowMinutes < gridStartMinutes || nowMinutes > gridEndMinutes) {
+    return { display: "none" };
+  }
+
+  return {
+    top: `${((nowMinutes - gridStartMinutes) / 60) * PIXELS_PER_HOUR}px`,
+  };
+}
+
 function isDateWorkable(date: Date) {
   const dayOfWeek = getDay(date);
   
@@ -341,6 +396,145 @@ function isDateWorkable(date: Date) {
       a.day_of_week === dayOfWeek &&
       a.is_available,
   );
+}
+
+function isStaffWorkable(staffId: string, date: Date) {
+  const dayOfWeek = getDay(date);
+
+  return availabilities.value.some(
+    (a) =>
+      a.staff_id === staffId &&
+      a.day_of_week === dayOfWeek &&
+      a.is_available,
+  );
+}
+
+function hasCancelledBlockException(blockId: string, date: Date) {
+  const dateStr = format(date, "yyyy-MM-dd");
+
+  return blockedDateExceptions.value.some(
+    (exception) =>
+      exception.blocked_date_id === blockId &&
+      exception.exception_date === dateStr &&
+      exception.type === "cancelled",
+  );
+}
+
+function getBlockTimeRangeForDate(block: BlockedDate, date: Date) {
+  const dateStr = format(date, "yyyy-MM-dd");
+  const start = parseISO(`${dateStr}T${block.start_time || "00:00:00"}`);
+  const end = parseISO(`${dateStr}T${block.end_time || "23:59:59"}`);
+
+  return { start, end };
+}
+
+function getExistingBlockInstancesForDate(staffId: string, date: Date) {
+  const dayStart = startOfDay(date);
+  const dayEnd = endOfDay(date);
+
+  return blockedDates.value.flatMap((block) => {
+    if (block.staff_id !== staffId) return [];
+
+    if (block.recurrence_rule) {
+      if (hasCancelledBlockException(block.id, date)) return [];
+
+      try {
+        const blockStart = parseISO(
+          `${block.start_date}T${block.start_time || "00:00:00"}`,
+        );
+        const rule = rrulestr(block.recurrence_rule, { dtstart: blockStart });
+        const occurrences = rule.between(dayStart, dayEnd, true);
+
+        return occurrences.map((occurrence) => {
+          const duration = differenceInMinutes(
+            parseISO(`${block.start_date}T${block.end_time || "23:59:59"}`),
+            blockStart,
+          );
+
+          return {
+            start: occurrence,
+            end: addMinutes(occurrence, duration),
+          };
+        });
+      } catch (e) {
+        console.error("Error checking recurring block conflict", e);
+        return [];
+      }
+    }
+
+    const blockStart = parseISO(`${block.start_date}T${block.start_time || "00:00:00"}`);
+    const blockEnd = parseISO(`${block.end_date}T${block.end_time || "23:59:59"}`);
+    if (blockStart > dayEnd || blockEnd < dayStart) return [];
+
+    return [getBlockTimeRangeForDate(block, date)];
+  });
+}
+
+function hasBlockedDateConflict(data: any, blockStart: Date, blockEnd: Date) {
+  const duration = differenceInMinutes(blockEnd, blockStart);
+  const datesToCheck = data.recurrence_rule
+    ? rrulestr(data.recurrence_rule, { dtstart: blockStart }).between(
+        blockStart,
+        addDays(blockStart, 366),
+        true,
+      )
+    : [blockStart];
+
+  return datesToCheck.some((date) => {
+    const newStart = date;
+    const newEnd = addMinutes(newStart, duration);
+    const existingBlocks = getExistingBlockInstancesForDate(data.staff_id, date);
+
+    return existingBlocks.some(
+      (block) => newStart < block.end && newEnd > block.start,
+    );
+  });
+}
+
+async function hasAppointmentConflict(data: any, blockStart: Date, blockEnd: Date) {
+  const duration = differenceInMinutes(blockEnd, blockStart);
+  const occurrenceStarts = data.recurrence_rule
+    ? rrulestr(data.recurrence_rule, { dtstart: blockStart }).between(
+        blockStart,
+        addDays(blockStart, 366),
+        true,
+      )
+    : [blockStart];
+
+  if (occurrenceStarts.length === 0) return false;
+
+  const firstOccurrence = occurrenceStarts[0];
+  const lastOccurrence = occurrenceStarts[occurrenceStarts.length - 1];
+  if (!firstOccurrence || !lastOccurrence) return false;
+
+  const firstDate = format(firstOccurrence, "yyyy-MM-dd");
+  const lastDate = format(lastOccurrence, "yyyy-MM-dd");
+  const occurrenceDates = new Map(
+    occurrenceStarts.map((date) => [format(date, "yyyy-MM-dd"), date]),
+  );
+
+  const { data: staffAppointments, error } = await supabase
+    .from("appointments")
+    .select("appointment_date,start_time,end_time,status,staff_id,services(duration)")
+    .eq("staff_id", data.staff_id)
+    .in("status", ["confirmed", "pending"])
+    .gte("appointment_date", firstDate)
+    .lte("appointment_date", lastDate);
+
+  if (error) throw error;
+
+  return (staffAppointments || []).some((apt: any) => {
+    const occurrenceStart = occurrenceDates.get(apt.appointment_date);
+    if (!occurrenceStart) return false;
+
+    const occurrenceEnd = addMinutes(occurrenceStart, duration);
+    const aptStart = parseISO(`${apt.appointment_date}T${apt.start_time}`);
+    const aptEnd = apt.end_time
+      ? parseISO(`${apt.appointment_date}T${apt.end_time}`)
+      : addMinutes(aptStart, apt.services?.duration || 30);
+
+    return occurrenceStart < aptEnd && occurrenceEnd > aptStart;
+  });
 }
 
 function expandBlockedDates() {
@@ -366,7 +560,9 @@ function expandBlockedDates() {
         const occurrences = rule.between(start, end, true);
 
         occurrences.forEach((date) => {
-          // Add block regardless of workable status
+          if (!isStaffWorkable(block.staff_id, date)) return;
+          if (hasCancelledBlockException(block.id, date)) return;
+
           blocks.push({
             id: block.id + "-" + date.toISOString(),
             type: "block",
@@ -597,10 +793,22 @@ function openEventDetails(event: any) {
   }
 }
 
-async function handleBlockDelete(id: string) {
+async function handleBlockDelete(payload: { id: string; scope: "series" | "occurrence"; date?: Date }) {
   deletingBlock.value = true
   try {
-    await availabilityService.deleteBlockedDate(id);
+    const providerId = selectedBlock.value?.original?.provider_id || authStore.provider?.id;
+
+    if (payload.scope === "occurrence" && payload.date && providerId) {
+      await availabilityService.createBlockedDateException({
+        blocked_date_id: payload.id,
+        provider_id: providerId,
+        exception_date: format(payload.date, "yyyy-MM-dd"),
+        type: "cancelled",
+      });
+    } else {
+      await availabilityService.deleteBlockedDate(payload.id);
+    }
+
     showBlockDetailsModal.value = false;
     await refreshData();
   } catch (e) {
@@ -668,8 +876,6 @@ function handleTimeSlotClick(date: Date, event: MouseEvent) {
 async function handleBlockSave(data: any) {
   savingBlock.value = true
   try {
-    // Validation: Check for conflicts with existing appointments
-    // Note: For recurring blocks, this primarily checks the first instance against loaded appointments.
     const blockStart = parseISO(
       data.start_date + "T" + (data.start_time || "00:00:00"),
     );
@@ -678,26 +884,18 @@ async function handleBlockSave(data: any) {
       (data.end_date || data.start_date) + "T" + (data.end_time || "23:59:59"),
     );
 
-    const conflict = appointments.value.some((apt) => {
-      // Ignore cancelled appointments
-      if (apt.status === "cancelled") return false;
-
-      // Check staff match
-      const aptStaffId = apt.staff_id || apt.staff?.id;
-      if (aptStaffId !== data.staff_id) return false;
-
-      const aptStart = parseISO(apt.appointment_date + "T" + apt.start_time);
-      const duration = apt.services?.duration || 30;
-      const aptEnd = addMinutes(aptStart, duration);
-
-      // Check Overlap
-      return blockStart < aptEnd && blockEnd > aptStart;
-    });
-
-    if (conflict) {
+    if (await hasAppointmentConflict(data, blockStart, blockEnd)) {
       conflictMessage.value =
         t("calendar.conflict_error") ||
         "Cannot block time: This staff member has existing appointments during this period.";
+      showConflictModal.value = true;
+      return;
+    }
+
+    if (hasBlockedDateConflict(data, blockStart, blockEnd)) {
+      conflictMessage.value =
+        t("calendar.block_conflict_error") ||
+        "Cannot block time: This staff member already has blocked time during this period.";
       showConflictModal.value = true;
       return;
     }
@@ -886,13 +1084,20 @@ async function handleBlockSave(data: any) {
                         }"
                       ></div>
 
+                      <div
+                        v-if="isToday(day)"
+                        class="past-time-overlay absolute top-0 left-0 right-0 z-10 bg-gray-100/60 cursor-default"
+                        :style="getPastTimeOverlayStyle(day)"
+                        @click.stop
+                      ></div>
+
                       <!-- Events -->
                       <button
                         v-for="event in getLaidOutEventsForDate(day)"
                         :key="event.id"
                         :style="getEventStyle(event)"
                         @click.stop="openEventDetails(event)"
-                        class="absolute rounded px-1.5 py-1 text-xs border-l-4 shadow-sm overflow-hidden hover:z-30 hover:shadow-md transition-all text-left flex flex-col pointer-events-auto group"
+                        class="absolute z-20 rounded px-1.5 py-1 text-xs border-l-4 shadow-sm overflow-hidden hover:z-30 hover:shadow-md transition-all text-left flex flex-col pointer-events-auto group"
                         :class="{
                           'border-l-blue-500 bg-blue-50 text-blue-700 opacity-90 hover:opacity-100':
                             event.type === 'appointment' &&
@@ -928,17 +1133,9 @@ async function handleBlockSave(data: any) {
 
                       <!-- Current Time Indicator -->
                       <div
-                        v-if="isSameDay(day, new Date())"
-                        class="absolute w-full border-t-2 border-red-500 z-20 pointer-events-none flex items-center"
-                        :style="{
-                          top:
-                            ((new Date().getHours() * 60 +
-                              new Date().getMinutes() -
-                              calendarStartHour * 60) /
-                              60) *
-                              PIXELS_PER_HOUR +
-                            'px',
-                        }"
+                        v-if="isToday(day)"
+                        class="absolute w-full border-t-2 border-red-500 z-30 pointer-events-none flex items-center"
+                        :style="getCurrentTimeIndicatorStyle(day)"
                       >
                         <div
                           class="w-2 h-2 rounded-full bg-red-500 -ml-1"
@@ -1099,13 +1296,20 @@ async function handleBlockSave(data: any) {
                       }"
                     ></div>
 
+                    <div
+                      v-if="isToday(currentDate)"
+                      class="past-time-overlay absolute top-0 left-0 right-0 z-10 bg-gray-100/60 cursor-default"
+                      :style="getPastTimeOverlayStyle(currentDate)"
+                      @click.stop
+                    ></div>
+
                     <!-- Events -->
                     <button
                       v-for="event in getLaidOutEventsForDate(currentDate)"
                       :key="event.id"
                       :style="getEventStyle(event)"
                       @click.stop="openEventDetails(event)"
-                      class="absolute rounded px-3 py-2 text-sm border-l-4 shadow-sm overflow-hidden hover:z-30 hover:shadow-md transition-all text-left flex flex-col pointer-events-auto"
+                      class="absolute z-20 rounded px-3 py-2 text-sm border-l-4 shadow-sm overflow-hidden hover:z-30 hover:shadow-md transition-all text-left flex flex-col pointer-events-auto"
                       :class="{
                         'border-l-blue-500 bg-blue-50 text-blue-700 opacity-90 hover:opacity-100':
                           event.type === 'appointment' &&
@@ -1142,17 +1346,9 @@ async function handleBlockSave(data: any) {
 
                     <!-- Current Time -->
                     <div
-                      v-if="isSameDay(currentDate, new Date())"
-                      class="absolute w-full border-t-2 border-red-500 z-20 pointer-events-none flex items-center"
-                      :style="{
-                        top:
-                          ((new Date().getHours() * 60 +
-                            new Date().getMinutes() -
-                            calendarStartHour * 60) /
-                            60) *
-                            PIXELS_PER_HOUR +
-                          'px',
-                      }"
+                      v-if="isToday(currentDate)"
+                      class="absolute w-full border-t-2 border-red-500 z-30 pointer-events-none flex items-center"
+                      :style="getCurrentTimeIndicatorStyle(currentDate)"
                     >
                       <div class="w-2 h-2 rounded-full bg-red-500 -ml-1"></div>
                     </div>

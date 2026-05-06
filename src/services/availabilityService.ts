@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase'
-import type { Availability, BlockedDate } from '../types'
+import type { Availability, BlockedDate, BlockedDateException } from '../types'
 
 export async function fetchAvailability(staffId: string): Promise<Availability[]> {
   const { data, error } = await supabase
@@ -54,4 +54,29 @@ export async function deleteBlockedDate(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) throw error
+}
+
+export async function fetchBlockedDateExceptions(blockedDateIds: string[]): Promise<BlockedDateException[]> {
+  if (blockedDateIds.length === 0) return []
+
+  const { data, error } = await supabase
+    .from('blocked_date_exceptions')
+    .select('*')
+    .in('blocked_date_id', blockedDateIds)
+
+  if (error) throw error
+  return data || []
+}
+
+export async function createBlockedDateException(
+  exception: Omit<BlockedDateException, 'id' | 'created_at'>
+): Promise<BlockedDateException> {
+  const { data, error } = await supabase
+    .from('blocked_date_exceptions')
+    .upsert([exception], { onConflict: 'blocked_date_id,exception_date,type' })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
 }

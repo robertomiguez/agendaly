@@ -1,10 +1,11 @@
 // ... (imports)
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount, flushPromises } from "@vue/test-utils";
 import ProviderCalendarView from "../ProviderCalendarView.vue";
 import { createPinia, setActivePinia } from "pinia";
 import { useAuthStore } from "../../../stores/useAuthStore";
 import { useSettingsStore } from "../../../stores/useSettingsStore";
+import * as availabilityService from "@/services/availabilityService";
 
 // Hoisted mocks for router
 const { pushMock } = vi.hoisted(() => ({
@@ -58,8 +59,10 @@ function resetSupabaseMock() {
 // Mock availabilityService
 vi.mock("@/services/availabilityService", () => ({
   fetchBlockedDates: vi.fn().mockResolvedValue([]),
+  fetchBlockedDateExceptions: vi.fn().mockResolvedValue([]),
   fetchAvailability: vi.fn().mockResolvedValue([]),
   createBlockedDate: vi.fn().mockResolvedValue({}),
+  createBlockedDateException: vi.fn().mockResolvedValue({}),
   deleteBlockedDate: vi.fn().mockResolvedValue({}),
 }));
 
@@ -94,6 +97,10 @@ describe("ProviderCalendarView", () => {
     resetSupabaseMock();
     const settingsStore = useSettingsStore();
     settingsStore.language = "en-US";
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("redirects to booking if no provider in auth store", () => {
@@ -279,5 +286,317 @@ describe("ProviderCalendarView", () => {
           expect(modalStub.exists()).toBe(true);
           expect(modalStub.attributes("data-open")).toBe("true"); // Check bound prop via stub
       }
+  });
+
+  it("does not expand recurring blocks on non-workable days", async () => {
+    const authStore = useAuthStore();
+    authStore.provider = { id: "p1", name: "Provider" } as any;
+
+    const wrapper = mount(ProviderCalendarView, {
+      global: {
+        mocks: { $t: (key: string) => key },
+        stubs: {
+          Button: { template: "<button><slot /></button>" },
+          Card: { template: "<div><slot /></div>" },
+          CardContent: { template: "<div><slot /></div>" },
+          CardHeader: { template: "<div><slot /></div>" },
+          Tabs: { template: "<div><slot /></div>" },
+          TabsList: { template: "<div><slot /></div>" },
+          TabsTrigger: { template: "<button><slot /></button>" },
+          BlockTimeModal: true,
+          AppointmentDetailsModal: true,
+        },
+      },
+    });
+
+    await flushPromises();
+
+    const vm = wrapper.vm as any;
+    vm.currentDate = new Date(2099, 4, 12);
+    vm.staff = [{ id: "s1", name: "Staff A" }];
+    vm.availabilities = [2, 3, 4, 5, 6].map((day) => ({
+      staff_id: "s1",
+      day_of_week: day,
+      is_available: true,
+    }));
+    vm.blockedDates = [
+      {
+        id: "block-1",
+        staff_id: "s1",
+        start_date: "2099-05-12",
+        end_date: "2099-05-12",
+        start_time: "12:00:00",
+        end_time: "13:30:00",
+        recurrence_rule: "DTSTART:20990512T120000\nRRULE:FREQ=DAILY",
+        title: "Lunch",
+      },
+    ];
+
+    vm.expandBlockedDates();
+
+    const weekdays = vm.expandedBlocks.map((block: any) => block.start.getDay());
+    expect(weekdays).toContain(2);
+    expect(weekdays).not.toContain(1);
+  });
+
+  it("does not expand cancelled recurring block occurrences", async () => {
+    const authStore = useAuthStore();
+    authStore.provider = { id: "p1", name: "Provider" } as any;
+
+    const wrapper = mount(ProviderCalendarView, {
+      global: {
+        mocks: { $t: (key: string) => key },
+        stubs: {
+          Button: { template: "<button><slot /></button>" },
+          Card: { template: "<div><slot /></div>" },
+          CardContent: { template: "<div><slot /></div>" },
+          CardHeader: { template: "<div><slot /></div>" },
+          Tabs: { template: "<div><slot /></div>" },
+          TabsList: { template: "<div><slot /></div>" },
+          TabsTrigger: { template: "<button><slot /></button>" },
+          BlockTimeModal: true,
+          AppointmentDetailsModal: true,
+        },
+      },
+    });
+
+    await flushPromises();
+
+    const vm = wrapper.vm as any;
+    vm.currentDate = new Date(2099, 4, 12);
+    vm.staff = [{ id: "s1", name: "Staff A" }];
+    vm.availabilities = [2, 3, 4, 5, 6].map((day) => ({
+      staff_id: "s1",
+      day_of_week: day,
+      is_available: true,
+    }));
+    vm.blockedDates = [
+      {
+        id: "block-1",
+        staff_id: "s1",
+        start_date: "2099-05-12",
+        end_date: "2099-05-12",
+        start_time: "12:00:00",
+        end_time: "13:30:00",
+        recurrence_rule: "DTSTART:20990512T120000\nRRULE:FREQ=DAILY",
+        title: "Lunch",
+      },
+    ];
+    vm.blockedDateExceptions = [
+      {
+        blocked_date_id: "block-1",
+        exception_date: "2099-05-12",
+        type: "cancelled",
+      },
+    ];
+
+    vm.expandBlockedDates();
+
+    const dates = vm.expandedBlocks.map((block: any) =>
+      block.start.toISOString().slice(0, 10),
+    );
+    expect(dates).not.toContain("2099-05-12");
+    expect(dates).toContain("2099-05-13");
+  });
+
+  it("expands Saturday daily blocks after the current time of day", async () => {
+    const authStore = useAuthStore();
+    authStore.provider = { id: "p1", name: "Provider" } as any;
+
+    const wrapper = mount(ProviderCalendarView, {
+      global: {
+        mocks: { $t: (key: string) => key },
+        stubs: {
+          Button: { template: "<button><slot /></button>" },
+          Card: { template: "<div><slot /></div>" },
+          CardContent: { template: "<div><slot /></div>" },
+          CardHeader: { template: "<div><slot /></div>" },
+          Tabs: { template: "<div><slot /></div>" },
+          TabsList: { template: "<div><slot /></div>" },
+          TabsTrigger: { template: "<button><slot /></button>" },
+          BlockTimeModal: true,
+          AppointmentDetailsModal: true,
+        },
+      },
+    });
+
+    await flushPromises();
+
+    const vm = wrapper.vm as any;
+    vm.currentDate = new Date(2099, 4, 12, 13, 0);
+    vm.staff = [{ id: "s1", name: "Staff A" }];
+    vm.availabilities = [2, 3, 4, 5, 6].map((day) => ({
+      staff_id: "s1",
+      day_of_week: day,
+      is_available: true,
+    }));
+    vm.blockedDates = [
+      {
+        id: "block-1",
+        staff_id: "s1",
+        start_date: "2099-05-12",
+        end_date: "2099-05-12",
+        start_time: "17:30:00",
+        end_time: "18:30:00",
+        recurrence_rule: "DTSTART:20990512T030000\nRRULE:FREQ=DAILY",
+        title: "Meeting",
+      },
+    ];
+    vm.blockedDateExceptions = [];
+
+    vm.expandBlockedDates();
+
+    const saturdayBlock = vm.expandedBlocks.find(
+      (block: any) => block.start.getDay() === 6,
+    );
+    expect(saturdayBlock).toBeDefined();
+    expect(saturdayBlock.start.getHours()).toBe(17);
+  });
+
+  it("does not create overlapping blocked time for the same staff", async () => {
+    const authStore = useAuthStore();
+    authStore.provider = { id: "p1", name: "Provider" } as any;
+
+    const wrapper = mount(ProviderCalendarView, {
+      global: {
+        mocks: { $t: (key: string) => key },
+        stubs: {
+          Button: true,
+          Card: true,
+          CardContent: true,
+          CardHeader: true,
+          Tabs: true,
+          TabsList: true,
+          TabsTrigger: true,
+          BlockTimeModal: true,
+          AppointmentDetailsModal: true,
+        },
+      },
+    });
+
+    await flushPromises();
+
+    const vm = wrapper.vm as any;
+    vm.appointments = [];
+    vm.blockedDates = [
+      {
+        id: "block-1",
+        staff_id: "s1",
+        start_date: "2099-05-12",
+        end_date: "2099-05-12",
+        start_time: "12:00:00",
+        end_time: "13:00:00",
+        title: "Lunch",
+      },
+    ];
+
+    await vm.handleBlockSave({
+      staff_id: "s1",
+      start_date: "2099-05-12",
+      end_date: "2099-05-12",
+      start_time: "12:30:00",
+      end_time: "13:30:00",
+      title: "Duplicate lunch",
+    });
+
+    expect(availabilityService.createBlockedDate).not.toHaveBeenCalled();
+    expect(vm.showConflictModal).toBe(true);
+  });
+
+  it("checks staff bookings before creating blocked time", async () => {
+    const authStore = useAuthStore();
+    authStore.provider = { id: "p1", name: "Provider" } as any;
+
+    const wrapper = mount(ProviderCalendarView, {
+      global: {
+        mocks: { $t: (key: string) => key },
+        stubs: {
+          Button: true,
+          Card: true,
+          CardContent: true,
+          CardHeader: true,
+          Tabs: true,
+          TabsList: true,
+          TabsTrigger: true,
+          BlockTimeModal: true,
+          AppointmentDetailsModal: true,
+        },
+      },
+    });
+
+    await flushPromises();
+
+    const vm = wrapper.vm as any;
+    vm.appointments = [];
+    vm.blockedDates = [];
+
+    selectMock.mockReturnValue({
+      eq: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
+      gte: vi.fn().mockReturnThis(),
+      lte: vi.fn().mockResolvedValue({
+        data: [
+          {
+            staff_id: "s1",
+            appointment_date: "2099-05-12",
+            start_time: "12:15:00",
+            end_time: "12:45:00",
+            status: "confirmed",
+            services: { duration: 30 },
+          },
+        ],
+        error: null,
+      }),
+    });
+
+    await vm.handleBlockSave({
+      staff_id: "s1",
+      start_date: "2099-05-12",
+      end_date: "2099-05-12",
+      start_time: "12:00:00",
+      end_time: "13:00:00",
+      title: "Lunch",
+    });
+
+    expect(availabilityService.createBlockedDate).not.toHaveBeenCalled();
+    expect(vm.showConflictModal).toBe(true);
+  });
+
+  it("shows disabled styling for past times today", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2099, 4, 12, 12, 30));
+
+    const authStore = useAuthStore();
+    authStore.provider = { id: "p1", name: "Provider" } as any;
+
+    const wrapper = mount(ProviderCalendarView, {
+      global: {
+        mocks: { $t: (key: string) => key },
+        stubs: {
+          Button: { template: "<button><slot /></button>" },
+          Card: { template: "<div><slot /></div>" },
+          CardContent: { template: "<div><slot /></div>" },
+          CardHeader: { template: "<div><slot /></div>" },
+          Tabs: { template: "<div><slot /></div>" },
+          TabsList: { template: "<div><slot /></div>" },
+          TabsTrigger: { template: "<button><slot /></button>" },
+          BlockTimeModal: true,
+          AppointmentDetailsModal: true,
+        },
+      },
+    });
+
+    await flushPromises();
+
+    const vm = wrapper.vm as any;
+    vm.calendarStartHour = 9;
+    vm.calendarEndHour = 17;
+    await wrapper.vm.$nextTick();
+
+    const overlay = wrapper.find(".past-time-overlay");
+    expect(overlay.exists()).toBe(true);
+    expect(overlay.attributes("class")).toContain("bg-gray-100/60");
+    expect(overlay.attributes("class")).toContain("cursor-default");
+    expect(overlay.attributes("style")).toContain("height: 273px");
   });
 });
