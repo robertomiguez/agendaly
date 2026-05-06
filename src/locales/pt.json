@@ -368,7 +368,8 @@
     "delete_success": "Agendamento excluído",
     "action_failed": "Falha ao processar solicitação",
     "conflict_title": "Não foi possível bloquear",
-    "conflict_error": "Não é possível bloquear: Este membro da equipe tem agendamentos existentes neste período."
+    "conflict_error": "Não é possível bloquear: Este membro da equipe tem agendamentos existentes neste período.",
+    "block_conflict_error": "Não é possível bloquear: Este membro da equipe já tem horário bloqueado neste período."
   },
   "my_bookings": {
     "title": "Meus Agendamentos",

@@ -371,7 +371,8 @@
     "delete_success": "Appointment deleted",
     "action_failed": "Failed to process request",
     "conflict_title": "Unable to Block Time",
-    "conflict_error": "Cannot block time: This staff member has existing appointments during this period."
+    "conflict_error": "Cannot block time: This staff member has existing appointments during this period.",
+    "block_conflict_error": "Cannot block time: This staff member already has blocked time during this period."
   },
   "my_bookings": {
     "title": "My Bookings",
