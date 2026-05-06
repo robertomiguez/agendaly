@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
 import { createTestingPinia } from "@pinia/testing";
 import BlockTimeModal from "../BlockTimeModal.vue";
+import { rrulestr } from "rrule";
 
 describe("BlockTimeModal Time Range", () => {
   const defaultProps = {
@@ -78,5 +79,90 @@ describe("BlockTimeModal Time Range", () => {
     expect(texts).not.toContain("08:45");
     expect(texts).not.toContain("12:00");
     expect(options.length).toBe(12);
+  });
+
+  it("starts weekly recurrence on the selected start date weekday", async () => {
+    const wrapper = mount(BlockTimeModal, {
+      props: {
+        ...defaultProps,
+        isOpen: false,
+        initialDate: new Date(2026, 4, 6, 10, 0),
+      },
+      global: globalMock
+    });
+
+    await wrapper.setProps({ isOpen: true });
+
+    const repeatSelect = wrapper.findAll("select").find((select) =>
+      select.find('option[value="weekly"]').exists(),
+    );
+    if (!repeatSelect) throw new Error("Repeat select not found");
+    await repeatSelect.setValue("weekly");
+    await wrapper.find("form").trigger("submit.prevent");
+
+    const saveEvents = wrapper.emitted("save");
+    const payload = saveEvents?.[0]?.[0] as { recurrence_rule?: string };
+    if (!payload.recurrence_rule) throw new Error("Recurrence rule not emitted");
+
+    const rule = rrulestr(payload.recurrence_rule, {
+      dtstart: new Date(2026, 4, 6, 10, 0),
+    });
+    const occurrences = rule.between(
+      new Date(2026, 4, 1),
+      new Date(2026, 4, 31),
+      true,
+    );
+
+    expect(occurrences[0]?.getDate()).toBe(6);
+    expect(occurrences[1]?.getDate()).toBe(13);
+  });
+
+  it("does not render weekday buttons for weekly recurrence", async () => {
+    const wrapper = mount(BlockTimeModal, {
+      props: {
+        ...defaultProps,
+        isOpen: false,
+        initialDate: new Date(2026, 4, 6, 10, 0),
+      },
+      global: globalMock
+    });
+
+    await wrapper.setProps({ isOpen: true });
+
+    const repeatSelect = wrapper.findAll("select").find((select) =>
+      select.find('option[value="weekly"]').exists(),
+    );
+    if (!repeatSelect) throw new Error("Repeat select not found");
+    await repeatSelect.setValue("weekly");
+
+    expect(wrapper.text()).not.toContain("calendar.repeat_on");
+  });
+
+  it("does not allow daily recurrence for all-day blocks", async () => {
+    const wrapper = mount(BlockTimeModal, {
+      props: {
+        ...defaultProps,
+        isOpen: false,
+        initialDate: new Date(2025, 3, 7),
+      },
+      global: globalMock
+    });
+
+    await wrapper.setProps({ isOpen: true });
+
+    const repeatSelect = wrapper.findAll("select").find((select) =>
+      select.find('option[value="daily"]').exists(),
+    );
+    if (!repeatSelect) throw new Error("Repeat select not found");
+
+    const dailyOption = repeatSelect.find('option[value="daily"]');
+    expect((dailyOption.element as HTMLOptionElement).disabled).toBe(true);
+
+    await repeatSelect.setValue("daily");
+    await wrapper.find("form").trigger("submit.prevent");
+
+    const saveEvents = wrapper.emitted("save");
+    const payload = saveEvents?.[0]?.[0] as { recurrence_rule?: string };
+    expect(payload.recurrence_rule).toBeUndefined();
   });
 });

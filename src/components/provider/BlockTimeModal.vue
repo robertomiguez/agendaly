@@ -4,7 +4,6 @@ import Modal from "../common/Modal.vue";
 import { RRule } from "rrule";
 import type { BlockedDate, Staff } from "../../types";
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue';
-import { useDays } from "../../composables/useDays";
 
 const props = defineProps<{
   isOpen: boolean;
@@ -33,15 +32,6 @@ const form = ref({
   repeat: "none", // none, daily, weekly, custom
   customRecurrence: "",
 });
-
-const { daysOfWeekShort, rruleDays } = useDays();
-const daysOfWeek = computed(() => {
-  return daysOfWeekShort.value.map((day, index) => ({
-    value: rruleDays[index],
-    label: day.label
-  }));
-});
-
 
 const timeOptions = computed(() => {
   const options = [];
@@ -77,7 +67,10 @@ const staffName = computed(() => {
   return "";
 });
 
-const selectedDays = ref<any[]>([]);
+function parseDateInput(date: string) {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(year || 0, (month || 1) - 1, day || 1);
+}
 
 // Initialize form when opening
 watch(
@@ -125,48 +118,51 @@ watch(
         repeat: "none",
         customRecurrence: "",
       };
-      selectedDays.value = [];
+    }
+  },
+);
+
+watch(
+  () => [form.value.allDay, form.value.repeat],
+  ([allDay, repeat]) => {
+    if (allDay && repeat === "daily") {
+      form.value.repeat = "none";
     }
   },
 );
 
 function generateRRule(): string | undefined {
   if (form.value.repeat === "none") return undefined;
+  if (form.value.allDay && form.value.repeat === "daily") return undefined;
 
   if (form.value.repeat === "daily") {
+    const endDate = parseDateInput(form.value.endDate);
+
     return new RRule({
       freq: RRule.DAILY,
-      dtstart: new Date(form.value.startDate),
+      dtstart: parseDateInput(form.value.startDate),
       until: new Date(
-        new Date(form.value.endDate).setFullYear(
-          new Date(form.value.endDate).getFullYear() + 1,
-        ),
+        endDate.setFullYear(endDate.getFullYear() + 1),
       ), // Default 1 year? Or user specified end?
     }).toString();
   }
 
   if (form.value.repeat === "weekly") {
-    // If no days selected, assume the day of start date
-    let days = selectedDays.value;
-    if (days.length === 0) {
-      const date = new Date(form.value.startDate);
-      // map getDay() 0-6 (Sun-Sat) to RRule day
-      const map = [
-        RRule.SU,
-        RRule.MO,
-        RRule.TU,
-        RRule.WE,
-        RRule.TH,
-        RRule.FR,
-        RRule.SA,
-      ];
-      days = [map[date.getDay()]];
-    }
+    const date = parseDateInput(form.value.startDate);
+    const days = [
+      RRule.SU,
+      RRule.MO,
+      RRule.TU,
+      RRule.WE,
+      RRule.TH,
+      RRule.FR,
+      RRule.SA,
+    ];
 
     return new RRule({
       freq: RRule.WEEKLY,
-      byweekday: days,
-      dtstart: new Date(form.value.startDate),
+      byweekday: [days[date.getDay()] || RRule.SU],
+      dtstart: parseDateInput(form.value.startDate),
     }).toString();
   }
 
@@ -322,38 +318,10 @@ function handleSave() {
           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
         >
           <option value="none">{{ $t("calendar.does_not_repeat") }}</option>
-          <option value="daily">{{ $t("calendar.daily") }}</option>
+          <option value="daily" :disabled="form.allDay">{{ $t("calendar.daily") }}</option>
           <option value="weekly">{{ $t("calendar.weekly") }}</option>
         </select>
       </div>
-
-      <!-- Weekly Sub-options -->
-      <div v-if="form.repeat === 'weekly'" class="space-y-2">
-        <label class="block text-sm font-medium text-gray-700">{{
-          $t("calendar.repeat_on")
-        }}</label>
-        <div class="flex gap-2">
-          <button
-            type="button"
-            v-for="day in daysOfWeek"
-            :key="day.label"
-            @click="
-              selectedDays.includes(day.value)
-                ? (selectedDays = selectedDays.filter((d) => d !== day.value))
-                : selectedDays.push(day.value)
-            "
-            class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium border transition-colors"
-            :class="
-              selectedDays.includes(day.value)
-                ? 'bg-primary-600 text-white border-primary-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-            "
-          >
-            {{ day.label.charAt(0) }}
-          </button>
-        </div>
-      </div>
-
       <!-- Reason/Description -->
       <div>
         <label class="block text-sm font-medium text-gray-700">{{
