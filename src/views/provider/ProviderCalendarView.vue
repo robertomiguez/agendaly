@@ -38,6 +38,7 @@ const router = useRouter();
 const settingsStore = useSettingsStore();
 const appointmentStore = useAppointmentStore();
 const { showSuccess, showError } = useNotifications();
+const { t } = useI18n();
 
 const staff = ref<Staff[]>([]);
 const selectedStaffId = ref<string>("all");
@@ -334,6 +335,31 @@ function formatEventTimeRange(event: any) {
   const startStr = formatTimeDisplay(start);
   if (!end) return startStr;
   return `${startStr} - ${formatTimeDisplay(end)}`;
+}
+
+function formatBlockedTimeRange(event: any) {
+  if (event.type !== "appointment" || !event.displayStart || !event.displayEnd) {
+    return "";
+  }
+
+  const hasBuffer =
+    event.start.getTime() !== event.displayStart.getTime() ||
+    event.end.getTime() !== event.displayEnd.getTime();
+
+  if (!hasBuffer) return "";
+
+  return `${t("calendar.blocked")}: ${formatTimeDisplay(event.start)} - ${formatTimeDisplay(
+    event.end,
+  )}`;
+}
+
+function formatEventTitle(event: any) {
+  const blockedRange = formatBlockedTimeRange(event);
+  const range = blockedRange
+    ? `${formatEventTimeRange(event)}, ${blockedRange}`
+    : formatEventTimeRange(event);
+
+  return `${event.title} - ${event.subtitle} (${range})`;
 }
 
 function isPast(date: Date) {
@@ -777,7 +803,6 @@ const selectedAppointment = ref<any>(null);
 const showDetailsModal = ref(false);
 
 // Block Details
-const { t } = useI18n();
 const showBlockDetailsModal = ref(false);
 const selectedBlock = ref<any>(null);
 const showConflictModal = ref(false);
@@ -1114,7 +1139,7 @@ async function handleBlockSave(data: any) {
                           'border-l-gray-500 bg-gray-100 text-gray-700':
                             event.type === 'block',
                         }"
-                        :title="`${event.title} - ${event.subtitle} (${formatEventTimeRange(event)})`"
+                        :title="formatEventTitle(event)"
                       >
                         <div
                           class="font-bold truncate text-[11px] leading-tight mb-0.5"
@@ -1122,12 +1147,18 @@ async function handleBlockSave(data: any) {
                           {{ event.title }}
                         </div>
                         <div
-                          class="truncate opacity-80 text-[10px] leading-tight"
+                          class="truncate opacity-80 text-[11px] leading-tight"
                         >
                           {{ formatEventTimeRange(event) }}
                           <span v-if="selectedStaffId === 'all'">
                             {{ $t("calendar.with") }} {{ event.staffName }}
                           </span>
+                        </div>
+                        <div
+                          v-if="formatBlockedTimeRange(event)"
+                          class="truncate text-[10px] leading-tight opacity-70"
+                        >
+                          {{ formatBlockedTimeRange(event) }}
                         </div>
                       </button>
 
@@ -1201,6 +1232,12 @@ async function handleBlockSave(data: any) {
                   >
                     <span v-if="event.type === 'appointment'">
                       {{ formatEventTimeRange(event) }}
+                      <span
+                        v-if="formatBlockedTimeRange(event)"
+                        class="text-[11px] opacity-70"
+                      >
+                        ({{ formatBlockedTimeRange(event) }})
+                      </span>
                       <span
                         v-if="selectedStaffId === 'all'"
                         class="font-semibold mr-0.5"
@@ -1335,6 +1372,12 @@ async function handleBlockSave(data: any) {
                           class="text-xs opacity-80 font-medium bg-white/50 px-1.5 py-0.5 rounded"
                           >{{ formatEventTimeRange(event) }}</span
                         >
+                      </div>
+                      <div
+                        v-if="formatBlockedTimeRange(event)"
+                        class="truncate text-[11px] leading-tight opacity-70"
+                      >
+                        {{ formatBlockedTimeRange(event) }}
                       </div>
                       <div
                         v-if="selectedStaffId === 'all'"

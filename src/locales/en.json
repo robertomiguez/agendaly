@@ -591,6 +591,8 @@
       "customer": "Customer",
       "service": "Service",
       "duration": "{min} min",
+      "blocked_time": "Blocked: {range}",
+      "buffer_details": "Buffer: {before} min before, {after} min after",
       "staff": "Staff",
       "datetime": "Date & Time",
       "datetime_value": "{date} at {time}",
