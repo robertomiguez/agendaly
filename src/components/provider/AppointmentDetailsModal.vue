@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { parseISO } from 'date-fns'
+import { computed } from 'vue'
+import { addMinutes, parseISO } from 'date-fns'
 import Modal from '../../components/common/Modal.vue'
 import { useSettingsStore } from '../../stores/useSettingsStore'
 
-defineProps<{
+const props = defineProps<{
   isOpen: boolean
   appointment: any
   loading?: boolean
@@ -15,6 +16,20 @@ const emit = defineEmits<{
 }>()
 
 const settingsStore = useSettingsStore()
+
+const bufferBefore = computed(() => props.appointment?.services?.buffer_before || 0)
+const bufferAfter = computed(() => props.appointment?.services?.buffer_after || 0)
+const hasBuffer = computed(() => bufferBefore.value > 0 || bufferAfter.value > 0)
+const blockedTimeRange = computed(() => {
+  if (!props.appointment || !hasBuffer.value) return ''
+
+  const start = parseISO(`${props.appointment.appointment_date}T${props.appointment.start_time}`)
+  const serviceEnd = addMinutes(start, props.appointment.services?.duration || 0)
+  const blockedStart = addMinutes(start, -bufferBefore.value)
+  const blockedEnd = addMinutes(serviceEnd, bufferAfter.value)
+
+  return `${formatDateTime(blockedStart)} - ${formatDateTime(blockedEnd)}`
+})
 
 function formatTime(time: string) {
   return new Date(`2000-01-01T${time}`).toLocaleTimeString(settingsStore.language, { 
@@ -28,6 +43,13 @@ function formatDate(dateStr: string) {
     month: 'short',
     day: 'numeric',
     year: 'numeric'
+  })
+}
+
+function formatDateTime(date: Date) {
+  return date.toLocaleTimeString(settingsStore.language, {
+    hour: 'numeric',
+    minute: '2-digit'
   })
 }
 </script>
@@ -51,6 +73,14 @@ function formatDate(dateStr: string) {
           <p class="text-sm text-gray-500">{{ $t('modals.appointment_details.service') }}</p>
           <p class="font-medium">{{ appointment.services?.name }}</p>
           <p class="text-sm text-gray-600">{{ $t('modals.appointment_details.duration', { min: appointment.services?.duration }) }}</p>
+          <div v-if="hasBuffer" class="mt-2 text-sm text-gray-600">
+            <p class="font-medium text-gray-700">
+              {{ $t('modals.appointment_details.blocked_time', { range: blockedTimeRange }) }}
+            </p>
+            <p>
+              {{ $t('modals.appointment_details.buffer_details', { before: bufferBefore, after: bufferAfter }) }}
+            </p>
+          </div>
           <p class="text-sm font-medium text-primary-600">{{ settingsStore.formatPrice(appointment.booked_price || 0) }}</p>
         </div>
         <div>

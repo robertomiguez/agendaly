@@ -162,15 +162,12 @@ describe("ProviderCalendarView Buffer Logic", () => {
     // Check top. 773.5px.
     expect(style).toContain("top: 773.5px");
 
-    // Check text label (should show original time 10:00 - 10:20)
+    // Check text label shows original appointment time and the visual blocked range
     // 10:00 + 20 min = 10:20.
     // Start: 10:00
     // End: 10:20
     expect(eventEl.text()).toContain("10:00");
     expect(eventEl.text()).toContain("10:20");
-    
-    // Ensure "9:55" or "10:25" is NOT in the text
-    expect(eventEl.text()).not.toContain("9:55");
-    expect(eventEl.text()).not.toContain("10:25");
+    expect(eventEl.text()).toContain("calendar.blocked: 9:55 AM - 10:25 AM");
   });
 });
