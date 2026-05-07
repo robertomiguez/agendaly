@@ -5,6 +5,7 @@ import './style.css'
 import App from './App.vue'
 import { useAuthStore } from './stores/useAuthStore'
 import i18n from './lib/i18n'
+import { registerServiceWorker } from './lib/serviceWorker'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -17,6 +18,8 @@ app.config.errorHandler = (err, _instance, info) => {
     console.error('[Vue Error]', err)
     console.error('[Vue Error Info]', info)
 }
+
+registerServiceWorker()
 
 // Initialize auth before mounting
 const authStore = useAuthStore()
