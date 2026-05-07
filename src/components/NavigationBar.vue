@@ -12,7 +12,8 @@ import {
   Menu, 
   X,
   ChevronDown,
-  CreditCard
+  CreditCard,
+  Download
 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { 
@@ -24,11 +25,13 @@ import {
   DropdownMenuSeparator 
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { usePwaInstall } from '@/composables/usePwaInstall'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 const settingsStore = useSettingsStore()
+const { canInstall, installApp } = usePwaInstall()
 
 const showMobileMenu = ref(false)
 const appVersion = import.meta.env.APP_VERSION
@@ -161,6 +164,11 @@ function changeLanguage(lang: string) {
   settingsStore.setLanguage(lang)
   showMobileMenu.value = false
 }
+
+async function handleInstallApp() {
+  showMobileMenu.value = false
+  await installApp()
+}
 </script>
 
 <template>
@@ -202,6 +210,11 @@ function changeLanguage(lang: string) {
           <Button variant="ghost" @click="navigateToForBusiness" class="flex items-center gap-2">
             <Briefcase class="h-4 w-4" />
             {{ $t('nav.for_business') }}
+          </Button>
+
+          <Button v-if="canInstall" variant="ghost" @click="handleInstallApp" class="flex items-center gap-2">
+            <Download class="h-4 w-4" />
+            {{ $t('nav.install_app') }}
           </Button>
 
           <!-- User Menu -->
@@ -343,6 +356,11 @@ function changeLanguage(lang: string) {
         <Button variant="ghost" class="justify-start h-12" @click="navigateToForBusiness">
            <Briefcase class="mr-2 h-5 w-5" />
            {{ $t('nav.for_business') }}
+        </Button>
+
+        <Button v-if="canInstall" variant="ghost" class="justify-start h-12" @click="handleInstallApp">
+          <Download class="mr-2 h-5 w-5" />
+          {{ $t('nav.install_app') }}
         </Button>
         
         <template v-if="authStore.isAuthenticated">
