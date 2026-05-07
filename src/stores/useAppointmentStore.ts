@@ -197,8 +197,7 @@ export const useAppointmentStore = defineStore('appointment', () => {
                     appointment_date,
                     start_time,
                     status,
-                    service:services(name),
-                    customer:customers(name)
+                    service:services(name)
                 `)
                 .gte('appointment_date', today)
                 .in('status', ['confirmed', 'pending'])

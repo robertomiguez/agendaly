@@ -588,6 +588,8 @@
       "customer": "Cliente",
       "service": "Serviço",
       "duration": "{min} min",
+      "blocked_time": "Bloqueado: {range}",
+      "buffer_details": "Intervalo: {before} min antes, {after} min depois",
       "staff": "Equipe",
       "datetime": "Data e Horário",
       "datetime_value": "{date} às {time}",
