@@ -43,6 +43,7 @@ describe('useAppointmentStore Conflict Checks', () => {
         const store = useAppointmentStore()
         const conflicts = await store.checkServiceUpdateConflicts('service-1', 60, 0, 0)
         
+        expect(chain.select).toHaveBeenCalledWith(expect.not.stringContaining('customer:customers(name)'))
         expect(conflicts).toEqual([])
     })
 
