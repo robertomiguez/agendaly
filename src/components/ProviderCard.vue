@@ -2,7 +2,6 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { Provider, ProviderAddress } from '../types'
-import { Badge } from '@/components/ui/badge'
 import { Star } from 'lucide-vue-next'
 
 const props = defineProps<{
@@ -55,54 +54,132 @@ const ratingStars = computed(() => {
 </script>
 
 <template>
-  <div class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow border border-gray-200 overflow-hidden cursor-pointer group">
+  <div class="provider-card">
     <!-- Provider Avatar/Logo -->
-    <div class="flex items-center gap-4 p-6 border-b border-gray-100">
-      <div class="w-16 h-16 bg-primary-600 text-white rounded-full flex items-center justify-center font-bold text-xl flex-shrink-0 overflow-hidden">
-        <img v-if="provider.logo_url" :src="provider.logo_url" :alt="provider.business_name" class="w-full h-full object-cover" />
+    <div class="provider-card__header">
+      <div class="provider-card__avatar">
+        <img v-if="provider.logo_url" :src="provider.logo_url" :alt="provider.business_name" class="provider-card__logo" />
         <span v-else>{{ initials }}</span>
       </div>
-      <div class="flex-1 min-w-0">
-        <h3 class="font-bold text-lg text-gray-900 truncate group-hover:text-primary-600 transition-colors">{{ provider.business_name }}</h3>
-        <p class="text-sm text-gray-500 truncate">{{ locationText }}</p>
+      <div class="provider-card__identity">
+        <h3>{{ provider.business_name }}</h3>
+        <p>{{ locationText }}</p>
       </div>
     </div>
 
     <!-- Rating & Reviews -->
-    <div class="px-6 py-3 bg-gray-50">
-      <div class="flex items-center gap-2">
-        <div class="flex">
+    <div class="provider-card__rating">
+      <div class="provider-card__rating-row">
+        <div class="provider-card__stars">
           <Star
             v-for="(filled, index) in ratingStars"
             :key="index"
-            class="w-4 h-4"
-            :class="filled ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'"
+            class="provider-card__star"
+            :class="filled ? 'provider-card__star--filled' : 'provider-card__star--empty'"
           />
         </div>
-        <span class="text-sm font-medium text-gray-700">{{ rating || 5.0 }}</span>
-        <span class="text-sm text-gray-500">({{ $t('provider_card.reviews', { count: reviewCount || 0 }) }})</span>
+        <span class="provider-card__rating-value">{{ rating || 5.0 }}</span>
+        <span class="provider-card__review-count">({{ $t('provider_card.reviews', { count: reviewCount || 0 }) }})</span>
       </div>
     </div>
 
     <!-- Categories/Services -->
-    <div v-if="categories && categories.length > 0" class="px-6 py-4">
-      <div class="flex flex-wrap gap-2">
-        <Badge
+    <div v-if="categories && categories.length > 0" class="provider-card__categories">
+      <div class="provider-card__category-list">
+        <span
           v-for="(category, index) in categories.slice(0, 3)"
           :key="index"
-          variant="secondary"
-          class="bg-primary-100 text-primary-700 hover:bg-primary-200"
+          class="provider-category"
         >
           {{ category }}
-        </Badge>
-        <Badge
+        </span>
+        <span
           v-if="categories.length > 3"
-          variant="outline"
-          class="bg-gray-100 text-gray-600 hover:bg-gray-200 border-transparent"
+          class="provider-category provider-category--muted"
         >
           {{ $t('provider_card.more', { count: categories.length - 3 }) }}
-        </Badge>
+        </span>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+@reference "../style.css";
+
+.provider-card {
+  @apply group cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white shadow transition-shadow hover:shadow-lg;
+}
+
+.provider-card__header {
+  @apply flex items-center gap-4 border-b border-gray-100 p-6;
+}
+
+.provider-card__avatar {
+  @apply flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-600 text-xl font-bold text-white;
+}
+
+.provider-card__logo {
+  @apply h-full w-full object-cover;
+}
+
+.provider-card__identity {
+  @apply min-w-0 flex-1;
+}
+
+.provider-card__identity h3 {
+  @apply truncate text-lg font-bold text-gray-900 transition-colors group-hover:text-primary-600;
+}
+
+.provider-card__identity p {
+  @apply truncate text-sm text-gray-500;
+}
+
+.provider-card__rating {
+  @apply bg-gray-50 px-6 py-3;
+}
+
+.provider-card__rating-row {
+  @apply flex items-center gap-2;
+}
+
+.provider-card__stars {
+  @apply flex;
+}
+
+.provider-card__star {
+  @apply h-4 w-4;
+}
+
+.provider-card__star--filled {
+  @apply fill-yellow-400 text-yellow-400;
+}
+
+.provider-card__star--empty {
+  @apply text-gray-300;
+}
+
+.provider-card__rating-value {
+  @apply text-sm font-medium text-gray-700;
+}
+
+.provider-card__review-count {
+  @apply text-sm text-gray-500;
+}
+
+.provider-card__categories {
+  @apply px-6 py-4;
+}
+
+.provider-card__category-list {
+  @apply flex flex-wrap gap-2;
+}
+
+.provider-category {
+  @apply inline-flex w-fit shrink-0 items-center justify-center rounded-full border border-transparent bg-primary-100 px-2 py-0.5 text-xs font-medium text-primary-700;
+}
+
+.provider-category--muted {
+  @apply bg-gray-100 text-gray-600;
+}
+</style>

@@ -1,0 +1,499 @@
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { fetchPublicProviderBySlug } from '@/services/providerService'
+import { fetchServices } from '@/services/serviceService'
+import { fetchStaff } from '@/services/staffService'
+import { useSettingsStore } from '@/stores/useSettingsStore'
+import { useAuthStore } from '@/stores/useAuthStore'
+import { getProviderSlugFromHost } from '@/lib/publicHost'
+import type { Provider, ProviderAddress, Service, Staff } from '@/types'
+import { ArrowRight, CalendarDays, Clock, ListChecks, MapPin, Scissors, Star, Users } from 'lucide-vue-next'
+
+const props = defineProps<{
+  providerSlug?: string | null
+}>()
+
+const route = useRoute()
+const router = useRouter()
+const settingsStore = useSettingsStore()
+const authStore = useAuthStore()
+const { t } = useI18n()
+
+const provider = ref<Provider | null>(null)
+const services = ref<Service[]>([])
+const staff = ref<Staff[]>([])
+const loading = ref(true)
+const error = ref<string | null>(null)
+
+const resolvedSlug = computed(() => {
+  return props.providerSlug || route.params.providerSlug as string || getProviderSlugFromHost()
+})
+
+const activeServices = computed(() => services.value.filter(service => service.active))
+const activeStaff = computed(() => staff.value.filter(member => member.active))
+const addresses = computed(() => {
+  return (provider.value?.provider_addresses || []).filter(address => address.active !== false)
+})
+const primaryAddress = computed(() => {
+  return addresses.value.find(address => address.is_primary) || addresses.value[0] || null
+})
+const featuredImages = computed(() => {
+  return activeServices.value
+    .flatMap(service => service.images?.map(image => image.url) || (service.image_url ? [service.image_url] : []))
+    .slice(0, 6)
+})
+
+function formatAddress(address: ProviderAddress | null) {
+  if (!address) return ''
+  return [
+    address.street_address,
+    address.street_address_2,
+    address.city,
+    address.state,
+    address.postal_code
+  ].filter(Boolean).join(', ')
+}
+
+function bookNow() {
+  if (!provider.value) return
+  router.push(`/booking?provider=${provider.value.id}`)
+}
+
+function bookService(serviceId: string) {
+  if (!provider.value) return
+  router.push(`/booking?provider=${provider.value.id}&service=${serviceId}`)
+}
+
+function goToMyBookings() {
+  if (authStore.customer) {
+    router.push('/my-bookings')
+  } else {
+    router.push('/login?redirect=/my-bookings&context=customer')
+  }
+}
+
+function getDirectionsUrl(address: ProviderAddress) {
+  const query = encodeURIComponent(formatAddress(address))
+  return `https://www.google.com/maps/search/?api=1&query=${query}`
+}
+
+onMounted(async () => {
+  if (!resolvedSlug.value) {
+    loading.value = false
+    error.value = t('provider_page.not_found_message')
+    return
+  }
+
+  try {
+    const publicProvider = await fetchPublicProviderBySlug(resolvedSlug.value)
+    provider.value = publicProvider
+
+    if (!publicProvider) {
+      error.value = t('provider_page.not_found_message')
+      return
+    }
+
+    const [providerServices, providerStaff] = await Promise.all([
+      fetchServices(publicProvider.id),
+      fetchStaff(publicProvider.id)
+    ])
+
+    services.value = providerServices
+    staff.value = providerStaff
+  } catch (e) {
+    console.error('Failed to load provider page:', e)
+    error.value = t('provider_page.load_error')
+  } finally {
+    loading.value = false
+  }
+})
+</script>
+
+<template>
+  <main class="provider-page">
+    <section v-if="loading" class="provider-state">
+      <div class="provider-spinner"></div>
+      <p>{{ $t('provider_page.loading') }}</p>
+    </section>
+
+    <section v-else-if="error || !provider" class="provider-state">
+      <h1>{{ $t('provider_page.not_found_title') }}</h1>
+      <p>{{ error }}</p>
+      <button type="button" class="provider-button provider-button--primary" @click="router.push('/')">{{ $t('provider_page.go_to_agendaly') }}</button>
+    </section>
+
+    <template v-else>
+      <section class="provider-hero">
+        <div class="provider-hero-inner">
+          <div class="provider-identity">
+            <img
+              v-if="provider.logo_url"
+              class="provider-logo"
+              :src="provider.logo_url"
+              :alt="provider.business_name"
+            />
+            <div v-else class="provider-logo-fallback">
+              {{ provider.business_name.slice(0, 2).toUpperCase() }}
+            </div>
+            <div>
+              <p class="provider-eyebrow">{{ $t('provider_page.eyebrow') }}</p>
+              <h1>{{ provider.business_name }}</h1>
+              <p class="provider-description">
+                {{ provider.description || $t('provider_page.default_description') }}
+              </p>
+            </div>
+          </div>
+
+          <div class="provider-actions">
+            <button type="button" class="provider-button provider-button--primary" @click="bookNow">
+              <CalendarDays class="provider-button-icon" />
+              {{ $t('nav.book_now') }}
+            </button>
+            <button type="button" class="provider-button provider-button--outline" @click="goToMyBookings">
+              <ListChecks class="provider-button-icon" />
+              {{ $t('nav.my_bookings') }}
+            </button>
+            <a
+              v-if="primaryAddress"
+              class="provider-link-button"
+              :href="getDirectionsUrl(primaryAddress)"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <MapPin class="provider-button-icon" />
+              {{ $t('provider_page.directions') }}
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="provider-summary">
+        <div class="provider-summary-item">
+          <Scissors class="provider-summary-icon" />
+          <span>{{ $t('provider_page.services_count', { count: activeServices.length }) }}</span>
+        </div>
+        <div class="provider-summary-item">
+          <Users class="provider-summary-icon" />
+          <span>{{ $t('provider_page.professionals_count', { count: activeStaff.length }) }}</span>
+        </div>
+        <div class="provider-summary-item">
+          <Star class="provider-summary-icon" />
+          <span>{{ $t('provider_page.trusted_business') }}</span>
+        </div>
+      </section>
+
+      <section class="provider-customer-path">
+        <div class="provider-customer-path-inner">
+          <div class="provider-customer-icon">
+            <ListChecks />
+          </div>
+          <div class="provider-customer-copy">
+            <p class="provider-customer-eyebrow">{{ $t('provider_page.customer_path_eyebrow') }}</p>
+            <h2>{{ $t('provider_page.customer_path_title') }}</h2>
+            <p>{{ $t('provider_page.customer_path_description') }}</p>
+          </div>
+          <button type="button" class="provider-button provider-button--dark" @click="goToMyBookings">
+            {{ $t('nav.my_bookings') }}
+            <ArrowRight class="provider-button-icon" />
+          </button>
+        </div>
+      </section>
+
+      <section class="provider-section">
+        <div class="provider-section-header">
+          <h2>{{ $t('provider_page.services_title') }}</h2>
+          <p>{{ $t('provider_page.services_subtitle') }}</p>
+        </div>
+
+        <div v-if="activeServices.length" class="service-list">
+          <article v-for="service in activeServices" :key="service.id" class="service-row">
+            <img
+              v-if="service.images?.[0]?.url || service.image_url"
+              class="service-image"
+              :src="service.images?.[0]?.url || service.image_url"
+              :alt="service.name"
+            />
+            <div class="service-content">
+              <h3>{{ service.name }}</h3>
+              <p v-if="service.description">{{ service.description }}</p>
+              <div class="service-meta">
+                <span><Clock class="service-meta-icon" />{{ service.duration }} {{ $t('common.minutes') }}</span>
+                <span>{{ settingsStore.formatPrice(service.price || 0) }}</span>
+              </div>
+            </div>
+            <button type="button" class="provider-button provider-button--outline" @click="bookService(service.id)">{{ $t('provider_page.book') }}</button>
+          </article>
+        </div>
+
+        <div v-else class="provider-empty">
+          {{ $t('provider_page.empty_services') }}
+        </div>
+      </section>
+
+      <section v-if="activeStaff.length" class="provider-section">
+        <div class="provider-section-header">
+          <h2>{{ $t('provider_page.team_title') }}</h2>
+          <p>{{ $t('provider_page.team_subtitle') }}</p>
+        </div>
+
+        <div class="staff-grid">
+          <article v-for="member in activeStaff" :key="member.id" class="staff-card">
+            <img
+              v-if="member.photo_url"
+              class="staff-photo"
+              :src="member.photo_url"
+              :alt="member.name"
+            />
+            <div v-else class="staff-photo-fallback">
+              {{ member.name.slice(0, 2).toUpperCase() }}
+            </div>
+            <h3>{{ member.name }}</h3>
+          </article>
+        </div>
+      </section>
+
+      <section v-if="featuredImages.length" class="provider-section">
+        <div class="provider-section-header">
+          <h2>{{ $t('provider_page.gallery_title') }}</h2>
+          <p>{{ $t('provider_page.gallery_subtitle') }}</p>
+        </div>
+
+        <div class="gallery-grid">
+          <img
+            v-for="image in featuredImages"
+            :key="image"
+            class="gallery-image"
+            :src="image"
+            alt=""
+          />
+        </div>
+      </section>
+
+      <section class="provider-section provider-location">
+        <div>
+          <h2>{{ $t('provider_page.location_title') }}</h2>
+          <p v-if="primaryAddress">{{ formatAddress(primaryAddress) }}</p>
+          <p v-else>{{ $t('provider_page.location_fallback') }}</p>
+        </div>
+        <a
+          v-if="primaryAddress"
+          class="provider-link-button"
+          :href="getDirectionsUrl(primaryAddress)"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <MapPin class="provider-button-icon" />
+          {{ $t('provider_page.open_map') }}
+        </a>
+      </section>
+    </template>
+  </main>
+</template>
+
+<style scoped>
+@reference "../style.css";
+
+.provider-page {
+  @apply min-h-screen bg-white text-gray-950;
+}
+
+.provider-state {
+  @apply mx-auto flex min-h-[60vh] max-w-xl flex-col items-center justify-center gap-4 px-6 text-center text-gray-600;
+}
+
+.provider-state h1 {
+  @apply text-3xl font-bold text-gray-950;
+}
+
+.provider-spinner {
+  @apply h-9 w-9 animate-spin rounded-full border-2 border-gray-200 border-t-primary-600;
+}
+
+.provider-hero {
+  @apply bg-gray-950 text-white;
+}
+
+.provider-hero-inner {
+  @apply mx-auto flex max-w-7xl flex-col gap-8 px-6 py-16 md:flex-row md:items-end md:justify-between;
+}
+
+.provider-identity {
+  @apply flex max-w-3xl flex-col gap-6 sm:flex-row sm:items-center;
+}
+
+.provider-logo,
+.provider-logo-fallback {
+  @apply h-24 w-24 shrink-0 rounded-lg border border-white/20 object-cover shadow-lg;
+}
+
+.provider-logo-fallback {
+  @apply flex items-center justify-center bg-primary-600 text-2xl font-bold text-white;
+}
+
+.provider-eyebrow {
+  @apply mb-3 text-sm font-semibold uppercase tracking-wide text-primary-200;
+}
+
+.provider-identity h1 {
+  @apply text-4xl font-bold md:text-6xl;
+}
+
+.provider-description {
+  @apply mt-4 max-w-2xl text-lg text-gray-200;
+}
+
+.provider-actions {
+  @apply flex flex-col gap-3 sm:flex-row;
+}
+
+.provider-button {
+  @apply inline-flex h-11 items-center justify-center gap-2 rounded-md px-5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-200 focus:ring-offset-2 focus:ring-offset-gray-950;
+}
+
+.provider-button--primary {
+  @apply bg-white text-gray-950 hover:bg-gray-100;
+}
+
+.provider-button--outline {
+  @apply border border-gray-300 bg-white text-gray-900 shadow-sm hover:bg-gray-50;
+}
+
+.provider-button--dark {
+  @apply bg-gray-950 text-white shadow-sm hover:bg-gray-800;
+}
+
+.provider-button-icon {
+  @apply h-4 w-4;
+}
+
+.provider-link-button {
+  @apply inline-flex h-11 items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-5 text-sm font-medium text-gray-900 shadow-sm transition-colors hover:bg-gray-50;
+}
+
+.provider-summary {
+  @apply mx-auto grid max-w-7xl grid-cols-1 gap-3 px-6 py-6 sm:grid-cols-3;
+}
+
+.provider-summary-item {
+  @apply flex items-center gap-3 rounded-lg border bg-white px-4 py-3 text-sm font-medium text-gray-700;
+}
+
+.provider-summary-icon {
+  @apply h-5 w-5 text-primary-600;
+}
+
+.provider-customer-path {
+  @apply bg-gray-50 px-6 py-8;
+}
+
+.provider-customer-path-inner {
+  @apply mx-auto flex max-w-7xl flex-col gap-5 rounded-lg border border-gray-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center;
+}
+
+.provider-customer-icon {
+  @apply flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-primary-50 text-primary-700;
+}
+
+.provider-customer-icon svg {
+  @apply h-6 w-6;
+}
+
+.provider-customer-copy {
+  @apply flex-1;
+}
+
+.provider-customer-eyebrow {
+  @apply mb-1 text-xs font-semibold uppercase tracking-wide text-primary-700;
+}
+
+.provider-customer-copy h2 {
+  @apply text-xl font-bold text-gray-950;
+}
+
+.provider-customer-copy p:not(.provider-customer-eyebrow) {
+  @apply mt-1 max-w-2xl text-sm text-gray-600;
+}
+
+.provider-section {
+  @apply mx-auto max-w-7xl px-6 py-10;
+}
+
+.provider-section-header {
+  @apply mb-6;
+}
+
+.provider-section h2 {
+  @apply text-2xl font-bold text-gray-950;
+}
+
+.provider-section p {
+  @apply mt-1 text-gray-600;
+}
+
+.service-list {
+  @apply divide-y rounded-lg border bg-white;
+}
+
+.service-row {
+  @apply grid gap-4 p-4 sm:grid-cols-[96px_1fr_auto] sm:items-center;
+}
+
+.service-image {
+  @apply h-24 w-full rounded-md object-cover sm:w-24;
+}
+
+.service-content h3 {
+  @apply text-lg font-semibold text-gray-950;
+}
+
+.service-meta {
+  @apply mt-3 flex flex-wrap gap-4 text-sm font-medium text-gray-700;
+}
+
+.service-meta span {
+  @apply inline-flex items-center gap-1.5;
+}
+
+.service-meta-icon {
+  @apply h-4 w-4 text-gray-500;
+}
+
+.provider-empty {
+  @apply rounded-lg border border-dashed p-8 text-center text-gray-500;
+}
+
+.staff-grid {
+  @apply grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5;
+}
+
+.staff-card {
+  @apply rounded-lg border bg-white p-4 text-center;
+}
+
+.staff-photo,
+.staff-photo-fallback {
+  @apply mx-auto mb-3 h-20 w-20 rounded-full object-cover;
+}
+
+.staff-photo-fallback {
+  @apply flex items-center justify-center bg-gray-100 font-semibold text-gray-700;
+}
+
+.staff-card h3 {
+  @apply font-semibold text-gray-950;
+}
+
+.gallery-grid {
+  @apply grid grid-cols-2 gap-3 md:grid-cols-3;
+}
+
+.gallery-image {
+  @apply aspect-square w-full rounded-lg object-cover;
+}
+
+.provider-location {
+  @apply mb-10 flex flex-col gap-4 border-t md:flex-row md:items-center md:justify-between;
+}
+</style>

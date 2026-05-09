@@ -14,7 +14,6 @@ import type { Service } from '../../types'
 import ServiceFormModal from '../../components/provider/ServiceFormModal.vue'
 import ConfirmationModal from '../../components/common/ConfirmationModal.vue'
 import LoadingSpinner from '../../components/common/LoadingSpinner.vue'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-vue-next'
 import { canAddService } from '../../services/subscriptionService'
 import BackButton from '../../components/common/BackButton.vue'
@@ -318,17 +317,17 @@ async function confirmDeactivation() {
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
                 {{ $t('provider.services.add_button') }}
-              </button>
+            </button>
             <div v-if="!canAdd && limitState?.reason === 'limit_reached'" class="mt-2 w-full max-w-[400px]">
-              <Alert variant="warning">
-                <AlertCircle class="h-4 w-4" />
-                <AlertTitle>{{ $t('pricing.limits.service_msg', { planName: limitState.planName, count: limitState.limit }) }}</AlertTitle>
-                <AlertDescription>
+              <div class="provider-limit-alert" role="alert">
+                <AlertCircle class="provider-limit-alert__icon" />
+                <div>
+                  <p class="provider-limit-alert__title">{{ $t('pricing.limits.service_msg', { planName: limitState.planName, count: limitState.limit }) }}</p>
                   <router-link to="/provider/pricing" class="underline font-medium hover:text-red-900">
                     {{ $t('pricing.limits.upgrade') }}
                   </router-link>
-                </AlertDescription>
-              </Alert>
+                </div>
+              </div>
             </div>
           </div>
           </div>
@@ -381,15 +380,15 @@ async function confirmDeactivation() {
             </button>
             
             <div v-if="!canAdd && limitState?.reason === 'limit_reached'" class="mt-4 w-full max-w-[400px] text-left">
-              <Alert variant="warning">
-                <AlertCircle class="h-4 w-4" />
-                <AlertTitle>{{ $t('pricing.limits.service_msg', { planName: limitState.planName, count: limitState.limit }) }}</AlertTitle>
-                <AlertDescription>
+              <div class="provider-limit-alert" role="alert">
+                <AlertCircle class="provider-limit-alert__icon" />
+                <div>
+                  <p class="provider-limit-alert__title">{{ $t('pricing.limits.service_msg', { planName: limitState.planName, count: limitState.limit }) }}</p>
                   <router-link to="/provider/pricing" class="underline font-medium hover:text-red-900">
                     {{ $t('pricing.limits.upgrade') }}
                   </router-link>
-                </AlertDescription>
-              </Alert>
+                </div>
+              </div>
             </div>
           </div>
       </div>
@@ -550,6 +549,18 @@ async function confirmDeactivation() {
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #ccc;
+}
+
+.provider-limit-alert {
+  @apply flex gap-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900;
+}
+
+.provider-limit-alert__icon {
+  @apply mt-0.5 h-4 w-4 flex-shrink-0;
+}
+
+.provider-limit-alert__title {
+  @apply font-medium;
 }
 
 .service-card-feedback {

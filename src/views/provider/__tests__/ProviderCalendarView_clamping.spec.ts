@@ -37,11 +37,6 @@ vi.mock("../../../stores/useSettingsStore", () => ({
 }));
 
 // Mock child components
-vi.mock("@/components/ui/card", () => ({
-    Card: { template: "<div><slot /></div>" },
-    CardHeader: { template: "<div><slot /></div>" },
-    CardContent: { template: "<div><slot /></div>" },
-}));
 vi.mock("@/components/provider/AppointmentDetailsModal.vue", () => ({ default: { template: "<div></div>" } }));
 vi.mock("@/components/provider/BlockTimeModal.vue", () => ({ default: { template: "<div></div>" } }));
 vi.mock("@/components/provider/BlockDetailsModal.vue", () => ({ default: { template: "<div></div>" } }));
@@ -71,9 +66,7 @@ describe("ProviderCalendarView Event Clamping", () => {
             global: {
                 mocks: { $t: (key: string) => key },
                 stubs: {
-                    Button: true,
-                    // Card components are already mocked globally with vi.mock
-                    Tabs: true, TabsList: true, TabsTrigger: true
+                    LoadingSpinner: true,
                 },
             },
         });

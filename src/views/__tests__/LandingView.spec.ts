@@ -53,6 +53,13 @@ vi.mock('@/composables/useLocation', () => ({
 
 // Mock vue-i18n
 vi.mock('vue-i18n', () => ({
+    createI18n: () => ({
+        global: {
+            locale: {
+                value: 'en'
+            }
+        }
+    }),
     useI18n: () => ({
         t: (key: string) => key
     })
@@ -87,12 +94,11 @@ describe('LandingView', () => {
         await new Promise(resolve => setTimeout(resolve, 0))
 
         expect(wrapper.exists()).toBe(true)
-        expect(supabase.rpc).toHaveBeenCalledWith('discover_providers', expect.objectContaining({
-            p_country_code: 'BR'
-        }))
+        expect(wrapper.text()).toContain('landing.institutional_title')
+        expect(supabase.rpc).not.toHaveBeenCalled()
     })
 
-    it('has hero images loaded correctly', async () => {
+    it('renders the business-page preview instead of marketplace search', async () => {
         setActivePinia(createPinia())
         const wrapper = mount(LandingView, {
             global: {
@@ -108,13 +114,8 @@ describe('LandingView', () => {
             }
         })
 
-        // Check if the hero section exists
-        const heroSection = wrapper.find('.bg-cover')
-        expect(heroSection.exists()).toBe(true)
-
-        // Check if background image is set
-        // We check the component state because happy-dom might strip complex style strings
-        const vm = wrapper.vm as any
-        expect(vm.currentHero.image).toBe('/img/manicure.png')
+        expect(wrapper.text()).toContain('robglamour.agendaly.co')
+        expect(wrapper.text()).not.toContain('Search Bar')
+        expect(wrapper.text()).not.toContain('Category Pills')
     })
 })

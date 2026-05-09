@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/useAuthStore'
+import { isBusinessHost } from '../lib/publicHost'
 
 const router = createRouter({
     history: createWebHistory(),
@@ -29,7 +30,7 @@ const router = createRouter({
         {
             path: '/for-business',
             name: 'ForBusiness',
-            component: () => import('../views/ForBusinessView.vue')
+            redirect: '/'
         },
         {
             path: '/login',
@@ -45,11 +46,6 @@ const router = createRouter({
         {
             path: '/booking',
             name: 'Booking',
-            component: () => import('../views/BookingView.vue')
-        },
-        {
-            path: '/p/:providerSlug/s/:staffSlug',
-            name: 'StaffBooking',
             component: () => import('../views/BookingView.vue')
         },
         {
@@ -183,6 +179,16 @@ const router = createRouter({
             name: 'Deactivated',
             component: () => import('../views/DeactivatedAccountView.vue'),
             meta: { requiresAuth: true }
+        },
+        {
+            path: '/:providerSlug',
+            name: 'ProviderLanding',
+            component: () => import('../views/ProviderLandingView.vue')
+        },
+        {
+            path: '/:providerSlug/:staffSlug/:serviceSlug?',
+            name: 'StaffBooking',
+            component: () => import('../views/BookingView.vue')
         }
     ]
 })
@@ -190,6 +196,10 @@ const router = createRouter({
 // Navigation guards
 router.beforeEach(async (to, _from, next) => {
     const authStore = useAuthStore()
+
+    if (isBusinessHost() && to.path === '/for-business') {
+        return next('/')
+    }
     
     // Ensure auth is initialized before routing
     if (!authStore.isReady) {
@@ -203,6 +213,9 @@ router.beforeEach(async (to, _from, next) => {
 
     // Login page - redirect if already authenticated based on role
     if (to.meta.requiresGuest && authStore.isAuthenticated) {
+        if (to.query.redirect) {
+            return next(to.query.redirect as string)
+        }
         if (authStore.isSuperAdmin) {
             return next('/super-admin/dashboard')
         }
@@ -214,9 +227,14 @@ router.beforeEach(async (to, _from, next) => {
 
     // Protected routes - require authentication
     if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+        const query: Record<string, string> = { redirect: to.fullPath }
+        if (to.path === '/my-bookings') {
+            query.context = 'customer'
+        }
+
         return next({
             path: '/login',
-            query: { redirect: to.fullPath }
+            query
         })
     }
 
@@ -248,7 +266,7 @@ router.beforeEach(async (to, _from, next) => {
         // Check if profile is incomplete
         if (authStore.profile && (!authStore.profile.name || !authStore.profile.phone)) {
             // Skip for auth callback, admin routes, provider routes, or booking route (they handle their own flow)
-            if (to.path === '/auth/callback' || to.path.startsWith('/admin') || to.path.startsWith('/provider') || to.path.startsWith('/super-admin') || to.path === '/booking') {
+            if (to.path === '/auth/callback' || to.path.startsWith('/admin') || to.path.startsWith('/provider') || to.path.startsWith('/super-admin') || to.path === '/booking' || to.name === 'StaffBooking') {
                 return next()
             }
             return next({ path: '/profile', query: { redirect: to.fullPath } })

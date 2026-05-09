@@ -3,18 +3,25 @@ import { ref } from 'vue'
 import i18n from '../lib/i18n'
 import { fetchGeoInfo, getLanguageFromGeo, getCurrencyFromGeo, getCountryCodeFromLocale, saveCountryCode } from '../services/geo'
 
+function normalizeSupportedLanguage(locale?: string | null): 'en' | 'pt' {
+  const language = (locale || 'en').replace('_', '-').split('-')[0] || 'en'
+  if (language === 'pt') return 'pt'
+  return 'en'
+}
+
 export const useSettingsStore = defineStore('settings', () => {
   const language = ref<string>(localStorage.getItem('language') || '')
   const currency = ref<string>(localStorage.getItem('currency') || '')
 
   function setLanguage(lang: string) {
-    language.value = lang
-    localStorage.setItem('language', lang)
-    const countryCode = getCountryCodeFromLocale(lang)
+    const normalizedLang = normalizeSupportedLanguage(lang)
+    language.value = normalizedLang
+    localStorage.setItem('language', normalizedLang)
+    const countryCode = getCountryCodeFromLocale(normalizedLang)
     if (countryCode) saveCountryCode(countryCode)
     if (i18n.global) {
       // @ts-ignore
-      i18n.global.locale.value = lang
+      i18n.global.locale.value = normalizedLang
     }
   }
 
@@ -25,7 +32,8 @@ export const useSettingsStore = defineStore('settings', () => {
 
   async function init() {
     // 1. Saved User Preference (handled by ref init)
-    let finalLang = language.value
+    const savedLang = language.value || localStorage.getItem('language') || ''
+    let finalLang: string = savedLang ? normalizeSupportedLanguage(savedLang) : ''
     let finalCurr = currency.value
 
     // We need to determine if we need to fetch geo.
@@ -53,11 +61,11 @@ export const useSettingsStore = defineStore('settings', () => {
       const supportedLangs = ['en', 'pt']
 
       if (supportedLangs.includes(browserLang)) {
-        finalLang = browserLang
+        finalLang = normalizeSupportedLanguage(browserLang)
       }
       // 3. Country detection (IP)
       else if (geoData) {
-        finalLang = getLanguageFromGeo(geoData.country_code)
+        finalLang = normalizeSupportedLanguage(getLanguageFromGeo(geoData.country_code))
       }
       // 4. Fallback
       else {

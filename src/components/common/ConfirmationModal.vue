@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import Modal from './Modal.vue'
-import { Button } from '@/components/ui/button'
 
 defineProps<{
   isOpen: boolean
@@ -33,20 +32,41 @@ const emit = defineEmits<{
     </div>
 
     <div class="mt-6 flex gap-3 sm:justify-end">
-      <Button
-        variant="outline"
-        class="flex-1 sm:flex-none"
+      <button
+        type="button"
+        class="modal-command modal-command--outline"
         @click="emit('close')"
       >
         {{ cancelLabel || $t('common.cancel') }}
-      </Button>
-      <Button
-        :variant="isDestructive ? 'destructive' : 'default'"
-        :class="[!isDestructive ? 'bg-primary-600 hover:bg-primary-700' : '', 'flex-1 sm:flex-none']"
+      </button>
+      <button
+        type="button"
+        class="modal-command"
+        :class="isDestructive ? 'modal-command--danger' : 'modal-command--primary'"
         @click="emit('confirm')"
       >
         {{ confirmLabel || $t('common.confirm') }}
-      </Button>
+      </button>
     </div>
   </Modal>
 </template>
+
+<style scoped>
+@reference "../../style.css";
+
+.modal-command {
+  @apply inline-flex h-9 flex-1 items-center justify-center rounded-md px-4 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 sm:flex-none;
+}
+
+.modal-command--outline {
+  @apply border border-gray-200 bg-white text-gray-900 shadow-sm hover:bg-gray-50;
+}
+
+.modal-command--primary {
+  @apply bg-primary-600 text-white hover:bg-primary-700;
+}
+
+.modal-command--danger {
+  @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-200;
+}
+</style>
