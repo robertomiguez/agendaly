@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase'
 import { uploadImage, deleteImage } from '../lib/storage'
-import { appendSlugSuffix, slugify } from '../lib/slug'
+import { appendSlugSuffix, isReservedProviderSlug, slugify } from '../lib/slug'
+import type { Provider } from '../types'
 
 import { getPlanByName } from './subscriptionService'
 
@@ -9,6 +10,8 @@ async function createUniqueProviderSlug(name: string, providerId?: string) {
 
     for (let suffix = 0; suffix < 100; suffix++) {
         const slug = appendSlugSuffix(baseSlug, suffix)
+        if (isReservedProviderSlug(slug)) continue
+
         let query = supabase
             .from('providers')
             .select('id')
@@ -300,6 +303,22 @@ export async function fetchRevenueReport(providerId: string) {
         .gte('appointment_date', weekStartStr)
         .lte('appointment_date', weekEndStr)
         .order('appointment_date', { ascending: false })
+
+    if (error) throw error
+    return data
+}
+
+export async function fetchPublicProviderBySlug(slug: string): Promise<Provider | null> {
+    const { data, error } = await supabase
+        .from('providers')
+        .select(`
+            *,
+            provider_addresses(*)
+        `)
+        .eq('slug', slug)
+        .eq('status', 'approved')
+        .or('active.is.true,active.is.null')
+        .maybeSingle()
 
     if (error) throw error
     return data

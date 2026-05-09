@@ -82,13 +82,6 @@ vi.mock("vue-i18n", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/card", () => ({
-    Card: { template: "<div><slot /></div>" },
-    CardHeader: { template: "<div><slot /></div>" },
-    CardContent: { template: "<div><slot /></div>" },
-}));
-
-
 describe("ProviderCalendarView Multi-Day Blocks", () => {
     beforeEach(() => {
         setActivePinia(createPinia());

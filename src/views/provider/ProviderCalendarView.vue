@@ -25,9 +25,6 @@ import BlockDetailsModal from "../../components/provider/BlockDetailsModal.vue";
 import * as availabilityService from "../../services/availabilityService";
 import ConfirmationModal from "@/components/common/ConfirmationModal.vue";
 import { useI18n } from "vue-i18n";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronLeft, ChevronRight } from "lucide-vue-next";
 import { rrulestr } from "rrule";
 import LoadingSpinner from "../../components/common/LoadingSpinner.vue";
@@ -975,33 +972,48 @@ async function handleBlockSave(data: any) {
           </div>
 
           <!-- View Tabs -->
-          <Tabs
-            :model-value="view"
-            @update:model-value="(v) => handleViewChange(v as string)"
-            class="w-[300px]"
-          >
-            <TabsList class="grid w-full grid-cols-3">
-              <TabsTrigger value="month">{{
+          <div class="calendar-tabs" role="tablist" aria-label="Calendar view">
+            <button
+              type="button"
+              class="calendar-tab"
+              :class="{ 'calendar-tab--active': view === 'month' }"
+              role="tab"
+              :aria-selected="view === 'month'"
+              @click="handleViewChange('month')"
+            >{{
                 $t("calendar.month")
-              }}</TabsTrigger>
-              <TabsTrigger value="week">{{ $t("calendar.week") }}</TabsTrigger>
-              <TabsTrigger value="day">{{ $t("calendar.day") }}</TabsTrigger>
-            </TabsList>
-          </Tabs>
+              }}</button>
+            <button
+              type="button"
+              class="calendar-tab"
+              :class="{ 'calendar-tab--active': view === 'week' }"
+              role="tab"
+              :aria-selected="view === 'week'"
+              @click="handleViewChange('week')"
+            >{{ $t("calendar.week") }}</button>
+            <button
+              type="button"
+              class="calendar-tab"
+              :class="{ 'calendar-tab--active': view === 'day' }"
+              role="tab"
+              :aria-selected="view === 'day'"
+              @click="handleViewChange('day')"
+            >{{ $t("calendar.day") }}</button>
+          </div>
         </div>
       </div>
 
       <!-- Calendar Card -->
-      <Card class="overflow-hidden">
-        <CardHeader class="border-b bg-gray-50/40 p-4">
+      <section class="calendar-card">
+        <header class="calendar-card__header">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <Button variant="outline" size="icon" @click="prevPeriod">
+              <button class="calendar-icon-button" type="button" @click="prevPeriod">
                 <ChevronLeft class="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon" @click="nextPeriod">
+              </button>
+              <button class="calendar-icon-button" type="button" @click="nextPeriod">
                 <ChevronRight class="h-4 w-4" />
-              </Button>
+              </button>
               <h2 class="text-lg font-semibold ml-2">
                 <span v-if="view === 'day'">
                   {{
@@ -1022,13 +1034,13 @@ async function handleBlockSave(data: any) {
                 </span>
               </h2>
             </div>
-            <Button variant="secondary" @click="today">
+            <button class="calendar-today-button" type="button" @click="today">
               {{ $t("calendar.today") }}
-            </Button>
+            </button>
           </div>
-        </CardHeader>
+        </header>
 
-        <CardContent class="p-0 relative">
+        <div class="relative p-0">
           <LoadingSpinner v-if="loading" :text="$t('calendar.loading')" class="absolute inset-0 z-10 bg-white/80" />
           <div class="min-h-[600px]">
             <!-- Week View (Time Grid) -->
@@ -1400,8 +1412,8 @@ async function handleBlockSave(data: any) {
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     </div>
 
     <!-- Appointment Details Modal -->
@@ -1447,3 +1459,35 @@ async function handleBlockSave(data: any) {
     />
   </div>
 </template>
+
+<style scoped>
+@reference "../../style.css";
+
+.calendar-tabs {
+  @apply grid w-[300px] grid-cols-3 rounded-md bg-gray-100 p-1;
+}
+
+.calendar-tab {
+  @apply rounded px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300;
+}
+
+.calendar-tab--active {
+  @apply bg-white text-gray-950 shadow-sm;
+}
+
+.calendar-card {
+  @apply overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm;
+}
+
+.calendar-card__header {
+  @apply border-b border-gray-200 bg-gray-50/40 p-4;
+}
+
+.calendar-icon-button {
+  @apply inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-700 transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300;
+}
+
+.calendar-today-button {
+  @apply rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-800 transition-colors hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300;
+}
+</style>

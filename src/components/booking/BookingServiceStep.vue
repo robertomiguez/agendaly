@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useSettingsStore } from '@/stores/useSettingsStore'
-import { Button } from '@/components/ui/button'
 import { DollarSign } from 'lucide-vue-next'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 
@@ -75,14 +74,22 @@ const settingsStore = useSettingsStore()
     </div>
     
     <div class="mt-8 pt-6 border-t border-gray-100 flex justify-end">
-      <Button 
-        size="lg" 
+      <button 
+        type="button"
+        class="booking-primary-command"
         @click="emit('confirm')" 
         :disabled="!selectedServiceId"
-        class="font-semibold px-8"
       >
         Continue <span class="ml-2">→</span>
-      </Button>
+      </button>
     </div>
   </div>
 </template>
+
+<style scoped>
+@reference "../../style.css";
+
+.booking-primary-command {
+  @apply inline-flex h-10 items-center justify-center gap-2 rounded-md bg-gray-950 px-8 text-sm font-semibold text-white transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+}
+</style>

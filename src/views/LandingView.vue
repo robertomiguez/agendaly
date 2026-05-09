@@ -1,488 +1,572 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import SearchBar from '../components/SearchBar.vue'
-import CategoryPills from '../components/CategoryPills.vue'
-import ProviderCard from '../components/ProviderCard.vue'
-import AdBanner from '@/components/common/AdBanner.vue'
-import { supabase } from '../lib/supabase'
-import { useLocation } from '../composables/useLocation'
-import { fetchDiscoverableProviders } from '../services/providerService'
-import { detectCountryCode } from '../services/geo'
-import type { Provider, ProviderAddress, Category } from '../types'
-import { Search, ChevronDown } from 'lucide-vue-next'
-
-// Import images
+import ProviderLandingView from './ProviderLandingView.vue'
+import { getProviderSlugFromHost } from '@/lib/publicHost'
+import { useAuthStore } from '@/stores/useAuthStore'
+import { ArrowRight, CalendarCheck, Clock, Globe2, Link, MapPin, Scissors, Share2, Smartphone, UserPlus, Users } from 'lucide-vue-next'
 import heroManicure from '@/assets/images/hero_background_manicure_1765115664380.png'
 import heroBarber from '@/assets/images/hero_barber_service_1765116285430.png'
 import heroMassage from '@/assets/images/hero_massage_service_1765116300777.png'
 import heroSpa from '@/assets/images/hero_spa_service_1765116318055.png'
 
 const router = useRouter()
-const { t, locale } = useI18n()
+const authStore = useAuthStore()
+const { t } = useI18n()
+const providerSlug = computed(() => getProviderSlugFromHost())
 
-const { location: userLocation, latitude: userLatitude, longitude: userLongitude, isPreciseLocation } = useLocation()
-
-// Track the location string actually used for the last successful search
-const searchedLocation = ref('')
-const displayLocation = computed(() => searchedLocation.value || searchParams.value.location || userLocation.value || t('landing.your_area'))
-
-const providers = ref<(Provider & { provider_addresses?: ProviderAddress[]; categories?: string[] })[]>([])
-const categories = ref<Category[]>([])
-const selectedCategory = ref<string | null>(null)
-
-const currentPage = ref(1)
-const pageSize = 8
-const totalCount = ref(0)
-const hasMore = computed(() => providers.value.length < totalCount.value)
-
-const selectedCategoryName = computed(() => {
-  const category = categories.value.find(c => c.id === selectedCategory.value)
-  return category ? category.name : ''
-})
-
-const selectedCategoryPluralName = computed(() => {
-  const name = selectedCategoryName.value
-  if (!name) return ''
-  return pluralize(name, locale.value as string)
-})
-
-function pluralize(word: string, localeCode: string): string {
-  if (!word) return ''
-  const lower = word.toLowerCase()
-
-  if (localeCode.startsWith('pt')) {
-    // Portuguese rules
-    if (lower.endsWith('m')) return word.slice(0, -1) + 'ns'
-    if (lower.endsWith('ão')) return word.slice(0, -2) + 'ões'
-    if (lower.endsWith('r') || lower.endsWith('z') || lower.endsWith('s')) return word + 'es'
-    if (lower.endsWith('l')) {
-      if (lower.endsWith('al')) return word.slice(0, -1) + 'is'
-      if (lower.endsWith('el')) return word.slice(0, -2) + 'éis'
-      if (lower.endsWith('ol')) return word.slice(0, -2) + 'óis'
-      if (lower.endsWith('ul')) return word.slice(0, -2) + 'uis'
-    }
-  } else if (localeCode.startsWith('en')) {
-    // English rules
-    if (lower.endsWith('y') && !/[aeiou]y$/.test(lower)) return word.slice(0, -1) + 'ies'
-    if (lower.endsWith('s') || lower.endsWith('sh') || lower.endsWith('ch') || lower.endsWith('x') || lower.endsWith('z')) return word + 'es'
-  } else if (localeCode.startsWith('fr')) {
-    // French rules
-    if (lower.endsWith('al')) return word.slice(0, -1) + 'ux'
-    if (lower.endsWith('eau')) return word + 'x'
-    if (lower.endsWith('eu')) return word + 'x'
-    if (lower.endsWith('s') || lower.endsWith('x') || lower.endsWith('z')) return word
+const valueItems = computed(() => [
+  {
+    icon: Link,
+    title: t('landing.provider_first_links_title'),
+    description: t('landing.provider_first_links_desc')
+  },
+  {
+    icon: CalendarCheck,
+    title: t('landing.same_booking_flow_title'),
+    description: t('landing.same_booking_flow_desc')
+  },
+  {
+    icon: Globe2,
+    title: t('landing.public_minisite_title'),
+    description: t('landing.public_minisite_desc')
   }
+])
 
-  // Default for all: add 's'
-  return word + 's'
-}
-
-const searchParams = ref({ location: '', lat: undefined as number | undefined, lng: undefined as number | undefined })
-const loading = ref(false)
-const detectedCountryCode = ref<string | null>(null)
-
-watch([isPreciseLocation, userLatitude, userLongitude], ([isPrecise, lat, lng]) => {
-  if (!isPrecise || lat === null || lng === null) return
-  if (searchParams.value.location || bypassLocationFilter.value) return
-
-  searchedLocation.value = userLocation.value || ''
-  fetchProviders()
-})
-
-// Rotating hero content
-const heroOptions = [
+const workflowSteps = computed(() => [
   {
-    service: 'manicure',
-    image: heroManicure
+    icon: Smartphone,
+    title: t('landing.workflow.publish_title'),
+    description: t('landing.workflow.publish_desc')
   },
   {
-    service: 'haircut',
-    image: heroBarber
+    icon: Users,
+    title: t('landing.workflow.share_title'),
+    description: t('landing.workflow.share_desc')
   },
   {
-    service: 'massage',
-    image: heroMassage
-  },
-  {
-    service: 'spa',
-    image: heroSpa
+    icon: CalendarCheck,
+    title: t('landing.workflow.relationship_title'),
+    description: t('landing.workflow.relationship_desc')
   }
+])
+
+const featureItems = computed(() => [
+  {
+    icon: Globe2,
+    title: t('landing.features.mini_pages_title'),
+    description: t('landing.features.mini_pages_desc')
+  },
+  {
+    icon: Scissors,
+    title: t('landing.features.service_links_title'),
+    description: t('landing.features.service_links_desc')
+  },
+  {
+    icon: UserPlus,
+    title: t('landing.features.staff_links_title'),
+    description: t('landing.features.staff_links_desc')
+  },
+  {
+    icon: MapPin,
+    title: t('landing.features.locations_title'),
+    description: t('landing.features.locations_desc')
+  },
+  {
+    icon: CalendarCheck,
+    title: t('landing.features.availability_title'),
+    description: t('landing.features.availability_desc')
+  },
+  {
+    icon: Share2,
+    title: t('landing.features.customer_return_title'),
+    description: t('landing.features.customer_return_desc')
+  }
+])
+
+const providerFlowSteps = computed(() => [
+  t('landing.provider_flow.profile'),
+  t('landing.provider_flow.services'),
+  t('landing.provider_flow.share'),
+  t('landing.provider_flow.customer')
+])
+
+const beautyImages = [
+  { src: heroManicure, alt: 'Manicure service detail' },
+  { src: heroBarber, alt: 'Barber service detail' },
+  { src: heroMassage, alt: 'Massage service detail' },
+  { src: heroSpa, alt: 'Spa service detail' }
 ]
 
-const currentHeroIndex = ref(0)
-let rotationInterval: number | null = null
-
-const currentHero = computed(() => (heroOptions[currentHeroIndex.value] ?? heroOptions[0])!)
-
-const heroBackgroundImage = computed(() =>
-  `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('${currentHero.value.image}')`
-)
-
-function rotateHero() {
-  // Get random index different from current
-  let newIndex = currentHeroIndex.value
-  while (newIndex === currentHeroIndex.value) {
-    newIndex = Math.floor(Math.random() * heroOptions.length)
-  }
-  currentHeroIndex.value = newIndex
+function goToLogin() {
+  router.push('/login?redirect=/provider')
 }
 
-onMounted(async () => {
-  await Promise.all([
-    fetchCategories(),
-    detectCountry()
-  ])
-  await fetchProviders()
-
-  // Start rotation
-  rotationInterval = window.setInterval(rotateHero, 3000)
-})
-
-onUnmounted(() => {
-  if (rotationInterval) {
-    clearInterval(rotationInterval)
-  }
-})
-
-async function fetchCategories() {
-  try {
-    const { data } = await supabase
-      .from('categories')
-      .select('*')
-      .order('name')
-
-    categories.value = data || []
-  } catch (error) {
-    console.error('Error fetching categories:', error)
-  }
-}
-
-async function detectCountry() {
-  detectedCountryCode.value = await detectCountryCode()
-}
-
-// Store the active filters used for the current search so pagination doesn't break if inputs change mid-way
-const activeFilters = ref({
-  categoryId: null as string | null,
-  searchTerm: '' as string | null,
-  userLat: null as number | null,
-  userLng: null as number | null,
-  countryCode: null as string | null
-})
-
-let currentFetchId = 0
-
-async function fetchProviders(append = false) {
-  const fetchId = ++currentFetchId
-
-  if (!append) {
-    currentPage.value = 1
-    providers.value = []
-
-    // If we have a geocoded search location, use that for coordinates
-    const hasGeocodedLocation = searchParams.value.lat !== undefined && searchParams.value.lng !== undefined
-
-    let finalSearchTerm = null
-    let finalLat = null
-    let finalLng = null
-    let finalCountryCode = null
-
-    if (hasGeocodedLocation) {
-      // User used Maps autocomplete - use strict radius search
-      finalLat = searchParams.value.lat!
-      finalLng = searchParams.value.lng!
-    } else if (searchParams.value.location) {
-      // Manual text search - ignore system country filter
-      finalSearchTerm = searchParams.value.location
-    } else if (!bypassLocationFilter.value) {
-      if (isPreciseLocation.value && userLatitude.value !== null && userLongitude.value !== null) {
-        finalLat = userLatitude.value
-        finalLng = userLongitude.value
-      } else {
-        // Empty search bar, but not 'See All' - default to system/IP country detection
-        finalCountryCode = detectedCountryCode.value
-      }
-    }
-
-    // Capture filters when starting a new search
-    activeFilters.value = {
-      categoryId: selectedCategory.value,
-      searchTerm: finalSearchTerm,
-      userLat: finalLat,
-      userLng: finalLng,
-      countryCode: finalCountryCode
-    }
+async function goToMyBookings() {
+  if (!authStore.isAuthenticated) {
+    router.push('/login?redirect=/my-bookings&context=customer')
+    return
   }
 
-  loading.value = true
-  try {
-    const { providers: newProviders, totalCount: count } = await fetchDiscoverableProviders({
-      categoryId: activeFilters.value.categoryId,
-      searchTerm: activeFilters.value.searchTerm,
-      userLat: activeFilters.value.userLat,
-      userLng: activeFilters.value.userLng,
-      countryCode: activeFilters.value.countryCode,
-      page: currentPage.value,
-      pageSize
-    })
-
-    // Ignore stale responses
-    if (fetchId !== currentFetchId) return
-
-    if (append) {
-      providers.value = [...providers.value, ...newProviders]
-    } else {
-      providers.value = newProviders
-    }
-
-    // Only update totalCount if we got a valid count, or if this is the initial load.
-    // This prevents the "Load More" button from vanishing if a pagination call returns empty.
-    if (count > 0 || !append) {
-      totalCount.value = count
-    }
-  } catch (error) {
-    if (fetchId !== currentFetchId) return
-    console.error('Error fetching providers:', error)
-  } finally {
-    if (fetchId === currentFetchId) {
-      loading.value = false
-    }
+  if (!authStore.customer) {
+    await authStore.ensureProfileAndCustomer()
+    await authStore.fetchCustomerProfile()
   }
-}
 
-async function loadMore() {
-  if (loading.value || !hasMore.value) return
-  currentPage.value++
-  await fetchProviders(true)
-}
-
-const bypassLocationFilter = ref(false)
-
-const shouldShowFunnyEmptyState = computed(() => {
-  if (bypassLocationFilter.value) return false
-
-  // Only show funny state if we have a location context (search or geo) AND no providers found
-  const hasLocationContext = !!searchParams.value.location || !!detectedCountryCode.value
-  return hasLocationContext && providers.value.length === 0
-})
-
-const displayedProviders = computed(() => {
-  return providers.value.map(p => ({
-    ...p,
-    distance: (p as any).distance_meters ? (p as any).distance_meters / 1000 : null
-  }))
-})
-
-// Apply service filter (if strict match needed beyond category) -
-// actually the original logic filtered by category OR service param.
-// The prompt removed service input, but code might still rely on searchParams.service if passed?
-// Assuming searchParams.service is effectively cleared or unused now based on previous steps,
-// but let's keep consistency with `categoryFilteredProviders`.
-
-
-const resultsSection = ref<HTMLElement | null>(null)
-
-function scrollToResults() {
-  if (resultsSection.value && window.innerWidth < 768) {
-    resultsSection.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-}
-
-
-
-function handleSearch(params: { location: string, lat?: number, lng?: number }) {
-  searchParams.value.location = params.location
-  searchParams.value.lat = params.lat
-  searchParams.value.lng = params.lng
-  searchedLocation.value = params.location
-  bypassLocationFilter.value = false
-  fetchProviders()
-  scrollToResults()
-}
-
-function handleCategorySelect(categoryId: string | null) {
-  selectedCategory.value = categoryId
-  fetchProviders()
-  scrollToResults()
-}
-
-function handleSeeAll() {
-  searchParams.value.location = ''
-  searchParams.value.lat = undefined
-  searchParams.value.lng = undefined
-  selectedCategory.value = null
-  bypassLocationFilter.value = true
-  fetchProviders()
-  scrollToResults()
+  router.push({ name: 'CustomerBookings' })
 }
 </script>
 
 <template>
-  <div class="min-h-screen bg-white">
-    <!-- Hero Section with Background Image -->
-    <div
-      class="relative bg-cover bg-center min-h-[600px] md:h-[500px] flex items-center transition-all duration-1000"
-      :style="{ backgroundImage: heroBackgroundImage }"
-    >
-      <div class="max-w-7xl mx-auto px-6 w-full py-16 md:py-0">
-        <div class="max-w-3xl">
-          <h1 class="text-5xl lg:text-6xl font-bold text-white mb-6 min-h-[3.6em] lg:min-h-[2.4em] flex flex-col justify-center">
-            {{ $t('landing.hero_title') }}
-            <span class="inline-block transition-all duration-500">{{ $t(`landing.hero_services.${currentHero.service}`) }}</span>
-          </h1>
+  <ProviderLandingView v-if="providerSlug" :provider-slug="providerSlug" />
 
-          <!-- Search Bar -->
-          <SearchBar
-            :initial-location="searchParams.location"
-            @search="handleSearch"
-          />
+  <main v-else class="institutional-page">
+    <section class="institutional-hero">
+      <div class="institutional-hero-inner">
+        <div class="institutional-copy">
+          <p class="institutional-eyebrow">{{ $t('landing.institutional_eyebrow') }}</p>
+          <h1>{{ $t('landing.institutional_title') }}</h1>
+          <p class="institutional-subtitle">
+            {{ $t('landing.institutional_subtitle') }}
+          </p>
+          <div class="institutional-actions">
+            <button type="button" class="institutional-login-command" @click="goToLogin">
+              {{ $t('landing.provider_login') }}
+            </button>
+          </div>
+        </div>
 
-          <!-- Category Pills -->
-          <div class="mt-10">
-            <CategoryPills
-              :categories="categories"
-              :selected-category="selectedCategory"
-              @select="handleCategorySelect"
-              @select-all="handleSeeAll"
-            />
+        <div class="institutional-visual">
+          <div class="beauty-collage">
+            <img class="beauty-collage-main" :src="heroManicure" alt="Beauty appointment service" />
+            <img class="beauty-collage-side beauty-collage-side--top" :src="heroBarber" alt="" />
+            <img class="beauty-collage-side beauty-collage-side--bottom" :src="heroSpa" alt="" />
+          </div>
+
+          <div class="institutional-preview">
+            <div class="preview-header">
+              <div class="preview-logo">RG</div>
+              <div>
+                <h2>Rob Glamour</h2>
+                <p>robglamour.agendaly.co</p>
+              </div>
+            </div>
+            <div class="preview-services">
+              <div class="preview-service">
+                <span>{{ $t('landing.preview.services.hair') }}</span>
+                <strong>$45</strong>
+              </div>
+              <div class="preview-service">
+                <span>{{ $t('landing.preview.services.manicure') }}</span>
+                <strong>$32</strong>
+              </div>
+              <div class="preview-service">
+                <span>{{ $t('landing.preview.services.makeup') }}</span>
+                <strong>$75</strong>
+              </div>
+            </div>
+            <div class="preview-cta">{{ $t('nav.book_now') }}</div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Popular Providers Section -->
-    <div ref="resultsSection" class="max-w-7xl mx-auto px-6 py-12 scroll-mt-24">
-      <div class="mb-8">
-
-        <h2 class="text-3xl font-bold text-gray-900 mb-2">
-          <template v-if="bypassLocationFilter">
-             {{ $t('landing.all_providers_title') }}
-          </template>
-          <template v-else-if="shouldShowFunnyEmptyState">
-            {{ selectedCategoryName ? $t('landing.no_service_funny', { service: selectedCategoryPluralName, city: searchParams.location || displayLocation }) : $t('landing.no_providers_funny', { city: searchParams.location || displayLocation }) }}
-            <span class="block text-lg font-normal text-gray-500 mt-2">{{ $t('landing.popular_places') }}</span>
-          </template>
-          <template v-else>
-            {{ selectedCategoryName ? $t('landing.popular_service_in', { service: selectedCategoryPluralName, location: displayLocation }) : $t('landing.popular_in', { location: displayLocation }) }}
-          </template>
-          <span
-            v-if="!bypassLocationFilter"
-            @click="handleSeeAll"
-            class="text-base font-normal text-primary-600 hover:text-primary-700 ml-4 cursor-pointer hover:underline"
-          >
-            {{ $t('nav.see_all') }} →
-          </span>
-        </h2>
+    <section class="institutional-band">
+      <div class="institutional-band-inner">
+        <article v-for="item in valueItems" :key="item.title" class="value-item">
+          <component :is="item.icon" class="value-icon" />
+          <h2>{{ item.title }}</h2>
+          <p>{{ item.description }}</p>
+        </article>
       </div>
+    </section>
 
-      <!-- Loading State -->
-      <div v-if="loading" class="text-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-        <p class="text-gray-500 mt-4">{{ $t('common.loading') }}</p>
-      </div>
-
-      <!-- Empty State -->
-      <div v-else-if="displayedProviders.length === 0" class="text-center py-12">
-        <Search class="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h3 class="text-lg font-medium text-gray-900 mb-2">{{ $t('landing.no_providers_found') }}</h3>
-        <p class="text-gray-600">{{ $t('landing.adjust_search') }}</p>
-      </div>
-
-      <!-- Provider Grid -->
-      <div v-else>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          <template
-            v-for="provider in displayedProviders"
-            :key="provider.id"
-          >
-            <ProviderCard
-              :provider="provider"
-              :rating="5.0"
-              :review-count="Math.floor(Math.random() * 100) + 10"
-              :categories="provider.categories"
-              @click="router.push(`/booking?provider=${provider.id}`)"
-            />
-          </template>
-        </div>
-
-        <!-- Ad Banner (Single, after the grid) -->
-        <AdBanner
-          v-if="displayedProviders.length > 0"
-          placement="landing"
-          class="mt-12"
-        />
-
-        <!-- Load More -->
-        <div v-if="hasMore" class="mt-12 text-center">
-          <button
-            @click="loadMore"
-            :disabled="loading"
-            class="inline-flex items-center gap-2 px-8 py-3 bg-white border border-gray-300 rounded-full text-gray-700 font-semibold hover:bg-gray-50 transition-colors disabled:opacity-50"
-          >
-            <template v-if="loading">
-              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700"></div>
-              {{ $t('common.loading') }}
-            </template>
-            <template v-else>
-              {{ $t('common.load_more') }}
-              <ChevronDown class="w-4 h-4" />
-            </template>
+    <section class="customer-return-section">
+      <div class="customer-return-inner">
+        <div class="customer-return-copy">
+          <p class="customer-return-eyebrow">{{ $t('landing.customer_return_eyebrow') }}</p>
+          <h2>{{ $t('landing.customer_return_title') }}</h2>
+          <p>{{ $t('landing.customer_return_desc') }}</p>
+          <button type="button" class="customer-return-command" @click="goToMyBookings">
+            {{ $t('landing.customer_return_cta') }}
+            <ArrowRight />
           </button>
         </div>
-      </div>
-    </div>
 
-    <!-- How It Works Section -->
-    <div class="bg-gray-50 py-20">
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="text-center mb-16">
-          <h2 class="text-4xl font-bold text-gray-900 mb-4">{{ $t('landing.how_it_works_title') }}</h2>
-          <p class="text-xl text-gray-600">{{ $t('landing.how_it_works_subtitle') }}</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
-          <div class="text-center">
-            <div class="w-16 h-16 bg-primary-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-              1
-            </div>
-            <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ $t('landing.steps.browse_title') }}</h3>
-            <p class="text-gray-600">{{ $t('landing.steps.browse_desc') }}</p>
+        <div class="customer-return-preview" aria-hidden="true">
+          <div class="customer-preview-header">
+            <span>{{ $t('landing.customer_return_preview_label') }}</span>
+            <strong>{{ $t('landing.customer_return_preview_status') }}</strong>
           </div>
-
-          <div class="text-center">
-            <div class="w-16 h-16 bg-primary-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-              2
+          <div class="customer-preview-row">
+            <CalendarCheck />
+            <div>
+              <strong>{{ $t('landing.customer_return_preview_service') }}</strong>
+              <span>{{ $t('landing.customer_return_preview_provider') }}</span>
             </div>
-            <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ $t('landing.steps.time_title') }}</h3>
-            <p class="text-gray-600">{{ $t('landing.steps.time_desc') }}</p>
           </div>
-
-          <div class="text-center">
-            <div class="w-16 h-16 bg-primary-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-              3
-            </div>
-            <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ $t('landing.steps.book_title') }}</h3>
-            <p class="text-gray-600">{{ $t('landing.steps.book_desc') }}</p>
+          <div class="customer-preview-meta">
+            <span>
+              <Clock />
+              {{ $t('landing.customer_return_preview_time') }}
+            </span>
+            <span>{{ $t('landing.customer_return_preview_action') }}</span>
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Footer -->
-    <div class="bg-gray-900 text-gray-400 py-12">
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="text-center">
-          <p class="mb-4">&copy; 2026 Agendaly. {{ $t('footer.rights') }}</p>
-          <div class="flex justify-center gap-6 text-sm">
-            <a href="#" class="hover:text-white transition-colors">{{ $t('footer.about') }}</a>
-            <a href="#" class="hover:text-white transition-colors">{{ $t('footer.privacy') }}</a>
-            <a href="#" class="hover:text-white transition-colors">{{ $t('footer.terms') }}</a>
-            <a href="#" class="hover:text-white transition-colors">{{ $t('footer.contact') }}</a>
-          </div>
+    <section class="beauty-gallery-section" aria-label="Beauty services">
+      <div class="beauty-gallery">
+        <img v-for="image in beautyImages" :key="image.src" :src="image.src" :alt="image.alt" />
+      </div>
+    </section>
+
+    <section class="institutional-section">
+      <div class="section-heading">
+        <h2>{{ $t('landing.provider_workflow_title') }}</h2>
+        <p>{{ $t('landing.provider_workflow_subtitle') }}</p>
+      </div>
+
+      <div class="workflow-grid">
+        <div v-for="step in workflowSteps" :key="step.title" class="workflow-step">
+          <component :is="step.icon" class="workflow-icon" />
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.description }}</p>
         </div>
       </div>
-    </div>
-  </div>
+    </section>
+
+    <section class="institutional-section feature-section">
+      <div class="section-heading">
+        <h2>{{ $t('landing.features_title') }}</h2>
+        <p>{{ $t('landing.features_subtitle') }}</p>
+      </div>
+
+      <div class="feature-grid">
+        <article v-for="item in featureItems" :key="item.title" class="feature-item">
+          <component :is="item.icon" class="feature-icon" />
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.description }}</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="institutional-section split-section">
+      <div class="split-copy">
+        <h2>{{ $t('landing.flow_title') }}</h2>
+        <p>
+          {{ $t('landing.flow_subtitle') }}
+        </p>
+      </div>
+
+      <div class="flow-list">
+        <div v-for="(step, index) in providerFlowSteps" :key="step" class="flow-row">
+          <span>{{ index + 1 }}</span>
+          <p>{{ step }}</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="institutional-footer">
+      <p>&copy; 2026 Agendaly. {{ $t('footer.rights') }}</p>
+    </footer>
+  </main>
 </template>
+
+<style scoped>
+@reference "../style.css";
+
+.institutional-page {
+  @apply min-h-screen bg-amber-50/30 text-gray-950;
+}
+
+.institutional-hero {
+  @apply overflow-hidden bg-gray-950 text-white;
+}
+
+.institutional-hero-inner {
+  @apply mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-[0.95fr_1.05fr] lg:items-center;
+}
+
+.institutional-copy {
+  @apply max-w-3xl;
+}
+
+.institutional-eyebrow {
+  @apply mb-4 text-sm font-semibold uppercase tracking-wide text-primary-200;
+}
+
+.institutional-copy h1 {
+  @apply text-5xl font-bold leading-tight md:text-6xl;
+}
+
+.institutional-subtitle {
+  @apply mt-6 max-w-2xl text-xl text-gray-200;
+}
+
+.institutional-actions {
+  @apply mt-8 flex flex-col gap-3 sm:flex-row;
+}
+
+.institutional-login-command {
+  @apply inline-flex h-10 items-center justify-center rounded-md border border-white/70 bg-transparent px-6 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-gray-950 focus:outline-none focus:ring-2 focus:ring-white/70 focus:ring-offset-2 focus:ring-offset-gray-950;
+}
+
+.institutional-visual {
+  @apply relative min-h-[440px] md:min-h-[520px];
+}
+
+.beauty-collage {
+  @apply grid h-[440px] grid-cols-[1fr_112px] grid-rows-2 gap-3 md:h-[520px] md:grid-cols-[1fr_160px];
+}
+
+.beauty-collage img {
+  @apply h-full w-full rounded-lg object-cover;
+}
+
+.beauty-collage-main {
+  @apply row-span-2 min-h-0 shadow-2xl;
+}
+
+.beauty-collage-side {
+  @apply min-h-0 border border-white/10;
+}
+
+.beauty-collage-side--top {
+  @apply min-h-0;
+}
+
+.beauty-collage-side--bottom {
+  @apply min-h-0;
+}
+
+.institutional-preview {
+  @apply absolute bottom-6 left-6 right-6 rounded-lg bg-white p-5 text-gray-950 shadow-2xl sm:left-auto sm:w-80;
+}
+
+.preview-header {
+  @apply flex items-center gap-4 border-b pb-4;
+}
+
+.preview-logo {
+  @apply flex h-14 w-14 items-center justify-center rounded-lg bg-primary-600 font-bold text-white;
+}
+
+.preview-header h2 {
+  @apply text-xl font-bold;
+}
+
+.preview-header p {
+  @apply text-sm text-gray-500;
+}
+
+.preview-services {
+  @apply my-5 divide-y rounded-md border;
+}
+
+.preview-service {
+  @apply flex items-center justify-between px-4 py-3 text-sm;
+}
+
+.preview-cta {
+  @apply rounded-md bg-gray-950 px-4 py-3 text-center text-sm font-semibold text-white;
+}
+
+.institutional-band {
+  @apply border-b border-amber-100 bg-white;
+}
+
+.institutional-band-inner {
+  @apply mx-auto grid max-w-7xl gap-4 px-6 py-8 md:grid-cols-3;
+}
+
+.value-item {
+  @apply rounded-lg border bg-white p-5;
+}
+
+.value-icon,
+.workflow-icon {
+  @apply mb-4 h-6 w-6 text-primary-600;
+}
+
+.value-item h2,
+.workflow-step h3 {
+  @apply text-lg font-bold text-gray-950;
+}
+
+.value-item p,
+.workflow-step p,
+.section-heading p {
+  @apply mt-2 text-gray-600;
+}
+
+.customer-return-section {
+  @apply bg-amber-50/30 px-6 py-14;
+}
+
+.customer-return-inner {
+  @apply mx-auto grid max-w-7xl gap-8 rounded-lg border border-amber-100 bg-white p-6 shadow-sm md:grid-cols-[1fr_360px] md:items-center lg:p-8;
+}
+
+.customer-return-copy {
+  @apply max-w-2xl;
+}
+
+.customer-return-eyebrow {
+  @apply mb-3 text-sm font-semibold uppercase tracking-wide text-primary-700;
+}
+
+.customer-return-copy h2 {
+  @apply text-3xl font-bold text-gray-950;
+}
+
+.customer-return-copy p {
+  @apply mt-3 text-gray-600;
+}
+
+.customer-return-command {
+  @apply mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-md bg-gray-950 px-5 text-sm font-semibold text-white transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2;
+}
+
+.customer-return-command svg {
+  @apply h-4 w-4;
+}
+
+.customer-return-preview {
+  @apply rounded-lg border border-gray-200 bg-white p-4 shadow-sm;
+}
+
+.customer-preview-header {
+  @apply flex items-center justify-between border-b border-gray-100 pb-3 text-sm;
+}
+
+.customer-preview-header span {
+  @apply font-medium text-gray-500;
+}
+
+.customer-preview-header strong {
+  @apply rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700;
+}
+
+.customer-preview-row {
+  @apply grid grid-cols-[40px_1fr] gap-3 py-4;
+}
+
+.customer-preview-row > svg {
+  @apply h-10 w-10 rounded-md bg-primary-50 p-2.5 text-primary-700;
+}
+
+.customer-preview-row div {
+  @apply grid gap-1;
+}
+
+.customer-preview-row strong {
+  @apply text-sm font-semibold text-gray-950;
+}
+
+.customer-preview-row span {
+  @apply text-sm text-gray-500;
+}
+
+.customer-preview-meta {
+  @apply flex flex-col gap-2 rounded-md bg-gray-50 p-3 text-sm text-gray-600 sm:flex-row sm:items-center sm:justify-between;
+}
+
+.customer-preview-meta span {
+  @apply inline-flex items-center gap-1.5;
+}
+
+.customer-preview-meta svg {
+  @apply h-4 w-4 text-gray-500;
+}
+
+.beauty-gallery-section {
+  @apply bg-white px-6 py-6;
+}
+
+.beauty-gallery {
+  @apply mx-auto grid max-w-7xl grid-cols-2 gap-3 md:grid-cols-4;
+}
+
+.beauty-gallery img {
+  @apply aspect-[4/3] w-full rounded-lg object-cover shadow-sm;
+}
+
+.institutional-section {
+  @apply mx-auto max-w-7xl px-6 py-16;
+}
+
+.section-heading {
+  @apply max-w-2xl;
+}
+
+.section-heading h2 {
+  @apply text-3xl font-bold text-gray-950;
+}
+
+.workflow-grid {
+  @apply mt-8 grid gap-4 md:grid-cols-3;
+}
+
+.workflow-step {
+  @apply rounded-lg border bg-white p-6;
+}
+
+.feature-section {
+  @apply border-t border-amber-100 bg-white;
+}
+
+.feature-grid {
+  @apply mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3;
+}
+
+.feature-item {
+  @apply rounded-lg border bg-white p-6;
+}
+
+.feature-icon {
+  @apply mb-4 h-6 w-6 text-primary-600;
+}
+
+.feature-item h3 {
+  @apply text-lg font-bold text-gray-950;
+}
+
+.feature-item p {
+  @apply mt-2 text-gray-600;
+}
+
+.split-section {
+  @apply grid gap-8 border-t lg:grid-cols-[0.8fr_1fr] lg:items-start;
+}
+
+.split-copy h2 {
+  @apply text-3xl font-bold text-gray-950;
+}
+
+.split-copy p {
+  @apply mt-3 text-gray-600;
+}
+
+.flow-list {
+  @apply grid gap-3;
+}
+
+.flow-row {
+  @apply grid grid-cols-[40px_1fr] gap-4 rounded-lg border bg-white p-4;
+}
+
+.flow-row span {
+  @apply flex h-10 w-10 items-center justify-center rounded-full bg-gray-950 text-sm font-bold text-white;
+}
+
+.flow-row p {
+  @apply self-center text-gray-700;
+}
+
+.institutional-footer {
+  @apply border-t bg-gray-950 px-6 py-8 text-center text-sm text-gray-400;
+}
+</style>

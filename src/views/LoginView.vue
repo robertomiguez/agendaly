@@ -2,6 +2,7 @@
 import { computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/useAuthStore'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import LoginForm from '../components/auth/LoginForm.vue'
 import heroImage from '@/assets/images/hero_barber_service_1765116285430.png'
 import BackButton from '../components/common/BackButton.vue'
@@ -9,6 +10,7 @@ import BackButton from '../components/common/BackButton.vue'
 const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
+const { t } = useI18n()
 
 // Determine context from redirect URL
 const loginContext = computed(() => {
@@ -23,6 +25,23 @@ const loginContext = computed(() => {
 const isBookingContext = computed(() => {
   const redirect = route.query.redirect as string
   return redirect && redirect.startsWith('/booking')
+})
+
+const isBookingsContext = computed(() => {
+  const redirect = route.query.redirect as string
+  return redirect && redirect.startsWith('/my-bookings')
+})
+
+const customerLoginTitle = computed(() => {
+  if (isBookingContext.value) return t('auth.customer_booking_title')
+  if (isBookingsContext.value) return t('auth.customer_bookings_title')
+  return t('auth.customer_login_title')
+})
+
+const customerLoginSubtitle = computed(() => {
+  if (isBookingContext.value) return t('auth.customer_booking_subtitle')
+  if (isBookingsContext.value) return t('auth.customer_bookings_subtitle')
+  return t('auth.customer_login_subtitle')
 })
 
 onMounted(async () => {
@@ -109,10 +128,10 @@ function handleLoginSuccess() {
         <!-- Customer header -->
         <div v-else class="flex flex-col space-y-2 text-center">
           <h1 class="text-3xl font-bold tracking-tight">
-            {{ $t('auth.customer_login_title') }}
+            {{ customerLoginTitle }}
           </h1>
           <p class="text-base text-muted-foreground text-center">
-            {{ $t('auth.customer_login_subtitle') }}
+            {{ customerLoginSubtitle }}
           </p>
         </div>
         
@@ -136,7 +155,7 @@ function handleLoginSuccess() {
             {{ $t('auth.customer_redirect_question') }}
           </p>
           <router-link 
-            to="/" 
+            to="/login?redirect=/my-bookings&context=customer" 
             class="text-sm font-medium text-primary hover:underline underline-offset-4"
           >
             {{ $t('auth.customer_redirect_link') }} →

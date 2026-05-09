@@ -18,13 +18,6 @@ import {
   PackageX,
   Image as ImageIcon
 } from 'lucide-vue-next'
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem
-} from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
 import type { Ad } from '@/types'
 
 const adminStore = useSuperAdminStore()
@@ -194,10 +187,10 @@ function openLink(url: string) {
             class="ads-search__input"
           />
         </div>
-        <Button @click="openCreateModal" class="ads-button ads-button--primary">
+        <button @click="openCreateModal" class="ads-button ads-button--primary">
           <Plus class="ads-button__icon" />
           Create Ad
-        </Button>
+        </button>
       </div>
     </div>
 
@@ -213,14 +206,12 @@ function openLink(url: string) {
       <div>
         <h3 class="ads-error__title">Something went wrong</h3>
         <p class="ads-error__message">{{ adminStore.error }}</p>
-        <Button
-          variant="outline"
-          size="sm"
-          class="ads-error__button"
+        <button
+          class="ads-button ads-error__button"
           @click="adminStore.fetchAds()"
         >
           Try Again
-        </Button>
+        </button>
       </div>
     </div>
 
@@ -292,32 +283,30 @@ function openLink(url: string) {
                 </button>
               </td>
               <td class="ads-table__cell ads-table__cell--actions">
-                <DropdownMenu>
-                  <DropdownMenuTrigger as-child>
-                    <Button variant="ghost" size="icon" class="ads-menu-button">
-                      <MoreVertical class="ads-menu-button__icon" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem @click="openEditModal(ad)" class="ads-menu-item">
+                <details class="ads-menu">
+                  <summary class="ads-menu-button">
+                    <MoreVertical class="ads-menu-button__icon" />
+                  </summary>
+                  <div class="ads-menu-content">
+                    <button @click="openEditModal(ad)" class="ads-menu-item">
                       <Pencil class="ads-menu-icon" />
                       Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem v-if="ad.link_url" @click="openLink(ad.link_url)" class="ads-menu-item">
+                    </button>
+                    <button v-if="ad.link_url" @click="openLink(ad.link_url)" class="ads-menu-item">
                       <ExternalLink class="ads-menu-icon" />
                       Preview Link
-                    </DropdownMenuItem>
-                    <DropdownMenuItem @click="toggleStatus(ad)" class="ads-menu-item">
+                    </button>
+                    <button @click="toggleStatus(ad)" class="ads-menu-item">
                       <component :is="ad.is_active ? EyeOff : Eye" class="ads-menu-icon" />
                       {{ ad.is_active ? 'Deactivate' : 'Activate' }}
-                    </DropdownMenuItem>
+                    </button>
                     <div class="ads-menu-separator"></div>
-                    <DropdownMenuItem @click="confirmDelete(ad)" class="ads-menu-item ads-menu-danger">
+                    <button @click="confirmDelete(ad)" class="ads-menu-item ads-menu-danger">
                       <Trash2 class="ads-menu-icon" />
                       Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    </button>
+                  </div>
+                </details>
               </td>
             </tr>
           </tbody>
@@ -332,12 +321,12 @@ function openLink(url: string) {
         <p class="ads-empty__message">
           {{ searchQuery ? 'No ads match your search criteria.' : 'Create your first advertisement campaign to see it here.' }}
         </p>
-        <Button v-if="searchQuery" variant="link" class="ads-empty__link" @click="searchQuery = ''">
+        <button v-if="searchQuery" class="ads-empty__link" @click="searchQuery = ''">
           Clear Search
-        </Button>
-        <Button v-else @click="openCreateModal" variant="outline" class="ads-empty__button">
+        </button>
+        <button v-else @click="openCreateModal" class="ads-button ads-empty__button">
           Create New Ad
-        </Button>
+        </button>
       </div>
     </div>
 
@@ -433,11 +422,11 @@ function openLink(url: string) {
           </div>
 
           <div class="ads-form-actions">
-            <Button type="button" variant="outline" class="ads-form-actions__button" @click="isModalOpen = false">Cancel</Button>
-            <Button type="submit" class="ads-button ads-button--primary ads-form-actions__button" :disabled="adminStore.loading">
+            <button type="button" class="ads-button ads-form-actions__button" @click="isModalOpen = false">Cancel</button>
+            <button type="submit" class="ads-button ads-button--primary ads-form-actions__button" :disabled="adminStore.loading">
               <Loader2 v-if="adminStore.loading" class="ads-button__icon ads-button__icon--spin" />
               {{ isEditing ? 'Update Advertisement' : 'Create Advertisement' }}
-            </Button>
+            </button>
           </div>
         </form>
       </div>
@@ -451,11 +440,11 @@ function openLink(url: string) {
         <h3 class="ads-delete-title">Delete Advertisement?</h3>
         <p class="ads-delete-message">This action cannot be undone. The banner image will also be removed from storage.</p>
         <div class="ads-delete-actions">
-          <Button variant="outline" class="ads-delete-actions__button" @click="isDeleting = false">Cancel</Button>
-          <Button class="ads-button ads-button--danger ads-delete-actions__button" @click="handleDelete" :disabled="adminStore.loading">
+          <button class="ads-button ads-delete-actions__button" @click="isDeleting = false">Cancel</button>
+          <button class="ads-button ads-button--danger ads-delete-actions__button" @click="handleDelete" :disabled="adminStore.loading">
             <Loader2 v-if="adminStore.loading" class="ads-button__icon ads-button__icon--spin" />
             Delete
-          </Button>
+          </button>
         </div>
       </div>
     </div>
@@ -500,6 +489,10 @@ function openLink(url: string) {
 
 .ads-search__input {
   @apply pl-10 pr-4 py-2;
+}
+
+.ads-button {
+  @apply inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 disabled:cursor-not-allowed disabled:opacity-60;
 }
 
 .ads-button--primary {
@@ -663,8 +656,16 @@ function openLink(url: string) {
   @apply bg-rose-100 text-rose-700 hover:bg-rose-200;
 }
 
+.ads-menu {
+  @apply relative inline-block text-left;
+}
+
 .ads-menu-button {
-  @apply h-8 w-8 text-slate-400;
+  @apply flex h-8 w-8 cursor-pointer list-none items-center justify-center rounded-md text-slate-400 hover:bg-slate-100;
+}
+
+.ads-menu-content {
+  @apply absolute right-0 z-20 mt-2 min-w-40 rounded-md border border-slate-200 bg-white p-1 text-left shadow-lg;
 }
 
 .ads-menu-button__icon,
@@ -681,7 +682,7 @@ function openLink(url: string) {
 }
 
 .ads-menu-item {
-  @apply cursor-pointer;
+  @apply flex w-full cursor-pointer items-center rounded px-2 py-1.5 text-left text-sm text-slate-700 hover:bg-slate-50;
 }
 
 .ads-menu-danger {

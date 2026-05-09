@@ -7,10 +7,8 @@ import { useAppointmentStore } from '../stores/useAppointmentStore'
 import { useSettingsStore } from '../stores/useSettingsStore'
 import { useNotifications } from '../composables/useNotifications'
 import { useI18n } from 'vue-i18n'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import ConfirmationModal from '../components/common/ConfirmationModal.vue'
 import LoadingSpinner from '../components/common/LoadingSpinner.vue'
-import BackButton from '../components/common/BackButton.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -125,13 +123,10 @@ async function handleCancel() {
 <template>
   <div class="min-h-screen bg-gray-50">
     <div class="max-w-4xl mx-auto px-4 py-8">
-      <BackButton to="/" />
       <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ $t('my_bookings.title') }}</h1>
       <p class="text-gray-600 mb-8">{{ $t('my_bookings.subtitle') }}</p>
 
-      <Alert v-if="errorMessage" variant="destructive" class="bookings-alert">
-        <AlertDescription>{{ errorMessage }}</AlertDescription>
-      </Alert>
+      <div v-if="errorMessage" class="bookings-alert" role="alert">{{ errorMessage }}</div>
 
       <!-- Tabs -->
       <div class="bg-white rounded-lg shadow-sm mb-6">
@@ -260,6 +255,6 @@ async function handleCancel() {
 @reference "../style.css";
 
 .bookings-alert {
-  @apply mb-6;
+  @apply mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800;
 }
 </style>

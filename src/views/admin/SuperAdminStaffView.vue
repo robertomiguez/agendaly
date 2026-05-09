@@ -13,13 +13,6 @@ import {
   AlertCircle,
   UserPlus2
 } from 'lucide-vue-next'
-import { 
-  DropdownMenu, 
-  DropdownMenuTrigger, 
-  DropdownMenuContent, 
-  DropdownMenuItem 
-} from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
 
 const adminStore = useSuperAdminStore()
 const searchQuery = ref('')
@@ -95,14 +88,12 @@ async function handleActivate(staffId: string) {
       <div>
         <h3 class="font-bold text-rose-900">Failed to load staff</h3>
         <p class="text-sm text-rose-700 mt-1">{{ adminStore.error }}</p>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          class="mt-4 border-rose-200 text-rose-700 hover:bg-rose-100"
+        <button 
+          class="mt-4 rounded-md border border-rose-200 px-3 py-1.5 text-sm text-rose-700 hover:bg-rose-100"
           @click="adminStore.fetchStaff()"
         >
           Try Again
-        </Button>
+        </button>
       </div>
     </div>
 
@@ -154,31 +145,29 @@ async function handleActivate(staffId: string) {
                 </span>
               </td>
               <td class="px-6 py-4 text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger as-child>
-                    <Button variant="ghost" size="icon" class="h-8 w-8 text-slate-400">
-                      <MoreVertical class="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem 
+                <details class="relative inline-block text-left">
+                  <summary class="flex h-8 w-8 cursor-pointer list-none items-center justify-center rounded-md text-slate-400 hover:bg-slate-100">
+                    <MoreVertical class="h-4 w-4" />
+                  </summary>
+                  <div class="absolute right-0 z-20 mt-2 min-w-36 rounded-md border border-slate-200 bg-white p-1 shadow-lg">
+                    <button
                       v-if="member.active"
                       @click="openDeactivate(member.id)"
-                      class="cursor-pointer text-rose-600"
+                      class="flex w-full cursor-pointer items-center rounded px-2 py-1.5 text-left text-sm text-rose-600 hover:bg-slate-50"
                     >
                       <UserMinus class="mr-2 h-4 w-4" />
                       Deactivate
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
+                    </button>
+                    <button
                       v-else
                       @click="handleActivate(member.id)"
-                      class="cursor-pointer text-emerald-600"
+                      class="flex w-full cursor-pointer items-center rounded px-2 py-1.5 text-left text-sm text-emerald-600 hover:bg-slate-50"
                     >
                       <UserPlus class="mr-2 h-4 w-4" />
                       Activate
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    </button>
+                  </div>
+                </details>
               </td>
             </tr>
           </tbody>
@@ -202,31 +191,29 @@ async function handleActivate(staffId: string) {
                 </div>
               </div>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger as-child>
-                <Button variant="ghost" size="icon" class="h-8 w-8 text-slate-400 shrink-0">
-                  <MoreVertical class="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem 
+            <details class="relative shrink-0 text-left">
+              <summary class="flex h-8 w-8 cursor-pointer list-none items-center justify-center rounded-md text-slate-400 hover:bg-slate-100">
+                <MoreVertical class="h-4 w-4" />
+              </summary>
+              <div class="absolute right-0 z-20 mt-2 min-w-36 rounded-md border border-slate-200 bg-white p-1 shadow-lg">
+                <button
                   v-if="member.active"
                   @click="openDeactivate(member.id)"
-                  class="cursor-pointer text-rose-600"
+                  class="flex w-full cursor-pointer items-center rounded px-2 py-1.5 text-left text-sm text-rose-600 hover:bg-slate-50"
                 >
                   <UserMinus class="mr-2 h-4 w-4" />
                   Deactivate
-                </DropdownMenuItem>
-                <DropdownMenuItem 
+                </button>
+                <button
                   v-else
                   @click="handleActivate(member.id)"
-                  class="cursor-pointer text-emerald-600"
+                  class="flex w-full cursor-pointer items-center rounded px-2 py-1.5 text-left text-sm text-emerald-600 hover:bg-slate-50"
                 >
                   <UserPlus class="mr-2 h-4 w-4" />
                   Activate
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </button>
+              </div>
+            </details>
           </div>
           <div class="flex items-center justify-between mt-3">
             <div class="flex items-center gap-3">
@@ -253,9 +240,9 @@ async function handleActivate(staffId: string) {
         <p class="text-slate-500 max-w-xs mx-auto mt-1">
           {{ searchQuery ? 'No staff match your search criteria.' : 'There are no staff members registered on the platform yet.' }}
         </p>
-        <Button v-if="searchQuery" variant="link" class="mt-2 text-indigo-600" @click="searchQuery = ''">
+        <button v-if="searchQuery" class="mt-2 text-indigo-600" @click="searchQuery = ''">
           Clear Search
-        </Button>
+        </button>
       </div>
     </div>
 
@@ -269,8 +256,8 @@ async function handleActivate(staffId: string) {
             class="w-full p-3 border border-slate-200 rounded-lg text-sm mb-4 h-24 outline-none focus:ring-2 focus:ring-rose-500"
           ></textarea>
           <div class="flex gap-2">
-             <Button variant="outline" class="flex-1" @click="showModal = false">Cancel</Button>
-             <Button class="flex-1 bg-rose-600 text-white hover:bg-rose-700" @click="handleConfirm">Deactivate</Button>
+             <button class="flex-1 rounded-md border border-slate-200 bg-white px-4 py-2 text-slate-700 hover:bg-slate-50" @click="showModal = false">Cancel</button>
+             <button class="flex-1 rounded-md bg-rose-600 px-4 py-2 text-white hover:bg-rose-700" @click="handleConfirm">Deactivate</button>
           </div>
        </div>
     </div>

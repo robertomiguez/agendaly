@@ -15,6 +15,7 @@ export interface ServiceImage {
 export interface Service {
     id: string
     name: string
+    slug?: string | null
     duration: number // in minutes
     price?: number
     buffer_before: number

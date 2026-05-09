@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-09T11:51:44-03:00",
+  "title": "Design System: Agendaly",
+  "extensions": {
+    "colorMeta": {
+      "primary-amber-600": {
+        "role": "primary",
+        "displayName": "Front Desk Amber",
+        "canonical": "#d97706",
+        "tonalRamp": ["#78350f", "#92400e", "#b45309", "#d97706", "#f59e0b", "#fbbf24", "#fde68a", "#fffbeb"]
+      },
+      "ink-950": {
+        "role": "neutral",
+        "displayName": "Schedule Ink",
+        "canonical": "#030712",
+        "tonalRamp": ["#030712", "#111827", "#1f2937", "#374151", "#4b5563", "#6b7280", "#d1d5db", "#f9fafb"]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#ffffff",
+        "tonalRamp": ["#111827", "#374151", "#6b7280", "#9ca3af", "#d1d5db", "#e5e7eb", "#f9fafb", "#ffffff"]
+      },
+      "success-600": {
+        "role": "secondary",
+        "displayName": "Confirmed Green",
+        "canonical": "#16a34a",
+        "tonalRamp": ["#14532d", "#166534", "#15803d", "#16a34a", "#22c55e", "#86efac", "#dcfce7", "#f0fdf4"]
+      },
+      "info-600": {
+        "role": "secondary",
+        "displayName": "Booking Blue",
+        "canonical": "#2563eb",
+        "tonalRamp": ["#1e3a8a", "#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#dbeafe", "#eff6ff"]
+      },
+      "role-provider-600": {
+        "role": "secondary",
+        "displayName": "Provider Violet",
+        "canonical": "#9333ea",
+        "tonalRamp": ["#581c87", "#6b21a8", "#7e22ce", "#9333ea", "#a855f7", "#c084fc", "#f3e8ff", "#faf5ff"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Landing page hero statements and rare brand moments."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page titles, dashboard headers, and major booking step headings."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card titles, modal titles, and section headings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Forms, descriptions, detail text, and booking instructions."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Form labels, badges, metadata, status text, and compact navigation."
+      }
+    },
+    "shadows": [
+      {
+        "name": "surface-shadow",
+        "value": "0 1px 2px rgb(0 0 0 / 0.05)",
+        "purpose": "Default cards, inputs, tabs, and subtle framed surfaces."
+      },
+      {
+        "name": "interactive-lift",
+        "value": "0 4px 6px -1px rgb(0 0 0 / 0.10), 0 2px 4px -2px rgb(0 0 0 / 0.10)",
+        "purpose": "Hoverable cards and operational actions."
+      },
+      {
+        "name": "overlay-shadow",
+        "value": "0 10px 15px -3px rgb(0 0 0 / 0.10), 0 4px 6px -4px rgb(0 0 0 / 0.10)",
+        "purpose": "Dialogs, popovers, dropdowns, and floating panels."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-transition",
+        "value": "transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease",
+        "purpose": "Default state changes for controls."
+      },
+      {
+        "name": "overlay-enter",
+        "value": "fade-in and zoom-in over 200ms",
+        "purpose": "Dialog and menu entrance motion from reka/tw-animate-css primitives."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Compact default action button for product workflows.",
+      "html": "<button class=\"ds-btn-primary\">Save changes</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; height: 36px; padding: 8px 16px; border: 0; border-radius: 8px; background: #030712; color: #ffffff; font: 500 14px/1 system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; transition: background-color 150ms ease, box-shadow 150ms ease; } .ds-btn-primary:hover { background: #111827; } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.35); }"
+    },
+    {
+      "name": "Accent CTA",
+      "kind": "button",
+      "refersTo": "button-accent",
+      "description": "Amber action for booking, publishing, and brand-forward CTAs.",
+      "html": "<button class=\"ds-btn-accent\">Book now</button>",
+      "css": ".ds-btn-accent { display: inline-flex; align-items: center; justify-content: center; height: 36px; padding: 8px 16px; border: 0; border-radius: 8px; background: #d97706; color: #ffffff; font: 600 14px/1 system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; transition: background-color 150ms ease, box-shadow 150ms ease; } .ds-btn-accent:hover { background: #b45309; } .ds-btn-accent:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.28); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary command button for dialogs and lower-risk actions.",
+      "html": "<button class=\"ds-btn-outline\">Cancel</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; height: 36px; padding: 8px 16px; border: 1px solid #e5e7eb; border-radius: 8px; background: #ffffff; color: #111827; font: 500 14px/1 system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; box-shadow: 0 1px 2px rgb(0 0 0 / 0.05); transition: background-color 150ms ease, box-shadow 150ms ease; } .ds-btn-outline:hover { background: #f9fafb; } .ds-btn-outline:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.25); }"
+    },
+    {
+      "name": "Product Card",
+      "kind": "card",
+      "refersTo": "card-default",
+      "description": "White operational surface for dashboards, lists, and forms.",
+      "html": "<article class=\"ds-card\"><h3>Today appointments</h3><p>4 confirmed bookings</p></article>",
+      "css": ".ds-card { display: flex; flex-direction: column; gap: 8px; padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px; background: #ffffff; color: #111827; box-shadow: 0 1px 2px rgb(0 0 0 / 0.05); font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; } .ds-card h3 { margin: 0; font-size: 18px; line-height: 1.35; font-weight: 600; } .ds-card p { margin: 0; color: #4b5563; font-size: 14px; line-height: 1.5; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Compact form field with border and soft focus ring.",
+      "html": "<label class=\"ds-field\"><span>Service name</span><input placeholder=\"Haircut\" /></label>",
+      "css": ".ds-field { display: grid; gap: 6px; color: #374151; font: 500 14px/1.3 system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; } .ds-field input { height: 36px; min-width: 0; border: 1px solid #e5e7eb; border-radius: 8px; background: #ffffff; padding: 4px 12px; color: #111827; font: 400 14px/1.5 system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; box-shadow: 0 1px 2px rgb(0 0 0 / 0.05); transition: border-color 150ms ease, box-shadow 150ms ease; } .ds-field input:focus-visible { outline: none; border-color: #6b7280; box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.25); }"
+    },
+    {
+      "name": "Role Badge",
+      "kind": "chip",
+      "refersTo": "badge-default",
+      "description": "Small rounded label for role, status, and plan markers.",
+      "html": "<span class=\"ds-badge\">Provider</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; justify-content: center; width: fit-content; border-radius: 9999px; border: 1px solid transparent; background: #f3e8ff; color: #6b21a8; padding: 2px 8px; font: 500 12px/1.3 system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; white-space: nowrap; } .ds-badge:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.22); }"
+    },
+    {
+      "name": "Top Navigation",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Sticky product navigation with translucent surface and compact controls.",
+      "html": "<nav class=\"ds-nav\"><strong>Agendaly</strong><button>Dashboard</button></nav>",
+      "css": ".ds-nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 64px; padding: 0 24px; border-bottom: 1px solid #e5e7eb; background: rgba(255, 255, 255, 0.95); color: #111827; backdrop-filter: blur(8px); font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; } .ds-nav strong { color: #d97706; font-size: 24px; line-height: 1; } .ds-nav button { border: 0; border-radius: 8px; background: transparent; color: #374151; padding: 8px 12px; font: 500 14px/1 system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; } .ds-nav button:hover { background: #f3f4f6; color: #111827; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Well-Run Front Desk",
+    "overview": "Agendaly should feel like a composed front desk at a busy service business: everything is findable, the next action is obvious, and the interface stays calm even when the schedule is full. The system is product-first, with marketing surfaces allowed to be more editorial, but daily provider workflows should stay restrained, legible, and quick to scan.\n\nThe current UI uses system typography, white and soft gray surfaces, rounded controls, thin borders, modest shadows, and an amber accent for brand warmth. It should preserve that operational clarity while becoming more intentional: quiet enough for repeated provider use, polished enough for serious businesses, and flexible enough to let provider pages carry each business's own identity.",
+    "keyCharacteristics": [
+      "Restrained product surfaces with amber used as a warm accent, not decoration.",
+      "White cards, gray canvases, clear borders, and small shadows for practical hierarchy.",
+      "Dense but readable management screens for provider work.",
+      "Mobile-first booking steps with direct copy and obvious progress.",
+      "Provider identity is supported without turning Agendaly into a marketplace."
+    ],
+    "rules": [
+      {
+        "name": "The Amber Earns Its Place Rule",
+        "body": "Amber should identify action, selection, or brand presence. Do not spread it across every card or section.",
+        "section": "colors"
+      },
+      {
+        "name": "The Workday Scale Rule",
+        "body": "Provider screens should not use hero-scale type inside dashboards, cards, or modals. Large type belongs to real page-level moments.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Until Needed Rule",
+        "body": "Surfaces are flat by default. Shadows appear to clarify layers, floating content, or interaction, not to decorate static grids.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep product work surfaces on #f9fafb with #ffffff content panels and #e5e7eb borders.",
+      "Do use #d97706 or the semantic primary token for important actions, selected states, and brand anchors.",
+      "Do keep provider management screens dense, scan-friendly, and direct.",
+      "Do use role color deliberately: violet for provider context, blue for customer context, green for success.",
+      "Do use clear focus states and maintain WCAG AA contrast for bilingual English and Portuguese users.",
+      "Do let provider pages express provider identity through logo, imagery, services, and business details."
+    ],
+    "donts": [
+      "Don't create generic SaaS dashboards with decorative metric cards and visual filler.",
+      "Don't use overdecorated salon aesthetics, beauty stock cliches, or excessive pink/gold treatment.",
+      "Don't make Agendaly feel like a sterile enterprise scheduling tool.",
+      "Don't create noisy marketplace vibes; provider pages should feel owned by the provider.",
+      "Don't translate WhatsApp chaos into software with crowded messages, unclear next steps, or too many competing actions.",
+      "Don't use colored side-stripe borders greater than 1px on cards, alerts, or list items.",
+      "Don't use gradient text, decorative glassmorphism, or oversized hero typography inside operational dashboards."
+    ]
+  }
+}

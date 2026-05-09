@@ -3,7 +3,6 @@ import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '../../stores/useAuthStore'
 import { useCurrency } from '@/composables/useCurrency'
 import { fetchRevenueReport } from '../../services/providerService'
-import { Button } from '@/components/ui/button'
 import { 
   Download,
   Share2, 
@@ -99,14 +98,14 @@ function handleExport() {
             </div>
           </div>
           <div class="flex gap-2">
-            <Button variant="outline" class="gap-2">
-              <Share2 class="w-4 h-4" />
+            <button type="button" class="report-command">
+              <Share2 />
               {{ $t('common.share', 'Share') }}
-            </Button>
-            <Button variant="outline" @click="handleExport" class="gap-2">
-              <Download class="w-4 h-4" />
+            </button>
+            <button type="button" class="report-command" @click="handleExport">
+              <Download />
               {{ $t('common.export_pdf', 'Export PDF') }}
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -210,6 +209,18 @@ function handleExport() {
     </div>
   </div>
 </template>
+
+<style scoped>
+@reference "../../style.css";
+
+.report-command {
+  @apply inline-flex h-9 items-center justify-center gap-2 rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2;
+}
+
+.report-command svg {
+  @apply h-4 w-4;
+}
+</style>
 
 <style scoped>
 @media print {

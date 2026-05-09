@@ -3,15 +3,6 @@ import { ref, watch } from 'vue'
 import { useAuthStore } from '../../stores/useAuthStore'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import {
-  PinInput,
-  PinInputGroup,
-  PinInputSlot,
-} from '@/components/ui/pin-input'
 import { Mail, ArrowLeft, RefreshCw } from 'lucide-vue-next'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 
@@ -100,22 +91,30 @@ function handleGoogleSignIn() {
   const redirect = isInBookingFlow ? '/booking' : (route.query.redirect as string || props.redirect)
   authStore.signInWithOAuth(redirect)
 }
+
+function updateOtp(index: number, event: Event) {
+  const target = event.target as HTMLInputElement
+  otpValue.value[index] = target.value.slice(-1)
+
+  if (target.value && index < 5) {
+    const next = target.parentElement?.querySelector<HTMLInputElement>(`input[data-index="${index + 1}"]`)
+    next?.focus()
+  }
+}
 </script>
 
 <template>
   <div :class="embedded ? 'w-full' : 'max-w-md w-full'">
-    <Alert v-if="authStore.error" variant="destructive" class="mb-6">
-      <AlertDescription>{{ authStore.error }}</AlertDescription>
-    </Alert>
+    <div v-if="authStore.error" class="auth-alert" role="alert">{{ authStore.error }}</div>
 
     <div v-if="!codeSent" class="grid gap-6">
       <div class="grid gap-4">
-        <Button variant="outline" type="button" :disabled="authStore.loading" @click="handleGoogleSignIn">
+        <button class="auth-command auth-command--outline" type="button" :disabled="authStore.loading" @click="handleGoogleSignIn">
           <svg class="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
             <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
           </svg>
           {{ $t('auth.continue_with_google') }}
-        </Button>
+        </button>
       </div>
 
       <div class="relative">
@@ -132,16 +131,16 @@ function handleGoogleSignIn() {
       <form @submit.prevent="sendCode">
         <div class="grid gap-4">
           <div class="grid gap-2">
-            <Label for="email">{{ $t('auth.email') }}</Label>
+            <label class="auth-label" for="email">{{ $t('auth.email') }}</label>
             <div class="relative">
-              <Input
+              <input
                 id="email"
                 v-model="email"
                 type="email"
                 placeholder="name@example.com"
                 required
                 :disabled="authStore.loading"
-                class="bg-background pr-10"
+                class="auth-input pr-10"
               />
               <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-muted-foreground">
                 <Mail class="h-4 w-4" />
@@ -149,10 +148,10 @@ function handleGoogleSignIn() {
             </div>
           </div>
           
-          <Button type="submit" :disabled="authStore.loading || !email">
+          <button class="auth-command auth-command--primary" type="submit" :disabled="authStore.loading || !email">
             <LoadingSpinner v-if="authStore.loading" inline size="sm" class="mr-2" color="text-white" />
             {{ authStore.loading ? $t('common.sending') : $t('auth.send_code') }}
-          </Button>
+          </button>
         </div>
       </form>
 
@@ -175,44 +174,82 @@ function handleGoogleSignIn() {
       </div>
 
       <div class="flex justify-center py-4">
-        <PinInput
-          v-model="otpValue"
-          placeholder="○"
-          class="flex gap-2 items-center justify-center"
-          :disabled="authStore.loading"
-          :otp="true"
-        >
-          <PinInputGroup class="gap-2">
-            <PinInputSlot
-              v-for="n in 6"
-              :key="n"
-              :index="n - 1"
-              class="w-10 h-12 text-lg border rounded-md text-center focus:ring-2 focus:ring-primary-500"
-            />
-          </PinInputGroup>
-        </PinInput>
+        <div class="otp-grid">
+          <input
+            v-for="n in 6"
+            :key="n"
+            :data-index="n - 1"
+            :value="otpValue[n - 1] || ''"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            maxlength="1"
+            :disabled="authStore.loading"
+            @input="updateOtp(n - 1, $event)"
+          />
+        </div>
       </div>
 
-      <Button 
+      <button 
+        class="auth-command auth-command--primary"
+        type="button"
         @click="verifyCode" 
         :disabled="authStore.loading || otpValue.length !== 6 || otpValue.some(v => v === '')"
-        class="w-full"
       >
         <LoadingSpinner v-if="authStore.loading" inline size="sm" class="mr-2" color="text-white" />
         {{ authStore.loading ? $t('common.verifying') : $t('auth.verify_code') }}
-      </Button>
+      </button>
 
       <div class="flex flex-col space-y-4">
-        <Button variant="outline" @click="sendCode" :disabled="authStore.loading">
+        <button class="auth-command auth-command--outline" type="button" @click="sendCode" :disabled="authStore.loading">
           <RefreshCw class="mr-2 h-4 w-4" />
           {{ $t('auth.resend_code') }}
-        </Button>
+        </button>
         
-        <Button variant="ghost" @click="goBack" class="text-sm text-muted-foreground">
+        <button class="auth-command auth-command--ghost" type="button" @click="goBack">
           <ArrowLeft class="mr-2 h-4 w-4" />
           {{ $t('auth.change_email') }}
-        </Button>
+        </button>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+@reference "../../style.css";
+
+.auth-alert {
+  @apply mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800;
+}
+
+.auth-command {
+  @apply inline-flex h-9 w-full items-center justify-center rounded-md px-4 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+}
+
+.auth-command--primary {
+  @apply bg-gray-950 text-white hover:bg-gray-800;
+}
+
+.auth-command--outline {
+  @apply border border-gray-200 bg-white text-gray-900 shadow-sm hover:bg-gray-50;
+}
+
+.auth-command--ghost {
+  @apply bg-transparent text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-800;
+}
+
+.auth-label {
+  @apply text-sm font-medium leading-none text-gray-700;
+}
+
+.auth-input {
+  @apply h-9 w-full rounded-md border border-gray-300 bg-white px-3 py-1 text-base text-gray-950 shadow-sm outline-none placeholder:text-gray-400 focus:border-gray-500 focus:ring-2 focus:ring-gray-200 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm;
+}
+
+.otp-grid {
+  @apply flex items-center justify-center gap-2;
+}
+
+.otp-grid input {
+  @apply h-12 w-10 rounded-md border border-gray-300 bg-white text-center text-lg font-semibold text-gray-950 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-200 disabled:opacity-50;
+}
+</style>

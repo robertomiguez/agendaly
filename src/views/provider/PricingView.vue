@@ -6,13 +6,6 @@ import { useNotifications } from '@/composables/useNotifications'
 import { getAllPlans, getProviderSubscription, createSubscription, changePlan, previewPlanChange } from '../../services/subscriptionService'
 import type { Plan, Subscription } from '../../types'
 import { useAuthStore } from '../../stores/useAuthStore'
-import { Button } from '@/components/ui/button'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Check, AlertCircle, RefreshCw, ArrowUp, Calendar, Lock, Users, MapPin, Scissors, AlertTriangle, ArrowRight } from 'lucide-vue-next'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import BackButton from '@/components/common/BackButton.vue'
@@ -313,23 +306,29 @@ function resolveLimitViolation() {
 
                 <!-- Billing Toggle -->
                 <div class="mt-8 flex items-center justify-center gap-4">
-                    <Label 
+                    <span 
                         :class="billingCycle === 'monthly' ? 'text-gray-900 font-semibold' : 'text-gray-500'"
                     >
                         {{ $t('pricing.monthly') }}
-                    </Label>
-                    <Switch 
-                        :checked="billingCycle === 'yearly'"
-                        @update:checked="billingCycle = $event ? 'yearly' : 'monthly'"
+                    </span>
+                    <button
+                        type="button"
+                        class="pricing-switch"
+                        :class="{ 'pricing-switch--on': billingCycle === 'yearly' }"
                         disabled
-                    />
+                        aria-disabled="true"
+                        :aria-pressed="billingCycle === 'yearly'"
+                        @click="billingCycle = billingCycle === 'yearly' ? 'monthly' : 'yearly'"
+                    >
+                        <span class="pricing-switch__thumb"></span>
+                    </button>
                     <div class="flex items-center gap-2">
-                        <Label class="text-gray-400">
+                        <span class="text-gray-400">
                             {{ $t('pricing.yearly') }}
-                        </Label>
-                        <Badge variant="secondary" class="text-xs">
+                        </span>
+                        <span class="pricing-badge pricing-badge--muted">
                             {{ $t('pricing.coming_soon') }}
-                        </Badge>
+                        </span>
                     </div>
                 </div>
 
@@ -344,11 +343,13 @@ function resolveLimitViolation() {
 
             <!-- Error Alert for Actions -->
             <div v-if="errorMessage" class="mb-6 max-w-2xl mx-auto">
-                <Alert variant="destructive">
-                    <AlertCircle class="h-4 w-4" />
-                    <AlertTitle>Error</AlertTitle>
-                    <AlertDescription>{{ errorMessage }}</AlertDescription>
-                </Alert>
+                <div class="pricing-error-alert" role="alert">
+                    <AlertCircle class="pricing-error-alert__icon" />
+                    <div>
+                        <p class="pricing-error-alert__title">Error</p>
+                        <p>{{ errorMessage }}</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Loading State -->
@@ -367,13 +368,13 @@ function resolveLimitViolation() {
                     {{ $t('pricing.error_message') }}
                 </p>
                 <div class="flex gap-3">
-                    <Button @click="loadPlans" variant="outline" class="gap-2">
+                    <button @click="loadPlans" class="pricing-button pricing-button--secondary gap-2">
                         <RefreshCw class="h-4 w-4" />
                         {{ $t('common.retry') }}
-                    </Button>
-                    <Button variant="default" @click="$router.push('/contact')">
+                    </button>
+                    <button class="pricing-button" @click="$router.push('/contact')">
                         {{ $t('pricing.contact_support') }}
-                    </Button>
+                    </button>
                 </div>
             </div>
 
@@ -387,11 +388,11 @@ function resolveLimitViolation() {
                     'grid-cols-1 md:grid-cols-2 lg:grid-cols-4 max-w-7xl': plans.length >= 4
                 }
             ]">
-                <Card 
+                <article 
                     v-for="plan in plans" 
                     :key="plan.id"
                     :class="[
-                        'relative transition-all duration-200 flex flex-col h-full',
+                        'pricing-plan-card',
                         isSelected(plan) ? 'border-2 border-green-500 shadow-lg ring-2 ring-green-100' : 
                             isPopular(plan) ? 'border-2 border-violet-200 shadow-md' : 'border border-gray-200',
                         plan.status === 'active' ? 'hover:shadow-lg cursor-pointer' : 'cursor-default'
@@ -428,9 +429,9 @@ function resolveLimitViolation() {
                             v-if="isPopular(plan) && !isSelected(plan)" 
                             class="absolute -top-3 left-1/2 -translate-x-1/2 z-10"
                         >
-                            <Badge class="bg-violet-600 text-white px-3 py-1">
+                            <span class="pricing-badge pricing-badge--popular">
                                 {{ $t('pricing.most_popular') }}
-                            </Badge>
+                            </span>
                         </div>
 
                         <!-- Status Badge (Only for legacy, since soon has overlay) -->
@@ -438,21 +439,21 @@ function resolveLimitViolation() {
                             v-if="plan.status === 'legacy'" 
                             class="absolute -top-3 left-1/2 -translate-x-1/2 z-10"
                         >
-                            <Badge variant="secondary" class="px-3 py-1">
+                            <span class="pricing-badge pricing-badge--muted">
                                 Legacy Plan
-                            </Badge>
+                            </span>
                         </div>
 
-                        <CardHeader class="text-center pt-8">
-                            <CardTitle class="text-2xl font-bold">
+                        <header class="text-center pt-8 px-6">
+                            <h2 class="text-2xl font-bold">
                                 {{ plan.display_name }}
-                            </CardTitle>
-                            <CardDescription class="mt-2">
+                            </h2>
+                            <p class="mt-2 text-sm text-gray-600">
                                 {{ plan.description }}
-                            </CardDescription>
-                        </CardHeader>
+                            </p>
+                        </header>
 
-                        <CardContent class="text-center">
+                        <div class="text-center px-6 py-6">
                             <!-- Price -->
                             <div class="mb-6">
                                 <template v-if="plan.status === 'active' || plan.status === 'legacy'">
@@ -472,12 +473,12 @@ function resolveLimitViolation() {
                                                 </span>
                                             </div>
                                             <div class="mt-2">
-                                                <Badge variant="outline" class="text-green-600 border-green-200 bg-green-50">
+                                                <span class="pricing-badge pricing-badge--discount">
                                                     {{ plan.discount_percent }}% off
                                                     <span v-if="plan.discount_duration_months">
                                                         for {{ plan.discount_duration_months }} mos
                                                     </span>
-                                                </Badge>
+                                                </span>
                                             </div>
                                         </template>
                                         <template v-else>
@@ -510,17 +511,15 @@ function resolveLimitViolation() {
                                     <span class="text-gray-600 text-sm">{{ feature }}</span>
                                 </li>
                             </ul>
-                        </CardContent>
+                        </div>
 
-                        <CardFooter class="mt-auto">
-                            <Button 
-                                variant="outline"
+                        <footer class="mt-auto px-6 pb-6">
+                            <button 
                                 :disabled="plan.status !== 'active' || (isChangeMode && isCurrentPlan(plan)) || processing"
                                 :class="[
-                                    'w-full',
-                                    isSelected(plan) ? 'bg-green-600 hover:bg-green-700 text-white border-green-600' : ''
+                                    'pricing-button pricing-button--secondary w-full',
+                                    isSelected(plan) ? 'pricing-button--selected' : ''
                                 ]"
-                                size="lg"
                                 @click.stop="handlePlanAction(plan)"
                             >
                                 <LoadingSpinner v-if="processing && isSelected(plan)" inline size="sm" class="mr-2" color="text-white" />
@@ -531,10 +530,10 @@ function resolveLimitViolation() {
                                     <span v-else-if="isChangeMode">{{ $t('pricing.switch_plan') }}</span>
                                     <span v-else>{{ $t('pricing.start_trial') }}</span>
                                 </template>
-                            </Button>
-                        </CardFooter>
+                            </button>
+                        </footer>
                     </div>
-                </Card>
+                </article>
             </div>
 
             <!-- Footer Note -->
@@ -562,9 +561,9 @@ function resolveLimitViolation() {
                 <LegalDocumentViewer documentType="terms" />
             </div>
             <div class="mt-4 flex justify-end">
-                <Button @click="showTermsModal = false">
+                <button class="pricing-button" @click="showTermsModal = false">
                     {{ $t('common.close') }}
-                </Button>
+                </button>
             </div>
         </Modal>
 
@@ -579,31 +578,37 @@ function resolveLimitViolation() {
                 <LegalDocumentViewer documentType="privacy" />
             </div>
             <div class="mt-4 flex justify-end">
-                <Button @click="showPrivacyModal = false">
+                <button class="pricing-button" @click="showPrivacyModal = false">
                     {{ $t('common.close') }}
-                </Button>
+                </button>
             </div>
         </Modal>
 
         <!-- Resource Limit Modal -->
-        <Dialog :open="showLimitModal" @update:open="showLimitModal = false">
-            <DialogContent class="sm:max-w-[425px]">
-                <DialogHeader>
+        <div
+            v-if="showLimitModal"
+            class="pricing-modal-backdrop"
+            role="dialog"
+            aria-modal="true"
+            @click.self="showLimitModal = false"
+        >
+            <div class="pricing-modal">
+                <header>
                     <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
                         <Users v-if="limitViolation?.reason === 'staff_limit'" class="h-6 w-6 text-red-600" />
                         <Scissors v-else-if="limitViolation?.reason === 'service_limit'" class="h-6 w-6 text-red-600" />
                         <MapPin v-else-if="limitViolation?.reason === 'location_limit'" class="h-6 w-6 text-red-600" />
                         <AlertTriangle v-else class="h-6 w-6 text-red-600" />
                     </div>
-                    <DialogTitle class="text-center text-xl">
+                    <h2 class="text-center text-xl font-semibold text-gray-950">
                         {{ 
                             limitViolation?.reason === 'staff_limit' ? 'Staff Limit Reached' :
                             limitViolation?.reason === 'service_limit' ? 'Service Limit Reached' :
                             limitViolation?.reason === 'location_limit' ? 'Location Limit Reached' :
                             'Plan Limit Reached'
                         }}
-                    </DialogTitle>
-                    <DialogDescription class="text-center pt-2">
+                    </h2>
+                    <p class="text-center pt-2 text-sm text-gray-600">
                         You have <span class="font-bold text-gray-900">{{ limitViolation?.currentCount }}</span> active 
                         {{ 
                             limitViolation?.reason === 'staff_limit' ? 'staff members' :
@@ -612,23 +617,23 @@ function resolveLimitViolation() {
                         }}, but the <span class="font-semibold">{{ limitViolation?.planName }}</span> plan allows only <span class="font-bold text-gray-900">{{ limitViolation?.limit }}</span>.
                         <br/><br/>
                         Please deactivate {{ (limitViolation?.currentCount || 0) - (limitViolation?.limit || 0) }} item(s) to continue with the downgrade.
-                    </DialogDescription>
-                </DialogHeader>
-                <DialogFooter class="sm:justify-center mt-4">
-                    <Button variant="outline" @click="showLimitModal = false">
+                    </p>
+                </header>
+                <footer class="mt-4 flex justify-center gap-3">
+                    <button class="pricing-button pricing-button--secondary" @click="showLimitModal = false">
                         Cancel
-                    </Button>
-                    <Button variant="default" @click="resolveLimitViolation" class="gap-2 bg-red-600 hover:bg-red-700 text-white">
+                    </button>
+                    <button class="pricing-button pricing-button--danger gap-2" @click="resolveLimitViolation">
                         <span>Manage {{ 
                             limitViolation?.reason === 'staff_limit' ? 'Staff' :
                             limitViolation?.reason === 'service_limit' ? 'Services' :
                             'Locations'
                         }}</span>
                         <ArrowRight class="h-4 w-4" />
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                    </button>
+                </footer>
+            </div>
+        </div>
 
         <!-- Proration Preview Modal -->
         <div 
@@ -689,25 +694,103 @@ function resolveLimitViolation() {
                 </div>
                 
                 <div class="flex gap-3 mt-6">
-                    <Button 
-                        variant="outline" 
-                        class="flex-1"
+                    <button 
+                        class="pricing-button pricing-button--secondary flex-1"
                         @click="cancelPreview"
                         :disabled="processing"
                     >
                         {{ $t('common.cancel') }}
-                    </Button>
-                    <Button 
-                        :variant="prorationPreview.isUpgrade ? 'default' : 'outline'"
-                        :class="prorationPreview.isUpgrade ? 'flex-1 bg-blue-600 hover:bg-blue-700' : 'flex-1'"
+                    </button>
+                    <button 
+                        :class="prorationPreview.isUpgrade ? 'pricing-button pricing-button--blue flex-1' : 'pricing-button pricing-button--secondary flex-1'"
                         @click="confirmPlanChange"
                         :disabled="processing"
                     >
                         <LoadingSpinner v-if="processing" inline size="sm" class="mr-2" :color="prorationPreview.isUpgrade ? 'text-white' : undefined" />
                         {{ $t('pricing.confirm_change') }}
-                    </Button>
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+@reference "../../style.css";
+
+.pricing-switch {
+    @apply relative inline-flex h-6 w-11 cursor-not-allowed items-center rounded-full bg-gray-200 transition-colors opacity-60;
+}
+
+.pricing-switch--on {
+    @apply bg-amber-600;
+}
+
+.pricing-switch__thumb {
+    @apply inline-block h-5 w-5 translate-x-0.5 rounded-full bg-white shadow transition-transform;
+}
+
+.pricing-switch--on .pricing-switch__thumb {
+    @apply translate-x-5;
+}
+
+.pricing-badge {
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold;
+}
+
+.pricing-badge--muted {
+    @apply bg-gray-100 text-gray-700;
+}
+
+.pricing-badge--popular {
+    @apply bg-violet-600 text-white;
+}
+
+.pricing-badge--discount {
+    @apply border border-green-200 bg-green-50 text-green-700;
+}
+
+.pricing-error-alert {
+    @apply flex gap-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700;
+}
+
+.pricing-error-alert__icon {
+    @apply mt-0.5 h-4 w-4 flex-shrink-0;
+}
+
+.pricing-error-alert__title {
+    @apply font-semibold;
+}
+
+.pricing-plan-card {
+    @apply relative flex h-full flex-col rounded-lg bg-white shadow-sm transition-all duration-200;
+}
+
+.pricing-button {
+    @apply inline-flex items-center justify-center rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 disabled:cursor-not-allowed disabled:opacity-60;
+}
+
+.pricing-button--secondary {
+    @apply border border-gray-300 bg-white text-gray-800 hover:bg-gray-50;
+}
+
+.pricing-button--selected {
+    @apply border-green-600 bg-green-600 text-white hover:bg-green-700;
+}
+
+.pricing-button--danger {
+    @apply bg-red-600 text-white hover:bg-red-700;
+}
+
+.pricing-button--blue {
+    @apply bg-blue-600 text-white hover:bg-blue-700;
+}
+
+.pricing-modal-backdrop {
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4;
+}
+
+.pricing-modal {
+    @apply w-full max-w-[425px] rounded-xl bg-white p-6 shadow-2xl;
+}
+</style>

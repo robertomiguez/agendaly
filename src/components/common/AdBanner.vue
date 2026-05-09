@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { Card } from '@/components/ui/card'
 import { adService } from '@/services/adService'
 import type { Ad } from '@/types'
 
@@ -45,7 +44,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <Card
+  <aside
     v-if="ad || isLoading"
     class="ad-banner"
     :class="[
@@ -86,7 +85,7 @@ onMounted(() => {
         </div>
       </template>
     </div>
-  </Card>
+  </aside>
 </template>
 
 <style scoped>

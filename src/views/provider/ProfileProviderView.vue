@@ -6,12 +6,6 @@ import ImageUpload from '../../components/ImageUpload.vue'
 import { saveProvider } from '../../services/providerService'
 import { useNotifications } from '../../composables/useNotifications'
 import { useI18n } from 'vue-i18n'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea' // Assuming Textarea component exists or use native
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Building, FileText, User } from 'lucide-vue-next'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import BackButton from '@/components/common/BackButton.vue'
@@ -131,15 +125,15 @@ async function handleSubmit() {
   <div class="min-h-screen bg-gray-50/50 flex flex-col items-center justify-center p-6">
     <div class="w-full max-w-2xl">
       <BackButton v-if="isEditing" to="/provider/dashboard" />
-      <Card class="overflow-hidden">
-        <CardHeader>
-          <CardTitle>{{ isEditing ? $t('provider_profile.title_edit') : $t('provider_profile.title_new') }}</CardTitle>
-          <CardDescription>
+      <section class="profile-panel">
+        <header class="profile-panel__header">
+          <h1 class="profile-panel__title">{{ isEditing ? $t('provider_profile.title_edit') : $t('provider_profile.title_new') }}</h1>
+          <p class="profile-panel__description">
             {{ isEditing ? $t('provider_profile.subtitle_edit') : $t('provider_profile.subtitle_new') }}
-          </CardDescription>
-        </CardHeader>
+          </p>
+        </header>
 
-        <CardContent>
+        <div class="profile-panel__body">
           <form @submit.prevent="handleSubmit" id="profile-form" class="space-y-6">
             
             <!-- Business Details -->
@@ -151,11 +145,12 @@ async function handleSubmit() {
               
               <div class="grid gap-4">
                 <div class="grid gap-2">
-                  <Label for="business_name">{{ $t('provider_profile.business_name') }} <span class="text-red-500">*</span></Label>
-                  <Input
+                  <label for="business_name" class="profile-label">{{ $t('provider_profile.business_name') }} <span class="text-red-500">*</span></label>
+                  <input
                     id="business_name"
                     v-model="form.business_name"
                     required
+                    class="profile-input"
                     placeholder="e.g. Elite Cuts"
                   />
                 </div>
@@ -181,22 +176,24 @@ async function handleSubmit() {
 
               <div class="grid gap-4">
                 <div class="grid gap-2">
-                  <Label for="contact_name">{{ $t('provider_profile.contact_name') }} <span class="text-red-500">*</span></Label>
-                  <Input
+                  <label for="contact_name" class="profile-label">{{ $t('provider_profile.contact_name') }} <span class="text-red-500">*</span></label>
+                  <input
                     id="contact_name"
                     v-model="contactName"
                     required
+                    class="profile-input"
                     :placeholder="$t('provider_profile.contact_name_placeholder')"
                   />
                 </div>
 
                 <div class="grid gap-2">
-                  <Label for="contact_phone">{{ $t('provider_profile.contact_phone') }} <span class="text-red-500">*</span></Label>
-                  <Input
+                  <label for="contact_phone" class="profile-label">{{ $t('provider_profile.contact_phone') }} <span class="text-red-500">*</span></label>
+                  <input
                     id="contact_phone"
                     v-model="contactPhone"
                     type="tel"
                     required
+                    class="profile-input"
                     placeholder="(555) 123-4567"
                   />
                 </div>
@@ -212,37 +209,90 @@ async function handleSubmit() {
 
               <div class="grid gap-4">
                 <div class="grid gap-2">
-                  <Label for="description">{{ $t('provider_profile.description') }}</Label>
-                  <Textarea
+                  <label for="description" class="profile-label">{{ $t('provider_profile.description') }}</label>
+                  <textarea
                     id="description"
                     v-model="form.description"
                     rows="4"
+                    class="profile-textarea"
                     :placeholder="$t('provider_profile.description_placeholder')"
-                  />
+                  ></textarea>
                 </div>
               </div>
             </div>
 
             <!-- Error Alert -->
-            <Alert v-if="errorMessage" variant="destructive">
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{{ errorMessage }}</AlertDescription>
-            </Alert>
+            <div v-if="errorMessage" class="profile-error" role="alert">
+              <p class="profile-error__title">Error</p>
+              <p>{{ errorMessage }}</p>
+            </div>
 
           </form>
-        </CardContent>
+        </div>
 
-        <CardFooter class="flex justify-end">
-          <Button 
+        <footer class="profile-panel__footer">
+          <button 
             @click="handleSubmit" 
             :disabled="loading"
-            class="min-w-[150px]"
+            class="profile-submit"
           >
             <LoadingSpinner v-if="loading" inline size="sm" class="mr-2" color="text-white" />
             {{ loading ? $t('common.loading') : $t('common.save_profile') }}
-          </Button>
-        </CardFooter>
-      </Card>
+          </button>
+        </footer>
+      </section>
     </div>
   </div>
 </template>
+
+<style scoped>
+@reference "../../style.css";
+
+.profile-panel {
+  @apply overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm;
+}
+
+.profile-panel__header {
+  @apply border-b border-gray-100 px-6 py-5;
+}
+
+.profile-panel__title {
+  @apply text-2xl font-semibold text-gray-950;
+}
+
+.profile-panel__description {
+  @apply mt-1 text-sm text-gray-600;
+}
+
+.profile-panel__body {
+  @apply px-6 py-6;
+}
+
+.profile-panel__footer {
+  @apply flex justify-end border-t border-gray-100 bg-gray-50 px-6 py-4;
+}
+
+.profile-label {
+  @apply text-sm font-medium text-gray-800;
+}
+
+.profile-input {
+  @apply h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm transition-colors placeholder:text-gray-400 focus-visible:border-amber-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200;
+}
+
+.profile-textarea {
+  @apply min-h-24 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm transition-colors placeholder:text-gray-400 focus-visible:border-amber-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200;
+}
+
+.profile-error {
+  @apply rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700;
+}
+
+.profile-error__title {
+  @apply font-semibold;
+}
+
+.profile-submit {
+  @apply inline-flex min-w-[150px] items-center justify-center rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 disabled:cursor-not-allowed disabled:opacity-60;
+}
+</style>

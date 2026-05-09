@@ -7,7 +7,6 @@ import { useAuthStore } from '@/stores/useAuthStore'
 import { useBookingFlow } from '@/composables/useBookingFlow'
 import { useNotifications } from '@/composables/useNotifications'
 import { useI18n } from 'vue-i18n'
-import { Card } from '@/components/ui/card'
 import { CheckCircle2 } from 'lucide-vue-next'
 import BackButton from '@/components/common/BackButton.vue'
 
@@ -41,8 +40,10 @@ onMounted(async () => {
     if (!wasRestored) {
       const providerId = route.query.provider as string
       const staffId = route.query.staff as string
+      const serviceId = route.query.service as string
       const providerSlug = route.params.providerSlug as string
       const staffSlug = route.params.staffSlug as string
+      const serviceSlug = route.params.serviceSlug as string
 
       if (providerSlug && staffSlug) {
         const staffMember = await staffStore.fetchStaffMemberBySlug(providerSlug, staffSlug)
@@ -68,7 +69,16 @@ onMounted(async () => {
       }
       await staffStore.fetchStaff()
 
-      if ((staffId || staffSlug) && booking.filteredServices.value.length === 1) {
+      if (serviceSlug) {
+        const matchedService = booking.filteredServices.value.find(service => service.slug === serviceSlug && service.active)
+        if (matchedService) {
+          booking.selectService(matchedService.id)
+          await booking.confirmService()
+        }
+      } else if (serviceId && booking.filteredServices.value.some(service => service.id === serviceId && service.active)) {
+        booking.selectService(serviceId)
+        await booking.confirmService()
+      } else if ((staffId || staffSlug) && booking.filteredServices.value.length === 1) {
         booking.selectService(booking.filteredServices.value[0]!.id)
       }
     } else {
@@ -259,7 +269,7 @@ async function handleLoginSuccess() {
         </nav>
 
         <!-- Dynamic Step Content -->
-        <Card class="shadow-lg border-t-4 border-t-primary-600">
+        <section class="booking-step-card">
           <div class="p-6 md:p-8">
             <!-- Step 1: Service Selection -->
             <BookingServiceStep
@@ -338,8 +348,16 @@ async function handleLoginSuccess() {
               @go-to-bookings="router.push('/my-bookings')"
             />
           </div>
-        </Card>
+        </section>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+@reference "../style.css";
+
+.booking-step-card {
+  @apply rounded-xl border border-t-4 border-gray-200 border-t-primary-600 bg-white shadow-lg;
+}
+</style>
