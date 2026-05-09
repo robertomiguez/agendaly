@@ -50,7 +50,7 @@ describe('useSettingsStore Localization', () => {
         // Call initializeSettings to ensure it doesn't override
         await store.initializeSettings()
 
-        expect(store.language).toBe('fr')
+        expect(store.language).toBe('en')
         expect(store.currency).toBe('EUR')
         expect(geoService.fetchGeoInfo).not.toHaveBeenCalled()
     })
@@ -78,7 +78,7 @@ describe('useSettingsStore Localization', () => {
         expect(store.currency).toBe('BRL')
     })
 
-    it('uses IP detection if browser language is unsupported (3rd Priority)', async () => {
+    it('uses supported fallback if detected IP language is unsupported (3rd Priority)', async () => {
         // Mock unsupported browser language (e.g. Spanish)
         Object.defineProperty(window.navigator, 'language', {
             value: 'es-ES',
@@ -97,7 +97,7 @@ describe('useSettingsStore Localization', () => {
         const store = useSettingsStore()
         await store.initializeSettings()
 
-        expect(store.language).toBe('fr') // from IP (geo)
+        expect(store.language).toBe('en') // unsupported geo language normalizes to fallback
         expect(store.currency).toBe('EUR') // from IP (geo)
     })
 

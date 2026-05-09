@@ -1,6 +1,31 @@
 import { supabase } from '../lib/supabase'
+import { appendSlugSuffix, slugify } from '../lib/slug'
 import type { Service } from '../types'
 import { canAddService } from './subscriptionService'
+
+async function createUniqueServiceSlug(providerId: string, name: string, serviceId?: string) {
+    const baseSlug = slugify(name)
+
+    for (let suffix = 0; suffix < 50; suffix++) {
+        const candidate = appendSlugSuffix(baseSlug, suffix)
+        let query = supabase
+            .from('services')
+            .select('id')
+            .eq('provider_id', providerId)
+            .eq('slug', candidate)
+            .limit(1)
+
+        if (serviceId) {
+            query = query.neq('id', serviceId)
+        }
+
+        const { data, error } = await query
+        if (error) throw error
+        if (!data || data.length === 0) return candidate
+    }
+
+    return `${baseSlug}-${Date.now()}`
+}
 
 export async function fetchServices(providerId?: string) {
     let query = supabase
@@ -57,10 +82,12 @@ export async function createService(service: Omit<Service, 'id' | 'created_at' |
     // @ts-ignore
     const { staff_ids, image_urls, id, ...serviceData } = service
 
+    const slug = serviceData.slug || await createUniqueServiceSlug(service.provider_id, serviceData.name)
+
     // 1. Insert the service
     const { data: insertedData, error: createError } = await supabase
         .from('services')
-        .insert([serviceData])
+        .insert([{ ...serviceData, slug }])
         .select()
         .single()
 
@@ -143,6 +170,20 @@ export async function updateService(id: string, updates: Partial<Service> & { st
     const { categories, staff, provider, images, staff_ids, image_urls, ...cleanUpdates } = updates
     if (staff_ids !== undefined && staff_ids.length === 0) {
         throw new Error('At least one staff member is required for a service.')
+    }
+
+    if (cleanUpdates.name && !cleanUpdates.slug) {
+        const { data: existingService, error: existingError } = await supabase
+            .from('services')
+            .select('provider_id, slug')
+            .eq('id', id)
+            .single()
+
+        if (existingError) throw existingError
+
+        if (existingService?.provider_id && !existingService.slug) {
+            cleanUpdates.slug = await createUniqueServiceSlug(existingService.provider_id, cleanUpdates.name, id)
+        }
     }
 
     // 1. Update basic service info

@@ -3,9 +3,6 @@ import { ref, watch, computed } from 'vue'
 import type { Staff, ProviderAddress } from '../../types'
 import Modal from '../../components/common/Modal.vue'
 import { useI18n } from 'vue-i18n'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import ImageUpload from '../ImageUpload.vue'
 
@@ -107,31 +104,33 @@ function handleSubmit() {
       </div>
 
       <div class="space-y-2">
-        <Label for="staff-name">{{ $t('modals.staff.name') }}</Label>
-        <Input
+        <label for="staff-name" class="staff-form-label">{{ $t('modals.staff.name') }}</label>
+        <input
           id="staff-name"
           v-model="form.name"
           type="text"
+          class="staff-form-input"
           required
         />
       </div>
 
       <div class="space-y-2">
-        <Label for="staff-email">{{ $t('modals.staff.email') }}</Label>
-        <Input
+        <label for="staff-email" class="staff-form-label">{{ $t('modals.staff.email') }}</label>
+        <input
           id="staff-email"
           v-model="form.email"
           type="email"
+          class="staff-form-input"
           required
         />
       </div>
 
       <div class="space-y-2">
-        <Label for="staff-role">{{ $t('modals.staff.role') }}</Label>
+        <label for="staff-role" class="staff-form-label">{{ $t('modals.staff.role') }}</label>
         <select
           id="staff-role"
           v-model="form.role"
-          class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          class="staff-form-input"
         >
           <option value="staff">{{ $t('modals.staff.roles.staff') }}</option>
           <option value="admin">{{ $t('modals.staff.roles.admin') }}</option>
@@ -143,24 +142,24 @@ function handleSubmit() {
           id="staff-active"
           v-model="form.active"
           type="checkbox"
-          class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+          class="staff-form-checkbox"
         />
-        <Label for="staff-active" class="cursor-pointer">{{ $t('modals.staff.active') }}</Label>
+        <label for="staff-active" class="staff-form-label staff-form-label--inline">{{ $t('modals.staff.active') }}</label>
       </div>
 
       <!-- Work Locations (Branches) -->
       <div v-if="providerAddresses.length > 0" class="space-y-2">
-        <Label>{{ $t('modals.staff.locations') }}</Label>
-        <div class="space-y-2 max-h-40 overflow-y-auto border border-input rounded-md p-3">
+        <span class="staff-form-label">{{ $t('modals.staff.locations') }}</span>
+        <div class="staff-form-location-list">
           <div v-for="address in providerAddresses" :key="address.id" class="flex items-start">
             <input
               :id="'addr-' + address.id"
               type="checkbox"
               :value="address.id"
               v-model="selectedAddressIds"
-              class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded mt-0.5"
+              class="staff-form-checkbox staff-form-checkbox--offset"
             />
-            <label :for="'addr-' + address.id" class="ml-2 text-sm text-foreground select-none cursor-pointer">
+            <label :for="'addr-' + address.id" class="staff-form-location-label">
               <span class="font-medium">{{ address.label || $t('modals.staff.location_fallback') }}</span>
               <span class="text-muted-foreground block text-xs">{{ address.street_address }}, {{ address.city }}</span>
             </label>
@@ -172,23 +171,66 @@ function handleSubmit() {
       </div>
 
       <div class="mt-5 flex gap-3 sm:justify-end">
-        <Button
+        <button
           type="button"
-          variant="outline"
-          class="flex-1 sm:flex-none"
+          class="staff-form-action staff-form-action--secondary"
           @click="$emit('close')"
         >
           {{ $t('common.cancel') }}
-        </Button>
-        <Button
+        </button>
+        <button
           type="submit"
           :disabled="loading || (providerAddresses.length > 0 && selectedAddressIds.length === 0)"
-          class="flex-1 sm:flex-none bg-primary-600 hover:bg-primary-700"
+          class="staff-form-action staff-form-action--primary"
         >
           <LoadingSpinner v-if="loading" inline size="sm" class="mr-2" color="text-white" />
           {{ loading ? $t('common.saving') : $t('common.save') }}
-        </Button>
+        </button>
       </div>
     </form>
   </Modal>
 </template>
+
+<style scoped>
+@reference "../../style.css";
+
+.staff-form-label {
+  @apply block text-sm font-medium text-gray-800;
+}
+
+.staff-form-label--inline {
+  @apply cursor-pointer;
+}
+
+.staff-form-input {
+  @apply flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm transition-colors placeholder:text-gray-400 focus-visible:border-amber-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200;
+}
+
+.staff-form-checkbox {
+  @apply h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500;
+}
+
+.staff-form-checkbox--offset {
+  @apply mt-0.5;
+}
+
+.staff-form-location-list {
+  @apply max-h-40 space-y-2 overflow-y-auto rounded-md border border-gray-300 p-3;
+}
+
+.staff-form-location-label {
+  @apply ml-2 cursor-pointer select-none text-sm text-gray-900;
+}
+
+.staff-form-action {
+  @apply flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none;
+}
+
+.staff-form-action--secondary {
+  @apply border border-gray-300 bg-white text-gray-800 hover:bg-gray-50;
+}
+
+.staff-form-action--primary {
+  @apply bg-amber-600 text-white hover:bg-amber-700;
+}
+</style>

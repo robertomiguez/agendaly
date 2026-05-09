@@ -75,7 +75,7 @@ async function updateProfile() {
 <template>
   <div class="min-h-screen bg-gray-50 flex items-center justify-center p-6">
     <div class="max-w-md w-full bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-      <BackButton v-if="!route.query.redirect && isProfileComplete" to="/" class="mb-4" />
+      <BackButton v-if="!route.query.redirect && isProfileComplete" to="/my-bookings" class="mb-4" />
       <div class="text-center mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ $t('profile.complete_title') }}</h1>
         <p class="text-gray-600">{{ $t('profile.complete_subtitle') }}</p>

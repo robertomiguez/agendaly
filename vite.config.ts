@@ -24,7 +24,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           'vue-vendor': ['vue', 'vue-router', 'pinia'],
-          'ui-vendor': ['lucide-vue-next', 'reka-ui', 'class-variance-authority', 'clsx', 'tailwind-merge', '@headlessui/vue']
+          'ui-vendor': ['lucide-vue-next', '@headlessui/vue']
         }
       }
     }

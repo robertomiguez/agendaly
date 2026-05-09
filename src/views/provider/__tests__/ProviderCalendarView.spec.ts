@@ -273,13 +273,28 @@ describe("ProviderCalendarView", () => {
       });
       
       await flushPromises();
+
+      const vm = wrapper.vm as any;
+      vm.currentDate = new Date(2099, 4, 12);
+      await wrapper.vm.$nextTick();
       
-      const dayColumn = wrapper.find(".min-h-full.relative"); 
+      const dayColumn = wrapper.find(".relative.min-h-full.border-r"); 
       if (dayColumn.exists()) {
+          vi.spyOn(dayColumn.element, "getBoundingClientRect").mockReturnValue({
+              top: 100,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: 0,
+              height: 0,
+              x: 0,
+              y: 100,
+              toJSON: () => ({})
+          } as DOMRect);
+
           await dayColumn.trigger("click", {
               clientX: 100,
-              clientY: 200, 
-              currentTarget: { getBoundingClientRect: () => ({ top: 100 }) } 
+              clientY: 200
           });
           
           const modalStub = wrapper.find(".block-modal-stub");

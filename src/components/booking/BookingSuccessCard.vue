@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { useSettingsStore } from '@/stores/useSettingsStore'
 import { useAuthStore } from '@/stores/useAuthStore'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { CheckCircle2, Navigation } from 'lucide-vue-next'
+import { CheckCircle2, Home, Navigation } from 'lucide-vue-next'
 import type { Provider, ProviderAddress } from '@/types'
 
 interface Service {
@@ -40,15 +38,15 @@ const authStore = useAuthStore()
 
 <template>
   <div class="max-w-xl mx-auto animate-in zoom-in duration-300">
-    <Card class="border-green-100 shadow-xl shadow-green-50">
-      <CardHeader class="text-center pb-2">
+    <section class="booking-success-card">
+      <header>
         <div class="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
           <CheckCircle2 class="h-8 w-8 text-green-600" />
         </div>
-        <CardTitle class="text-2xl text-green-700">{{ $t('booking.confirmed_title') }}</CardTitle>
-        <CardDescription>{{ $t('booking.confirmed_desc', { email: authStore.customer?.profile?.email }) }}</CardDescription>
-      </CardHeader>
-      <CardContent class="grid gap-4 pt-4">
+        <h2>{{ $t('booking.confirmed_title') }}</h2>
+        <p>{{ $t('booking.confirmed_desc', { email: authStore.customer?.profile?.email }) }}</p>
+      </header>
+      <div class="booking-success-card__content">
         <div class="bg-gray-50 rounded-lg p-4 grid gap-3 text-sm border">
           <div class="flex justify-between items-center">
             <span class="text-gray-500">{{ $t('booking.steps.service') }}</span>
@@ -98,8 +96,64 @@ const authStore = useAuthStore()
             {{ $t('booking.get_directions') }}
           </a>
         </div>
-        <Button class="w-full mt-4" @click="emit('reset')">{{ $t('booking.book_another') }}</Button>
-      </CardContent>
-    </Card>
+        <div class="booking-success-actions">
+          <button type="button" class="booking-success-action booking-success-action--primary" @click="emit('reset')">
+            {{ $t('booking.book_another') }}
+          </button>
+          <router-link
+            v-if="providerInfo?.slug"
+            class="booking-success-action booking-success-action--outline"
+            :to="`/${providerInfo.slug}`"
+          >
+            <Home class="booking-success-icon" />
+            {{ $t('booking.provider_page') }}
+          </router-link>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
+
+<style scoped>
+@reference "../../style.css";
+
+.booking-success-card {
+  @apply rounded-xl border border-green-100 bg-white py-6 shadow-xl shadow-green-50;
+}
+
+.booking-success-card header {
+  @apply px-6 pb-2 text-center;
+}
+
+.booking-success-card h2 {
+  @apply text-2xl font-semibold leading-tight text-green-700;
+}
+
+.booking-success-card p {
+  @apply mt-1 text-sm text-gray-600;
+}
+
+.booking-success-card__content {
+  @apply grid gap-4 px-6 pt-4;
+}
+
+.booking-success-actions {
+  @apply mt-4 grid gap-2;
+}
+
+.booking-success-action {
+  @apply inline-flex h-10 w-full items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2;
+}
+
+.booking-success-action--primary {
+  @apply bg-gray-950 text-white hover:bg-gray-800;
+}
+
+.booking-success-action--outline {
+  @apply border border-gray-200 bg-white text-gray-900 shadow-sm hover:bg-gray-50;
+}
+
+.booking-success-icon {
+  @apply h-4 w-4;
+}
+</style>

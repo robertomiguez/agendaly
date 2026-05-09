@@ -3,7 +3,6 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/useAuthStore'
 import { ShieldAlert, LogOut } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -34,14 +33,14 @@ async function handleLogout() {
       </div>
 
       <div class="space-y-3">
-        <Button 
-          variant="outline" 
-          class="w-full h-12 flex items-center justify-center gap-2"
+        <button 
+          type="button"
+          class="signout-command"
           @click="handleLogout"
         >
           <LogOut class="h-4 w-4" />
           Sign Out
-        </Button>
+        </button>
         
         <a 
           href="mailto:support@agendaly.com" 
@@ -57,3 +56,11 @@ async function handleLogout() {
     </p>
   </div>
 </template>
+
+<style scoped>
+@reference "../style.css";
+
+.signout-command {
+  @apply inline-flex h-12 w-full items-center justify-center gap-2 rounded-md border border-gray-200 bg-white text-sm font-medium text-gray-900 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2;
+}
+</style>

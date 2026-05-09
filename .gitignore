@@ -31,5 +31,5 @@ images/
 GEMINI.md
 AGENTS.md
 ARCHITECTURE.md
-.agent/skills/
+.agents/skills/
 .codex/config.toml

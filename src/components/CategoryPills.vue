@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { Badge } from '@/components/ui/badge'
-
 interface Category {
   id: string
   name: string
@@ -23,28 +21,24 @@ function selectCategory(categoryId: string | null) {
 
 <template>
   <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-    <Badge
+    <button
+      type="button"
       @click="selectCategory(null)"
-      class="px-4 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all hover:scale-105"
-      :variant="!selectedCategory ? 'default' : 'outline'"
-      :class="!selectedCategory 
-        ? 'bg-white text-primary-600 hover:bg-gray-100 border-white' 
-        : 'bg-transparent text-white border-white/50 hover:bg-white/10 hover:text-white'"
+      class="category-pill"
+      :class="!selectedCategory ? 'category-pill--active' : 'category-pill--idle'"
     >
       {{ $t('category_pills.all') }}
-    </Badge>
-    <Badge
+    </button>
+    <button
       v-for="category in categories"
       :key="category.id"
+      type="button"
       @click="selectCategory(category.id)"
-      class="px-4 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all hover:scale-105"
-      :variant="selectedCategory === category.id ? 'default' : 'outline'"
-      :class="selectedCategory === category.id
-        ? 'bg-white text-primary-600 hover:bg-gray-100 border-white' 
-        : 'bg-transparent text-white border-white/50 hover:bg-white/10 hover:text-white'"
+      class="category-pill"
+      :class="selectedCategory === category.id ? 'category-pill--active' : 'category-pill--idle'"
     >
       {{ category.name }}
-    </Badge>
+    </button>
   </div>
 </template>
 
@@ -56,5 +50,17 @@ function selectCategory(categoryId: string | null) {
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+.category-pill {
+  @apply cursor-pointer rounded-full border px-4 py-2 text-sm font-semibold transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white/60;
+}
+
+.category-pill--active {
+  @apply border-white bg-white text-primary-600 hover:bg-gray-100;
+}
+
+.category-pill--idle {
+  @apply border-white/50 bg-transparent text-white hover:bg-white/10;
 }
 </style>

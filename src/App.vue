@@ -7,6 +7,7 @@ import { useAuthStore } from './stores/useAuthStore'
 import { getProviderSubscription } from './services/subscriptionService'
 import type { Subscription } from './types'
 import { AlertTriangle, ChevronRight } from 'lucide-vue-next'
+import { getProviderSlugFromHost } from './lib/publicHost'
 
 const route = useRoute()
 const router = useRouter()
@@ -77,7 +78,13 @@ const hideNavigation = computed(() => {
     '/profile',
     '/super-admin'
   ]
-  return hiddenRoutes.includes(route.path) || route.path.startsWith('/super-admin')
+  const providerMiniSiteFromMenu = route.name === 'ProviderLanding' && route.query.menu === '1'
+
+  return hiddenRoutes.includes(route.path)
+    || route.path.startsWith('/super-admin')
+    || (route.name === 'ProviderLanding' && !providerMiniSiteFromMenu)
+    || route.name === 'StaffBooking'
+    || (route.path === '/' && !!getProviderSlugFromHost())
 })
 </script>
 

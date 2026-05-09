@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
 import { supabase } from '@/lib/supabase'
 import type { Subscription } from '@/types'
 import { Users, Briefcase, MapPin } from 'lucide-vue-next'
@@ -67,77 +65,162 @@ function calculatePercentage(current: number, max: number | null | undefined): n
 </script>
 
 <template>
-    <Card v-if="subscription?.plan">
-        <CardHeader>
-            <CardTitle class="text-xl leading-none">Resource Usage</CardTitle>
-            <CardDescription>
+    <section v-if="subscription?.plan" class="usage-card">
+        <header class="usage-card__header">
+            <h2>Resource Usage</h2>
+            <p>
                 Track your active resources against your {{ subscription.plan.display_name }} plan limits
-            </CardDescription>
-        </CardHeader>
-        <CardContent>
-            <div v-if="loading" class="animate-pulse space-y-6">
-                <div class="h-10 bg-gray-100 rounded-md"></div>
-                <div class="h-10 bg-gray-100 rounded-md"></div>
-                <div class="h-10 bg-gray-100 rounded-md"></div>
+            </p>
+        </header>
+        <div class="usage-card__content">
+            <div v-if="loading" class="usage-skeleton">
+                <div></div>
+                <div></div>
+                <div></div>
             </div>
-            <div v-else class="space-y-6">
-                <!-- Location Usage -->
-                <div class="space-y-2">
-                    <div class="flex items-center justify-between text-sm">
-                        <div class="flex items-center gap-2 font-medium text-gray-700">
-                            <MapPin class="h-4 w-4" />
+            <div v-else class="usage-list">
+                <div class="usage-row">
+                    <div class="usage-row__meta">
+                        <div>
+                            <MapPin />
                             <span>Locations</span>
                         </div>
-                        <span class="text-gray-500 font-medium">
+                        <span>
                             {{ locationsCount }} / {{ subscription.plan.max_locations === null ? '∞' : subscription.plan.max_locations }}
                         </span>
                     </div>
-                    <Progress 
+                    <progress
                         v-if="subscription.plan.max_locations !== null"
-                        :model-value="calculatePercentage(locationsCount, subscription.plan.max_locations)" 
-                        class="h-2"
-                        :class="locationsCount >= (subscription.plan.max_locations || 0) ? 'text-red-500' : 'text-primary-600'"
+                        class="usage-progress"
+                        :class="{ 'is-full': locationsCount >= (subscription.plan.max_locations || 0) }"
+                        :value="calculatePercentage(locationsCount, subscription.plan.max_locations)"
+                        max="100"
                     />
                 </div>
 
-                <!-- Services Usage -->
-                <div class="space-y-2">
-                    <div class="flex items-center justify-between text-sm">
-                        <div class="flex items-center gap-2 font-medium text-gray-700">
-                            <Briefcase class="h-4 w-4" />
+                <div class="usage-row">
+                    <div class="usage-row__meta">
+                        <div>
+                            <Briefcase />
                             <span>Active Services</span>
                         </div>
-                        <span class="text-gray-500 font-medium">
+                        <span>
                             {{ servicesCount }} / {{ subscription.plan.max_services === null ? '∞' : subscription.plan.max_services }}
                         </span>
                     </div>
-                    <Progress 
+                    <progress
                         v-if="subscription.plan.max_services !== null"
-                        :model-value="calculatePercentage(servicesCount, subscription.plan.max_services)" 
-                        class="h-2"
-                        :class="servicesCount >= (subscription.plan.max_services || 0) ? 'text-red-500' : 'text-primary-600'"
+                        class="usage-progress"
+                        :class="{ 'is-full': servicesCount >= (subscription.plan.max_services || 0) }"
+                        :value="calculatePercentage(servicesCount, subscription.plan.max_services)"
+                        max="100"
                     />
                 </div>
 
-                <!-- Staff Usage -->
-                <div class="space-y-2">
-                    <div class="flex items-center justify-between text-sm">
-                        <div class="flex items-center gap-2 font-medium text-gray-700">
-                            <Users class="h-4 w-4" />
+                <div class="usage-row">
+                    <div class="usage-row__meta">
+                        <div>
+                            <Users />
                             <span>Active Staff</span>
                         </div>
-                        <span class="text-gray-500 font-medium">
+                        <span>
                             {{ staffCount }} / {{ subscription.plan.max_staff === null ? '∞' : subscription.plan.max_staff }}
                         </span>
                     </div>
-                    <Progress 
+                    <progress
                         v-if="subscription.plan.max_staff !== null"
-                        :model-value="calculatePercentage(staffCount, subscription.plan.max_staff)" 
-                        class="h-2"
-                        :class="staffCount >= (subscription.plan.max_staff || 0) ? 'text-red-500' : 'text-primary-600'"
+                        class="usage-progress"
+                        :class="{ 'is-full': staffCount >= (subscription.plan.max_staff || 0) }"
+                        :value="calculatePercentage(staffCount, subscription.plan.max_staff)"
+                        max="100"
                     />
                 </div>
             </div>
-        </CardContent>
-    </Card>
+        </div>
+    </section>
 </template>
+
+<style scoped>
+@reference "../../style.css";
+
+.usage-card {
+    @apply rounded-xl border border-gray-200 bg-white py-6 text-gray-950 shadow-sm;
+}
+
+.usage-card__header {
+    @apply px-6;
+}
+
+.usage-card__header h2 {
+    @apply text-xl font-semibold leading-tight;
+}
+
+.usage-card__header p {
+    @apply mt-1 text-sm leading-6 text-gray-600;
+}
+
+.usage-card__content {
+    @apply px-6 pt-6;
+}
+
+.usage-skeleton {
+    @apply grid animate-pulse gap-6;
+}
+
+.usage-skeleton div {
+    @apply h-10 rounded-md bg-gray-100;
+}
+
+.usage-list {
+    @apply grid gap-6;
+}
+
+.usage-row {
+    @apply grid gap-2;
+}
+
+.usage-row__meta {
+    @apply flex items-center justify-between gap-4 text-sm;
+}
+
+.usage-row__meta div {
+    @apply flex items-center gap-2 font-medium text-gray-700;
+}
+
+.usage-row__meta svg {
+    @apply h-4 w-4;
+}
+
+.usage-row__meta > span {
+    @apply shrink-0 font-medium text-gray-500;
+}
+
+.usage-progress {
+    @apply h-2 w-full overflow-hidden rounded-full bg-primary-100;
+}
+
+.usage-progress::-webkit-progress-bar {
+    @apply rounded-full bg-primary-100;
+}
+
+.usage-progress::-webkit-progress-value {
+    @apply rounded-full bg-primary-600 transition-all;
+}
+
+.usage-progress::-moz-progress-bar {
+    @apply rounded-full bg-primary-600 transition-all;
+}
+
+.usage-progress.is-full {
+    @apply bg-red-100;
+}
+
+.usage-progress.is-full::-webkit-progress-bar {
+    @apply bg-red-100;
+}
+
+.usage-progress.is-full::-webkit-progress-value,
+.usage-progress.is-full::-moz-progress-bar {
+    @apply bg-red-600;
+}
+</style>

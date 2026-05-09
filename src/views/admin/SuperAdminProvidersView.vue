@@ -10,13 +10,6 @@ import {
   Mail,
   Building
 } from 'lucide-vue-next'
-import { 
-  DropdownMenu, 
-  DropdownMenuTrigger, 
-  DropdownMenuContent, 
-  DropdownMenuItem 
-} from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
 
 const adminStore = useSuperAdminStore()
 const searchQuery = ref('')
@@ -136,16 +129,14 @@ import { computed } from 'vue'
                 </div>
               </td>
               <td class="px-6 py-4 text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger as-child>
-                    <Button variant="ghost" size="icon" class="h-8 w-8 text-slate-400 hover:text-slate-600">
+                <details class="relative inline-block text-left">
+                  <summary class="flex h-8 w-8 cursor-pointer list-none items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-600">
                       <MoreVertical class="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem 
+                  </summary>
+                  <div class="absolute right-0 z-20 mt-2 min-w-36 rounded-md border border-slate-200 bg-white p-1 shadow-lg">
+                    <button
                       @click="toggleActive(provider.id, provider.status === 'approved')"
-                      class="cursor-pointer"
+                      class="flex w-full cursor-pointer items-center rounded px-2 py-1.5 text-left text-sm hover:bg-slate-50"
                     >
                       <template v-if="provider.status === 'approved'">
                         <UserX class="mr-2 h-4 w-4 text-red-500" />
@@ -155,9 +146,9 @@ import { computed } from 'vue'
                         <UserCheck class="mr-2 h-4 w-4 text-emerald-500" />
                         <span class="text-emerald-600">Activate</span>
                       </template>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    </button>
+                  </div>
+                </details>
               </td>
             </tr>
           </tbody>
@@ -180,16 +171,14 @@ import { computed } from 'vue'
                 </div>
               </div>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger as-child>
-                <Button variant="ghost" size="icon" class="h-8 w-8 text-slate-400 shrink-0">
+            <details class="relative shrink-0 text-left">
+              <summary class="flex h-8 w-8 cursor-pointer list-none items-center justify-center rounded-md text-slate-400 hover:bg-slate-100">
                   <MoreVertical class="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem 
+              </summary>
+              <div class="absolute right-0 z-20 mt-2 min-w-36 rounded-md border border-slate-200 bg-white p-1 shadow-lg">
+                <button
                   @click="toggleActive(provider.id, provider.status === 'approved')"
-                  class="cursor-pointer"
+                  class="flex w-full cursor-pointer items-center rounded px-2 py-1.5 text-left text-sm hover:bg-slate-50"
                 >
                   <template v-if="provider.status === 'approved'">
                     <UserX class="mr-2 h-4 w-4 text-red-500" />
@@ -199,9 +188,9 @@ import { computed } from 'vue'
                     <UserCheck class="mr-2 h-4 w-4 text-emerald-500" />
                     <span class="text-emerald-600">Activate</span>
                   </template>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </button>
+              </div>
+            </details>
           </div>
           <div class="flex items-center justify-between mt-3">
             <span 
@@ -248,8 +237,8 @@ import { computed } from 'vue'
           ></textarea>
           
           <div class="flex gap-3">
-             <Button variant="outline" class="flex-1 h-12" @click="showDeactivationModal = false">Cancel</Button>
-             <Button class="flex-1 h-12 bg-red-600 hover:bg-red-700 text-white" @click="confirmDeactivation">Deactivate</Button>
+             <button class="flex-1 h-12 rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-slate-50" @click="showDeactivationModal = false">Cancel</button>
+             <button class="flex-1 h-12 rounded-md bg-red-600 text-white hover:bg-red-700" @click="confirmDeactivation">Deactivate</button>
           </div>
        </div>
     </div>

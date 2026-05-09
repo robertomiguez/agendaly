@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
+import { computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import {
+  AlertTriangle,
+  Bell,
+  Briefcase,
+  Calendar,
+  Clock,
+  DollarSign,
+  MapPin,
+  Plus,
+  Settings,
+  Users
+} from 'lucide-vue-next'
+import LoadingSpinner from '../../components/common/LoadingSpinner.vue'
+import { useCurrency } from '@/composables/useCurrency'
 import { useAuthStore } from '../../stores/useAuthStore'
 import { useProviderStore } from '../../stores/useProviderStore'
-import { useRouter } from 'vue-router'
-import { Button } from '@/components/ui/button'
-import { 
-  Bell, 
-  Settings, 
-  Calendar, 
-  DollarSign, 
-  Briefcase, 
-  Users, 
-  Plus, 
-  MapPin, 
-  Clock,
-  AlertTriangle
-} from 'lucide-vue-next'
-import { useCurrency } from '@/composables/useCurrency'
-import LoadingSpinner from '../../components/common/LoadingSpinner.vue'
 
 const authStore = useAuthStore()
 const providerStore = useProviderStore()
 const router = useRouter()
+const { formatPrice } = useCurrency()
 
 onMounted(async () => {
   if (!authStore.provider) {
@@ -32,14 +32,12 @@ onMounted(async () => {
   await providerStore.fetchDashboardStats(authStore.provider.id)
 })
 
-const { formatPrice } = useCurrency()
+const hasStaff = computed(() => providerStore.stats.totalStaff > 0)
+const providerName = computed(() => authStore.provider?.business_name || 'Provider')
 
 function formatCurrency(amount: number) {
-  // Use shared currency logic which respects browser locale
   return formatPrice(amount)
 }
-
-const hasStaff = computed(() => providerStore.stats.totalStaff > 0)
 
 function goToServices() {
   if (!hasStaff.value) return
@@ -59,7 +57,6 @@ function goToCalendar() {
   router.push('/provider/calendar')
 }
 
-
 function goToAvailability() {
   if (!hasStaff.value) return
   router.push('/provider/availability')
@@ -68,218 +65,422 @@ function goToAvailability() {
 function goToRevenueReport() {
   router.push('/provider/revenue-report')
 }
+
+function goToProfile() {
+  router.push('/provider/profile')
+}
+
+const dashboardStats = computed(() => [
+  {
+    key: 'appointments',
+    label: 'dashboard.stats.today_appointments',
+    value: providerStore.stats.todayAppointments,
+    hint: null,
+    icon: Calendar,
+    tone: 'amber',
+    disabled: !hasStaff.value,
+    action: goToCalendar
+  },
+  {
+    key: 'revenue',
+    label: 'dashboard.stats.week_revenue',
+    value: formatCurrency(providerStore.stats.weekRevenue),
+    hint: 'dashboard.stats.revenue_projected_hint',
+    icon: DollarSign,
+    tone: 'green',
+    disabled: false,
+    action: goToRevenueReport
+  },
+  {
+    key: 'services',
+    label: 'dashboard.stats.active_services',
+    value: providerStore.stats.activeServices,
+    hint: null,
+    icon: Briefcase,
+    tone: 'blue',
+    disabled: !hasStaff.value,
+    action: goToServices
+  },
+  {
+    key: 'staff',
+    label: 'dashboard.stats.staff_members',
+    value: providerStore.stats.totalStaff,
+    hint: null,
+    icon: Users,
+    tone: 'violet',
+    disabled: false,
+    action: goToStaff
+  }
+])
+
+const quickActions = computed(() => [
+  {
+    key: 'locations',
+    title: 'dashboard.quick_actions.locations_title',
+    description: 'dashboard.quick_actions.locations_desc',
+    icon: MapPin,
+    tone: 'amber',
+    disabled: false,
+    action: goToAddresses
+  },
+  {
+    key: 'staff',
+    title: 'dashboard.quick_actions.staff_title',
+    description: 'dashboard.quick_actions.staff_desc',
+    icon: Users,
+    tone: 'violet',
+    disabled: false,
+    action: goToStaff
+  },
+  {
+    key: 'services',
+    title: 'dashboard.quick_actions.services_title',
+    description: 'dashboard.quick_actions.services_desc',
+    icon: Plus,
+    tone: 'amber',
+    disabled: !hasStaff.value,
+    action: goToServices
+  },
+  {
+    key: 'availability',
+    title: 'dashboard.quick_actions.availability_title',
+    description: 'dashboard.quick_actions.availability_desc',
+    icon: Clock,
+    tone: 'blue',
+    disabled: !hasStaff.value,
+    action: goToAvailability
+  },
+  {
+    key: 'calendar',
+    title: 'dashboard.quick_actions.calendar_title',
+    description: 'dashboard.quick_actions.calendar_desc',
+    icon: Calendar,
+    tone: 'green',
+    disabled: !hasStaff.value,
+    action: goToCalendar
+  }
+])
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Header -->
-    <div class="bg-white border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-6 py-4">
-        <div class="flex items-center justify-between">
-          <div>
-            <h1 class="text-3xl font-bold text-gray-900">{{ $t('dashboard.title') }}</h1>
-            <p class="text-gray-600 mt-1">{{ $t('dashboard.welcome_back', { name: authStore.provider?.business_name || 'Provider' }) }}</p>
-          </div>
-          <div class="flex items-center gap-4">
-            <!-- Notifications placeholder -->
-            <button class="p-2 text-gray-600 hover:text-gray-900 relative">
-              <Bell class="w-6 h-6" />
-            </button>
-            <!-- Settings placeholder -->
-            <button class="p-2 text-gray-600 hover:text-gray-900">
-              <Settings class="w-6 h-6" />
-            </button>
-          </div>
+  <div class="provider-dashboard">
+    <header class="dashboard-header">
+      <div class="dashboard-shell header-layout">
+        <div class="header-copy">
+          <p class="dashboard-kicker">{{ $t('nav.business_dashboard') }}</p>
+          <h1>{{ $t('dashboard.title') }}</h1>
+          <p>{{ $t('dashboard.welcome_back', { name: providerName }) }}</p>
+        </div>
+
+        <div class="header-actions">
+          <button class="icon-command" type="button" aria-label="Notifications">
+            <Bell />
+          </button>
+          <button class="icon-command" type="button" aria-label="Business settings" @click="goToProfile">
+            <Settings />
+          </button>
         </div>
       </div>
-    </div>
+    </header>
 
-    <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-6 py-8">
-      
+    <main class="dashboard-shell dashboard-main">
       <LoadingSpinner v-if="providerStore.loading" :text="$t('dashboard.loading')" />
 
-      <!-- Stats Grid -->
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <!-- Today's Appointments -->
-        <div 
-          @click="goToCalendar"
-          class="bg-white rounded-lg shadow p-6 border-l-4 border-primary-600 transition-all"
-          :class="hasStaff ? 'cursor-pointer hover:shadow-md' : 'opacity-75 cursor-not-allowed'"
-        >
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-600">{{ $t('dashboard.stats.today_appointments') }}</p>
-              <p class="text-3xl font-bold text-gray-900 mt-2">{{ providerStore.stats.todayAppointments }}</p>
-            </div>
-            <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-              <Calendar class="w-6 h-6 text-primary-600" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Week Revenue -->
-        <div 
-          @click="goToRevenueReport"
-          class="bg-white rounded-lg shadow p-6 border-l-4 border-green-600 cursor-pointer hover:shadow-md transition-all"
-        >
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-600">{{ $t('dashboard.stats.week_revenue') }}</p>
-              <p class="text-3xl font-bold text-gray-900 mt-2">{{ formatCurrency(providerStore.stats.weekRevenue) }}</p>
-              <p class="text-xs text-gray-400 mt-1 italic">{{ $t('dashboard.stats.revenue_projected_hint') }}</p>
-            </div>
-            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-              <DollarSign class="w-6 h-6 text-green-600" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Active Services -->
-        <div 
-          @click="goToServices"
-          class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-600 transition-all"
-          :class="hasStaff ? 'cursor-pointer hover:shadow-md' : 'opacity-75 cursor-not-allowed'"
-        >
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-600">{{ $t('dashboard.stats.active_services') }}</p>
-              <p class="text-3xl font-bold text-gray-900 mt-2">{{ providerStore.stats.activeServices }}</p>
-            </div>
-            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-              <Briefcase class="w-6 h-6 text-blue-600" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Total Staff -->
-        <div 
-          @click="goToStaff"
-          class="bg-white rounded-lg shadow p-6 border-l-4 border-purple-600 cursor-pointer hover:shadow-md transition-all"
-        >
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-600">{{ $t('dashboard.stats.staff_members') }}</p>
-              <p class="text-3xl font-bold text-gray-900 mt-2">{{ providerStore.stats.totalStaff }}</p>
-            </div>
-            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-              <Users class="w-6 h-6 text-purple-600" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Quick Actions -->
-      <div class="bg-white rounded-lg shadow p-6 mb-8">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">{{ $t('dashboard.quick_actions.title') }}</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-
+      <template v-else>
+        <section class="metrics-grid" aria-label="Business summary">
           <button
-            @click="goToAddresses"
-            class="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-all"
+            v-for="stat in dashboardStats"
+            :key="stat.key"
+            class="metric-card"
+            :class="[`tone-${stat.tone}`, { 'is-disabled': stat.disabled }]"
+            type="button"
+            :disabled="stat.disabled"
+            @click="stat.action"
           >
-            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-              <MapPin class="w-6 h-6 text-orange-600" />
-            </div>
-            <div class="text-left">
-              <p class="font-semibold text-gray-900">{{ $t('dashboard.quick_actions.locations_title') }}</p>
-              <p class="text-sm text-gray-600">{{ $t('dashboard.quick_actions.locations_desc') }}</p>
-            </div>
+            <span class="metric-icon">
+              <component :is="stat.icon" />
+            </span>
+            <span class="metric-body">
+              <span class="metric-label">{{ $t(stat.label) }}</span>
+              <strong>{{ stat.value }}</strong>
+              <span v-if="stat.hint" class="metric-hint">{{ $t(stat.hint) }}</span>
+            </span>
           </button>
+        </section>
 
-          <button
-            @click="goToStaff"
-            class="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all"
-          >
-            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-              <Users class="w-6 h-6 text-purple-600" />
-            </div>
-            <div class="text-left">
-              <p class="font-semibold text-gray-900">{{ $t('dashboard.quick_actions.staff_title') }}</p>
-              <p class="text-sm text-gray-600">{{ $t('dashboard.quick_actions.staff_desc') }}</p>
-            </div>
-          </button>
-
-          <button
-            @click="goToServices"
-            :disabled="!hasStaff"
-            class="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            :class="hasStaff ? 'hover:border-primary-500 hover:bg-primary-50' : ''"
-          >
-            <div class="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-              <Plus class="w-6 h-6 text-primary-600" />
-            </div>
-            <div class="text-left">
-              <p class="font-semibold text-gray-900">{{ $t('dashboard.quick_actions.services_title') }}</p>
-              <p class="text-sm text-gray-600">{{ $t('dashboard.quick_actions.services_desc') }}</p>
-            </div>
-          </button>
-
-          <button
-            @click="goToAvailability"
-            :disabled="!hasStaff"
-            class="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            :class="hasStaff ? 'hover:border-blue-500 hover:bg-blue-50' : ''"
-          >
-            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Clock class="w-6 h-6 text-blue-600" />
-            </div>
-            <div class="text-left">
-              <p class="font-semibold text-gray-900">{{ $t('dashboard.quick_actions.availability_title') }}</p>
-              <p class="text-sm text-gray-600">{{ $t('dashboard.quick_actions.availability_desc') }}</p>
-            </div>
-          </button>
-
-          <button
-            @click="goToCalendar"
-            :disabled="!hasStaff"
-            class="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            :class="hasStaff ? 'hover:border-green-500 hover:bg-green-50' : ''"
-          >
-            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-              <Calendar class="w-6 h-6 text-green-600" />
-            </div>
-            <div class="text-left">
-              <p class="font-semibold text-gray-900">{{ $t('dashboard.quick_actions.calendar_title') }}</p>
-              <p class="text-sm text-gray-600">{{ $t('dashboard.quick_actions.calendar_desc') }}</p>
-            </div>
-          </button>
-
-        </div>
-      </div>
-
-      <!-- Pending Status Warning (if not approved) -->
-      <div v-if="providerStore.isPending" class="bg-yellow-50 border-l-4 border-yellow-400 p-6 mb-8 rounded-lg">
-        <div class="flex">
-          <div class="flex-shrink-0">
-            <AlertTriangle class="h-5 w-5 text-yellow-400" />
+        <section v-if="providerStore.isPending" class="pending-panel">
+          <AlertTriangle />
+          <div>
+            <h2>{{ $t('dashboard.status.pending_title') }}</h2>
+            <p>{{ $t('dashboard.status.pending_desc') }}</p>
           </div>
-          <div class="ml-3">
-            <h3 class="text-sm font-medium text-yellow-800">{{ $t('dashboard.status.pending_title') }}</h3>
-            <div class="mt-2 text-sm text-yellow-700">
-              <p>{{ $t('dashboard.status.pending_desc') }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+        </section>
 
-      <!-- Recent Activity / Upcoming Appointments -->
-      <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">{{ $t('dashboard.upcoming.title') }}</h2>
-        <div v-if="providerStore.stats.todayAppointments === 0" class="text-center py-12">
-          <Calendar class="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <p class="text-gray-600">{{ $t('dashboard.upcoming.no_appointments') }}</p>
-          <Button v-if="hasStaff" variant="link" @click="goToCalendar" class="mt-4 text-primary-600 hover:text-primary-700">
-            {{ $t('dashboard.upcoming.view_full_calendar') }} →
-          </Button>
+        <div class="dashboard-columns">
+          <section class="action-panel">
+            <div class="section-heading">
+              <p>{{ $t('dashboard.quick_actions.title') }}</p>
+              <h2>{{ $t('landing.flow_title') }}</h2>
+            </div>
+
+            <div class="action-list">
+              <button
+                v-for="item in quickActions"
+                :key="item.key"
+                class="action-row"
+                :class="[`tone-${item.tone}`, { 'is-disabled': item.disabled }]"
+                type="button"
+                :disabled="item.disabled"
+                @click="item.action"
+              >
+                <span class="action-icon">
+                  <component :is="item.icon" />
+                </span>
+                <span class="action-copy">
+                  <strong>{{ $t(item.title) }}</strong>
+                  <span>{{ $t(item.description) }}</span>
+                </span>
+              </button>
+            </div>
+          </section>
+
+          <section class="today-panel">
+            <div class="section-heading">
+              <p>{{ $t('dashboard.upcoming.title') }}</p>
+              <h2>{{ $t('calendar.today') }}</h2>
+            </div>
+
+            <div v-if="providerStore.stats.todayAppointments === 0" class="empty-today">
+              <Calendar />
+              <p>{{ $t('dashboard.upcoming.no_appointments') }}</p>
+              <button v-if="hasStaff" class="text-command" type="button" @click="goToCalendar">
+                {{ $t('dashboard.upcoming.view_full_calendar') }}
+              </button>
+            </div>
+
+            <div v-else class="today-summary">
+              <div class="today-count">
+                <strong>{{ providerStore.stats.todayAppointments }}</strong>
+                <span>{{ $t('dashboard.upcoming.appointments_count', { count: providerStore.stats.todayAppointments }) }}</span>
+              </div>
+              <button v-if="hasStaff" class="text-command" type="button" @click="goToCalendar">
+                {{ $t('dashboard.upcoming.view_details') }}
+              </button>
+            </div>
+          </section>
         </div>
-        <div v-else class="space-y-3">
-          <p class="text-gray-600">{{ $t('dashboard.upcoming.appointments_count', { count: providerStore.stats.todayAppointments }) }}</p>
-          <Button v-if="hasStaff" variant="link" @click="goToCalendar" class="text-primary-600 hover:text-primary-700 p-0">
-            {{ $t('dashboard.upcoming.view_details') }} →
-          </Button>
-        </div>
-      </div>
-    </div>
+      </template>
+    </main>
   </div>
 </template>
+
+<style scoped>
+@reference "../../style.css";
+
+.provider-dashboard {
+  @apply min-h-screen bg-gray-50 text-gray-950;
+}
+
+.dashboard-shell {
+  @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+}
+
+.dashboard-header {
+  @apply border-b border-gray-200 bg-white;
+}
+
+.header-layout {
+  @apply flex flex-col gap-5 py-6 sm:flex-row sm:items-center sm:justify-between;
+}
+
+.header-copy {
+  @apply max-w-3xl;
+}
+
+.dashboard-kicker {
+  @apply text-xs font-semibold uppercase tracking-wide text-primary-700;
+}
+
+.header-copy h1 {
+  @apply mt-2 text-2xl font-bold leading-tight text-gray-950 sm:text-3xl;
+}
+
+.header-copy p:last-child {
+  @apply mt-2 text-sm text-gray-600 sm:text-base;
+}
+
+.header-actions {
+  @apply flex items-center gap-2;
+}
+
+.icon-command {
+  @apply inline-flex h-10 w-10 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-950 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2;
+}
+
+.icon-command svg {
+  @apply h-5 w-5;
+}
+
+.dashboard-main {
+  @apply py-6 sm:py-8;
+}
+
+.metrics-grid {
+  @apply grid gap-3 sm:grid-cols-2 lg:grid-cols-4;
+}
+
+.metric-card {
+  @apply flex min-h-36 w-full items-start gap-4 rounded-xl border border-gray-200 bg-white p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 disabled:hover:translate-y-0 disabled:hover:shadow-sm;
+}
+
+.metric-card.is-disabled {
+  @apply cursor-not-allowed opacity-60;
+}
+
+.metric-icon,
+.action-icon {
+  @apply inline-flex shrink-0 items-center justify-center rounded-lg;
+}
+
+.metric-icon {
+  @apply h-10 w-10;
+}
+
+.metric-icon svg,
+.action-icon svg {
+  @apply h-5 w-5;
+}
+
+.metric-body {
+  @apply flex min-w-0 flex-col;
+}
+
+.metric-label {
+  @apply text-sm font-medium text-gray-600;
+}
+
+.metric-body strong {
+  @apply mt-2 text-3xl font-bold leading-none text-gray-950;
+}
+
+.metric-hint {
+  @apply mt-2 text-xs leading-snug text-gray-500;
+}
+
+.tone-amber .metric-icon,
+.tone-amber .action-icon {
+  @apply bg-primary-100 text-primary-700;
+}
+
+.tone-green .metric-icon,
+.tone-green .action-icon {
+  @apply bg-green-100 text-green-700;
+}
+
+.tone-blue .metric-icon,
+.tone-blue .action-icon {
+  @apply bg-blue-100 text-blue-700;
+}
+
+.tone-violet .metric-icon,
+.tone-violet .action-icon {
+  @apply bg-purple-100 text-purple-700;
+}
+
+.pending-panel {
+  @apply mt-5 flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900;
+}
+
+.pending-panel svg {
+  @apply mt-0.5 h-5 w-5 shrink-0 text-amber-600;
+}
+
+.pending-panel h2 {
+  @apply text-sm font-semibold;
+}
+
+.pending-panel p {
+  @apply mt-1 text-sm leading-6 text-amber-800;
+}
+
+.dashboard-columns {
+  @apply mt-6 grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(340px,0.65fr)];
+}
+
+.action-panel,
+.today-panel {
+  @apply rounded-xl border border-gray-200 bg-white p-5 shadow-sm;
+}
+
+.section-heading {
+  @apply mb-4;
+}
+
+.section-heading p {
+  @apply text-xs font-semibold uppercase tracking-wide text-gray-500;
+}
+
+.section-heading h2 {
+  @apply mt-1 text-lg font-semibold leading-tight text-gray-950;
+}
+
+.action-list {
+  @apply grid gap-3 md:grid-cols-2;
+}
+
+.action-row {
+  @apply flex min-h-24 items-center gap-3 rounded-lg border border-gray-200 bg-white p-4 text-left transition-colors hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 disabled:hover:border-gray-200 disabled:hover:bg-white;
+}
+
+.action-row.is-disabled {
+  @apply cursor-not-allowed opacity-55;
+}
+
+.action-icon {
+  @apply h-11 w-11;
+}
+
+.action-copy {
+  @apply flex min-w-0 flex-col;
+}
+
+.action-copy strong {
+  @apply text-sm font-semibold text-gray-950;
+}
+
+.action-copy span {
+  @apply mt-1 text-sm leading-5 text-gray-600;
+}
+
+.empty-today {
+  @apply flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-gray-200 bg-gray-50 px-5 py-8 text-center;
+}
+
+.empty-today svg {
+  @apply h-12 w-12 text-gray-400;
+}
+
+.empty-today p {
+  @apply mt-4 text-sm text-gray-600;
+}
+
+.today-summary {
+  @apply flex min-h-64 flex-col justify-between rounded-lg border border-gray-200 bg-gray-50 p-5;
+}
+
+.today-count {
+  @apply flex flex-col;
+}
+
+.today-count strong {
+  @apply text-5xl font-bold leading-none text-gray-950;
+}
+
+.today-count span {
+  @apply mt-3 text-sm leading-6 text-gray-600;
+}
+
+.text-command {
+  @apply mt-5 inline-flex w-fit items-center rounded-md text-sm font-semibold text-primary-700 transition-colors hover:text-primary-800 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:ring-offset-2;
+}
+</style>

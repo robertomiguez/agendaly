@@ -4,7 +4,6 @@ import { useAuthStore } from '../../stores/useAuthStore'
 import { useRoute, useRouter } from 'vue-router'
 import LoginForm from '../../components/auth/LoginForm.vue'
 import { ShieldAlert, ShieldCheck } from 'lucide-vue-next'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -61,13 +60,13 @@ async function handleLoginSuccess() {
         leave-from-class="opacity-100"
         leave-to-class="opacity-0"
       >
-        <Alert v-if="adminError" variant="destructive" class="border-rose-200 bg-rose-50">
+        <div v-if="adminError" class="admin-alert" role="alert">
           <ShieldAlert class="h-4 w-4" />
-          <AlertTitle>Authorization Failed</AlertTitle>
-          <AlertDescription>
-            {{ adminError }}
-          </AlertDescription>
-        </Alert>
+          <div>
+            <h2>Authorization Failed</h2>
+            <p>{{ adminError }}</p>
+          </div>
+        </div>
       </transition>
 
       <!-- Login Form Card -->
@@ -86,5 +85,21 @@ async function handleLoginSuccess() {
 </template>
 
 <style scoped>
-/* Custom transitions and styling for the admin portal */
+@reference "../../style.css";
+
+.admin-alert {
+  @apply grid grid-cols-[auto_1fr] gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-900;
+}
+
+.admin-alert svg {
+  @apply mt-0.5 text-rose-600;
+}
+
+.admin-alert h2 {
+  @apply text-sm font-semibold;
+}
+
+.admin-alert p {
+  @apply mt-1 text-sm leading-6 text-rose-800;
+}
 </style>

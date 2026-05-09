@@ -60,11 +60,6 @@ vi.mock("@/components/common/ConfirmationModal.vue", () => ({ default: { templat
 vi.mock("@/components/provider/StaffFormModal.vue", () => ({ default: { template: "<div />" } }));
 vi.mock("@/components/common/LoadingSpinner.vue", () => ({ default: { template: "<div />" } }));
 vi.mock("@/components/common/BackButton.vue", () => ({ default: { template: "<div />" } }));
-vi.mock("@/components/ui/alert", () => ({
-  Alert: { template: "<div><slot /></div>" },
-  AlertDescription: { template: "<div><slot /></div>" },
-  AlertTitle: { template: "<div><slot /></div>" },
-}));
 vi.mock("lucide-vue-next", () => ({
   AlertCircle: { template: "<span />" },
 }));
@@ -120,7 +115,7 @@ describe("ProviderStaffView", () => {
     expect(shareMock).toHaveBeenCalledWith({
       title: "provider.staff.share_title:Ana",
       text: "provider.staff.share_text:Ana",
-      url: "https://app.test/p/provider/s/ana",
+      url: "https://app.test/provider/ana",
     });
   });
 });

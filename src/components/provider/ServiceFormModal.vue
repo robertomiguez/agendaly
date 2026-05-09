@@ -5,9 +5,6 @@ import { useStaffStore } from '../../stores/useStaffStore'
 import { useAuthStore } from '../../stores/useAuthStore'
 import { useCurrency } from '../../composables/useCurrency'
 import Modal from '../../components/common/Modal.vue'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Trash2, ImagePlus } from 'lucide-vue-next'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import { supabase } from '../../lib/supabase'
@@ -205,11 +202,12 @@ async function handleSubmit() {
     <form @submit.prevent="handleSubmit" class="mt-4 space-y-4">
       <!-- Name -->
       <div class="space-y-2">
-        <Label for="service-name">{{ $t('modals.service.name') }}</Label>
-        <Input
+        <label for="service-name" class="service-form-label">{{ $t('modals.service.name') }}</label>
+        <input
           id="service-name"
           v-model="form.name"
           type="text"
+          class="service-form-input"
           required
           :placeholder="$t('modals.service.name_placeholder')"
         />
@@ -217,7 +215,7 @@ async function handleSubmit() {
 
       <!-- Images -->
       <div class="space-y-2">
-        <Label>{{ $t('modals.service.images') }} (Max {{ MAX_SERVICE_IMAGES }})</Label>
+        <span class="service-form-label">{{ $t('modals.service.images') }} (Max {{ MAX_SERVICE_IMAGES }})</span>
         
         <div class="flex flex-wrap gap-4">
             <!-- Existing/Preview Images -->
@@ -262,12 +260,12 @@ async function handleSubmit() {
 
       <!-- Category -->
       <div class="space-y-2">
-        <Label for="service-category">{{ $t('modals.service.category') }}</Label>
+        <label for="service-category" class="service-form-label">{{ $t('modals.service.category') }}</label>
         <select
           id="service-category"
           v-model="form.category_id"
           required
-          class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          class="service-form-input"
         >
           <option value="" disabled>{{ $t('modals.service.category_placeholder') }}</option>
           <option v-for="cat in categoryStore.categories" :key="cat.id" :value="cat.id">
@@ -279,30 +277,32 @@ async function handleSubmit() {
       <div class="grid grid-cols-2 gap-4">
         <!-- Price -->
         <div class="space-y-2">
-          <Label for="service-price">{{ $t('modals.service.price') }}</Label>
+          <label for="service-price" class="service-form-label">{{ $t('modals.service.price') }}</label>
           <div class="relative">
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">{{ currencySymbol }}</span>
-            <Input
+            <input
               id="service-price"
               v-model="form.price"
               type="number"
               min="0"
               step="0.01"
               required
-              :class="currencySymbol.length > 1 ? 'pl-12' : 'pl-7'"
+              class="service-form-input"
+              :class="currencySymbol.length > 1 ? 'service-form-input--currency-wide' : 'service-form-input--currency'"
             />
           </div>
         </div>
 
         <!-- Duration -->
         <div class="space-y-2">
-          <Label for="service-duration">{{ $t('modals.service.duration') }}</Label>
-          <Input
+          <label for="service-duration" class="service-form-label">{{ $t('modals.service.duration') }}</label>
+          <input
             id="service-duration"
             v-model="form.duration"
             type="number"
             min="5"
             step="5"
+            class="service-form-input"
             required
           />
         </div>
@@ -310,19 +310,19 @@ async function handleSubmit() {
 
       <!-- Description -->
       <div class="space-y-2">
-        <Label for="service-description">{{ $t('modals.service.description') }}</Label>
+        <label for="service-description" class="service-form-label">{{ $t('modals.service.description') }}</label>
         <textarea
           id="service-description"
           v-model="form.description"
           rows="3"
-          class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          class="service-form-textarea"
           :placeholder="$t('modals.service.description_placeholder')"
         ></textarea>
       </div>
 
       <!-- Staff Selection -->
       <div class="space-y-2">
-        <Label>{{ $t('modals.service.assign_staff') }}</Label>
+        <span class="service-form-label">{{ $t('modals.service.assign_staff') }}</span>
         <div class="border border-input rounded-md max-h-48 overflow-y-auto p-2 space-y-2">
           <div v-if="staffStore.staff.length === 0" class="text-sm text-muted-foreground italic px-2">
             {{ $t('modals.service.no_staff') }}
@@ -348,25 +348,27 @@ async function handleSubmit() {
       <div class="grid grid-cols-2 gap-4">
         <!-- Buffer Before -->
         <div class="space-y-2">
-          <Label for="buffer-before">{{ $t('modals.service.buffer_before') }}</Label>
-          <Input
+          <label for="buffer-before" class="service-form-label">{{ $t('modals.service.buffer_before') }}</label>
+          <input
             id="buffer-before"
             v-model="form.buffer_before"
             type="number"
             min="0"
             step="5"
+            class="service-form-input"
           />
         </div>
 
         <!-- Buffer After -->
         <div class="space-y-2">
-          <Label for="buffer-after">{{ $t('modals.service.buffer_after') }}</Label>
-          <Input
+          <label for="buffer-after" class="service-form-label">{{ $t('modals.service.buffer_after') }}</label>
+          <input
             id="buffer-after"
             v-model="form.buffer_after"
             type="number"
             min="0"
             step="5"
+            class="service-form-input"
           />
         </div>
       </div>
@@ -382,22 +384,21 @@ async function handleSubmit() {
         </div>
 
         <div class="service-form-actions__buttons">
-        <Button
+        <button
           type="button"
-          variant="outline"
-          class="flex-1 sm:flex-none"
+          class="service-form-action service-form-action--secondary"
           @click="$emit('close')"
         >
           {{ $t('common.cancel') }}
-        </Button>
-        <Button
+        </button>
+        <button
           type="submit"
           :disabled="props.loading || uploading || requiresStaffSelection"
-          class="flex-1 sm:flex-none bg-primary-600 hover:bg-primary-700"
+          class="service-form-action service-form-action--primary"
         >
           <LoadingSpinner v-if="props.loading || uploading" inline size="sm" class="mr-2" color="text-white" />
           {{ props.loading || uploading ? $t('modals.service.saving') : $t('modals.service.save_button') }}
-        </Button>
+        </button>
         </div>
       </div>
     </form>
@@ -406,6 +407,26 @@ async function handleSubmit() {
 
 <style scoped>
 @reference "../../style.css";
+
+.service-form-label {
+  @apply block text-sm font-medium text-gray-800;
+}
+
+.service-form-input {
+  @apply flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm transition-colors placeholder:text-gray-400 focus-visible:border-amber-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200;
+}
+
+.service-form-input--currency {
+  @apply pl-7;
+}
+
+.service-form-input--currency-wide {
+  @apply pl-12;
+}
+
+.service-form-textarea {
+  @apply flex min-h-[80px] w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm transition-colors placeholder:text-gray-400 focus-visible:border-amber-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200;
+}
 
 .service-form-actions {
   @apply mt-5 space-y-3;
@@ -417,5 +438,17 @@ async function handleSubmit() {
 
 .service-form-actions__buttons {
   @apply flex gap-3 sm:justify-end;
+}
+
+.service-form-action {
+  @apply flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none;
+}
+
+.service-form-action--secondary {
+  @apply border border-gray-300 bg-white text-gray-800 hover:bg-gray-50;
+}
+
+.service-form-action--primary {
+  @apply bg-amber-600 text-white hover:bg-amber-700;
 }
 </style>

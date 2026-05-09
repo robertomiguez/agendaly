@@ -4,11 +4,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/useAuthStore'
 import { getProviderSubscription, getPlan } from '../../services/subscriptionService'
 import type { Subscription, Plan } from '../../types'
-import { Button } from '@/components/ui/button'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
-import BackButton from '@/components/common/BackButton.vue'
 
 import { 
     Calendar, 
@@ -140,7 +136,6 @@ function verifyChangePlan() {
     <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div class="mb-8">
             <div class="flex items-center gap-4">
-                <BackButton to="/provider/dashboard" />
                 <h1 class="text-3xl font-bold text-gray-900">{{ $t('subscription.title') }}</h1>
             </div>
             <p class="mt-2 text-gray-600">{{ $t('subscription.subtitle') }}</p>
@@ -152,31 +147,31 @@ function verifyChangePlan() {
 
         <div v-else-if="!subscription" class="text-center py-12 bg-gray-50 rounded-lg">
             <p class="text-gray-500 mb-4">{{ $t('subscription.no_subscription') }}</p>
-            <Button @click="$router.push('/provider/pricing')">
+            <button class="subscription-button" @click="$router.push('/provider/pricing')">
                 {{ $t('subscription.view_plans') }}
-            </Button>
+            </button>
         </div>
 
         <div v-else class="space-y-6">
             <!-- Main Subscription Card -->
-            <Card>
-                <CardHeader>
+            <section class="subscription-card">
+                <header class="subscription-card__header">
                     <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                         <div class="flex-1">
                             <div class="flex flex-wrap items-center gap-2 mb-1">
-                                <CardTitle class="text-xl">
+                                <h2 class="subscription-card__title">
                                     {{ subscription.plan?.display_name }} Plan
-                                </CardTitle>
-                                <Badge 
-                                    :variant="isCancelled ? 'destructive' : 'default'"
-                                    :class="isCancelled ? '' : 'bg-green-600'"
+                                </h2>
+                                <span
+                                    class="subscription-badge"
+                                    :class="isCancelled ? 'subscription-badge--danger' : 'subscription-badge--active'"
                                 >
                                     {{ isCancelled ? $t('subscription.status_cancelling') : subscription.status.toUpperCase() }}
-                                </Badge>
+                                </span>
                             </div>
-                            <CardDescription>
+                            <p class="subscription-card__description">
                                 {{ subscription.plan?.description }}
-                            </CardDescription>
+                            </p>
                         </div>
                         <div class="sm:text-right">
                             <div class="text-2xl font-bold text-gray-900">
@@ -191,8 +186,8 @@ function verifyChangePlan() {
                             </div>
                         </div>
                     </div>
-                </CardHeader>
-                <CardContent class="space-y-6">
+                </header>
+                <div class="subscription-card__body">
                     <!-- Billing Info -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
                         <div class="flex items-center gap-3">
@@ -243,18 +238,18 @@ function verifyChangePlan() {
                             </div>
                         </div>
                     </div>
-                </CardContent>
-                <CardFooter class="flex flex-col sm:flex-row gap-3 border-t pt-6 bg-gray-50/50" v-show="false">                    <Button 
-                        variant="outline" 
-                        class="w-full sm:w-auto"
+                </div>
+                <footer class="subscription-card__footer" v-show="false">
+                    <button
+                        class="subscription-button subscription-button--secondary"
                         @click="verifyChangePlan"
                         :disabled="processing || isCancelled"
                     >
                         <ArrowUpCircle class="mr-2 h-4 w-4" />
                         {{ $t('subscription.change_plan') }}
-                    </Button>
-                </CardFooter>
-            </Card>
+                    </button>
+                </footer>
+            </section>
 
             <!-- Cancellation Warning (if cancelled) -->
             <div v-if="isCancelled" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex gap-3">
@@ -283,3 +278,51 @@ function verifyChangePlan() {
         </div>
     </div>
 </template>
+
+<style scoped>
+@reference "../../style.css";
+
+.subscription-card {
+    @apply rounded-lg border border-gray-200 bg-white shadow-sm;
+}
+
+.subscription-card__header {
+    @apply border-b border-gray-100 px-6 py-5;
+}
+
+.subscription-card__title {
+    @apply text-xl font-semibold text-gray-950;
+}
+
+.subscription-card__description {
+    @apply text-sm text-gray-600;
+}
+
+.subscription-card__body {
+    @apply space-y-6 px-6 py-6;
+}
+
+.subscription-card__footer {
+    @apply flex flex-col gap-3 border-t border-gray-100 bg-gray-50 px-6 py-4 sm:flex-row;
+}
+
+.subscription-badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
+}
+
+.subscription-badge--active {
+    @apply bg-green-600 text-white;
+}
+
+.subscription-badge--danger {
+    @apply bg-red-600 text-white;
+}
+
+.subscription-button {
+    @apply inline-flex items-center justify-center rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 disabled:cursor-not-allowed disabled:opacity-60;
+}
+
+.subscription-button--secondary {
+    @apply w-full border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 sm:w-auto;
+}
+</style>
