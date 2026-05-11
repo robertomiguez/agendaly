@@ -6,7 +6,7 @@ import { useAuthStore } from '../../stores/useAuthStore'
 import { useCurrency } from '../../composables/useCurrency'
 import Modal from '../../components/common/Modal.vue'
 import { Trash2, ImagePlus } from 'lucide-vue-next'
-import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import SubmitButton from '@/components/common/SubmitButton.vue'
 import { supabase } from '../../lib/supabase'
 import { MAX_SERVICE_IMAGES, MAX_IMAGE_SIZE_BYTES, MAX_IMAGE_SIZE_MB, SERVICE_IMAGES_BUCKET } from '../../constants'
 
@@ -391,14 +391,13 @@ async function handleSubmit() {
         >
           {{ $t('common.cancel') }}
         </button>
-        <button
-          type="submit"
-          :disabled="props.loading || uploading || requiresStaffSelection"
-          class="service-form-action service-form-action--primary"
-        >
-          <LoadingSpinner v-if="props.loading || uploading" inline size="sm" class="mr-2" color="text-white" />
-          {{ props.loading || uploading ? $t('modals.service.saving') : $t('modals.service.save_button') }}
-        </button>
+        <SubmitButton
+          :loading="props.loading || uploading"
+          :disabled="requiresStaffSelection"
+          :label="$t('common.save')"
+          :loading-label="$t('modals.service.saving')"
+          responsive
+        />
         </div>
       </div>
     </form>

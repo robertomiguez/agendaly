@@ -5,6 +5,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useNotifications } from '../composables/useNotifications'
 import { useI18n } from 'vue-i18n'
 import BackButton from '../components/common/BackButton.vue'
+import SubmitButton from '../components/common/SubmitButton.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -114,28 +115,34 @@ async function updateProfile() {
 
         <div class="space-y-3">
           <!-- New/Incomplete User: Save and Continue -->
-          <button
+          <SubmitButton
             v-if="!authStore.profile || (!authStore.profile.name || !authStore.profile.phone)"
-            type="submit"
-            :disabled="loading"
-            class="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-4 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-          >
-            <div v-if="loading" class="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            <span>{{ loading ? $t('common.saving') : $t('profile.save_and_continue') }}</span>
-          </button>
+            :loading="loading"
+            :label="$t('profile.save_and_continue')"
+            :loading-label="$t('common.saving')"
+            full-width
+            class="profile-form-submit"
+          />
 
           <!-- Existing User: Save -->
-          <button
+          <SubmitButton
             v-else
-            type="submit"
-            :disabled="loading"
-            class="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-4 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-          >
-            <div v-if="loading" class="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            <span>{{ loading ? $t('common.saving') : $t('common.save') }}</span>
-          </button>
+            :loading="loading"
+            :label="$t('common.save')"
+            :loading-label="$t('common.saving')"
+            full-width
+            class="profile-form-submit"
+          />
         </div>
       </form>
     </div>
   </div>
 </template>
+
+<style scoped>
+@reference "../style.css";
+
+.profile-form-submit {
+  @apply py-3 font-semibold shadow-sm;
+}
+</style>

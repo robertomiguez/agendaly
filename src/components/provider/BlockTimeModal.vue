@@ -3,7 +3,7 @@ import { ref, watch, computed } from "vue";
 import Modal from "../common/Modal.vue";
 import { RRule } from "rrule";
 import type { BlockedDate, Staff } from "../../types";
-import LoadingSpinner from '@/components/common/LoadingSpinner.vue';
+import SubmitButton from '@/components/common/SubmitButton.vue';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -342,15 +342,12 @@ function handleSave() {
         >
           {{ $t("common.cancel") }}
         </button>
-        <button
-          type="submit"
-          :disabled="loading"
-          class="flex-1 sm:flex-none inline-flex justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:text-sm items-center"
-          :class="{ 'opacity-75 cursor-not-allowed': loading }"
-        >
-          <LoadingSpinner v-if="loading" inline size="sm" class="mr-2" color="text-white" />
-          {{ loading ? $t('common.saving') : $t('common.save') }}
-        </button>
+        <SubmitButton
+          :loading="loading"
+          :label="$t('common.save')"
+          :loading-label="$t('common.saving')"
+          responsive
+        />
       </div>
     </form>
   </Modal>

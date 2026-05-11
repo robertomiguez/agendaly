@@ -13,6 +13,7 @@ import ConfirmationModal from '../../components/common/ConfirmationModal.vue'
 
 
 import LoadingSpinner from '../../components/common/LoadingSpinner.vue'
+import SubmitButton from '../../components/common/SubmitButton.vue'
 import { AlertCircle } from 'lucide-vue-next'
 import { canAddLocation } from '../../services/subscriptionService'
 import BackButton from '../../components/common/BackButton.vue'
@@ -642,15 +643,12 @@ async function handleSetPrimary(id: string) {
           >
             {{ $t('common.cancel') }}
           </button>
-          <button
-            type="submit"
-            class="flex-1 sm:flex-none inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:text-sm items-center"
-            :disabled="saving"
-            :class="{ 'opacity-75 cursor-not-allowed': saving }"
-          >
-            <LoadingSpinner v-if="saving" inline size="sm" class="mr-2" color="text-white" />
-            {{ saving ? $t('common.saving') : $t('common.save') }}
-          </button>
+          <SubmitButton
+            :loading="saving"
+            :label="$t('common.save')"
+            :loading-label="$t('common.saving')"
+            responsive
+          />
         </div>
       </form>
     </Modal>

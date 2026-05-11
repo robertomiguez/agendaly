@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import Modal from '../../components/common/Modal.vue'
+import SubmitButton from '../common/SubmitButton.vue'
 
 const props = defineProps<{
   isOpen: boolean
@@ -83,13 +84,12 @@ function handleSubmit() {
         >
           {{ $t('common.cancel') }}
         </button>
-        <button
-          type="submit"
-          :disabled="loading"
-          class="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
-        >
-          {{ loading ? $t('modals.blocked_date.adding') : $t('modals.blocked_date.add_button') }}
-        </button>
+        <SubmitButton
+          :loading="loading"
+          :label="$t('modals.blocked_date.add_button')"
+          :loading-label="$t('modals.blocked_date.adding')"
+          responsive
+        />
       </div>
     </form>
   </Modal>
