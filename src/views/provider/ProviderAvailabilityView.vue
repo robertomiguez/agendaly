@@ -11,6 +11,7 @@ import { useNotifications } from '../../composables/useNotifications'
 import { useI18n } from 'vue-i18n'
 import ConfirmationModal from '../../components/common/ConfirmationModal.vue'
 import LoadingSpinner from '../../components/common/LoadingSpinner.vue'
+import SubmitButton from '../../components/common/SubmitButton.vue'
 import BackButton from '../../components/common/BackButton.vue'
 import { useDays } from '../../composables/useDays'
 import type { Availability, Staff } from '../../types'
@@ -248,14 +249,14 @@ async function performSave() {
                 {{ member.name }}
               </option>
             </select>
-            <button
+            <SubmitButton
+              type="button"
+              :loading="isSaving"
+              :disabled="isLoading"
+              :label="$t('common.save')"
+              :loading-label="$t('common.saving')"
               @click="saveSchedule"
-              class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              :disabled="isLoading || isSaving"
-            >
-              <LoadingSpinner v-if="isSaving" inline size="sm" class="mr-2" color="text-white" />
-              <span>{{ isSaving ? $t('common.saving') : $t('common.save') }}</span>
-            </button>
+            />
           </div>
         </div>
       </div>

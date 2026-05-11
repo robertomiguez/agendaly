@@ -197,7 +197,14 @@ async function handleCancel() {
               </h3>
               
               <div class="flex items-center gap-2 text-gray-600 mb-4">
-                <span class="font-medium text-primary-700">
+                <router-link
+                  v-if="booking.service?.provider?.slug"
+                  :to="`/${booking.service.provider.slug}`"
+                  class="booking-provider-link"
+                >
+                  {{ booking.service?.provider?.business_name || 'Provider' }}
+                </router-link>
+                <span v-else class="font-medium text-primary-700">
                   {{ booking.service?.provider?.business_name || 'Provider' }}
                 </span>
                 <span class="text-gray-300">•</span>
@@ -256,5 +263,9 @@ async function handleCancel() {
 
 .bookings-alert {
   @apply mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800;
+}
+
+.booking-provider-link {
+  @apply rounded-md font-semibold text-primary-700 underline underline-offset-4 transition-colors hover:text-primary-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
 }
 </style>
