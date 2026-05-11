@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useDomainTranslation } from '../composables/useDomainTranslation'
 interface Category {
   id: string
   name: string
@@ -13,6 +14,8 @@ defineProps<{
 const emit = defineEmits<{
   select: [categoryId: string | null]
 }>()
+
+const { td } = useDomainTranslation()
 
 function selectCategory(categoryId: string | null) {
   emit('select', categoryId)
@@ -37,7 +40,7 @@ function selectCategory(categoryId: string | null) {
       class="category-pill"
       :class="selectedCategory === category.id ? 'category-pill--active' : 'category-pill--idle'"
     >
-      {{ category.name }}
+      {{ td('categories', category.name) }}
     </button>
   </div>
 </template>
