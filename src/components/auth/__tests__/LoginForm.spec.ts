@@ -54,7 +54,10 @@ describe('LoginForm', () => {
     await flushPromises()
 
     const otpInputs = wrapper.findAll('.otp-grid input')
-    await otpInputs[0].trigger('paste', {
+    const firstOtpInput = otpInputs[0]
+    expect(firstOtpInput).toBeDefined()
+
+    await firstOtpInput!.trigger('paste', {
       clipboardData: {
         getData: () => '123456'
       }
