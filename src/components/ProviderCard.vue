@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { Provider, ProviderAddress } from '../types'
+import { useDomainTranslation } from '../composables/useDomainTranslation'
 import { Star } from 'lucide-vue-next'
 
 const props = defineProps<{
@@ -14,6 +15,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const { td } = useDomainTranslation()
 const initials = computed(() => {
   return props.provider.business_name
     .split(' ')
@@ -91,7 +93,7 @@ const ratingStars = computed(() => {
           :key="index"
           class="provider-category"
         >
-          {{ category }}
+          {{ td('categories', category) }}
         </span>
         <span
           v-if="categories.length > 3"

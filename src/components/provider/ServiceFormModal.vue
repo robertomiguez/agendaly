@@ -4,6 +4,7 @@ import { useCategoryStore } from '../../stores/useCategoryStore'
 import { useStaffStore } from '../../stores/useStaffStore'
 import { useAuthStore } from '../../stores/useAuthStore'
 import { useCurrency } from '../../composables/useCurrency'
+import { useDomainTranslation } from '../../composables/useDomainTranslation'
 import Modal from '../../components/common/Modal.vue'
 import { Trash2, ImagePlus } from 'lucide-vue-next'
 import SubmitButton from '@/components/common/SubmitButton.vue'
@@ -21,6 +22,7 @@ const categoryStore = useCategoryStore()
 const staffStore = useStaffStore()
 const authStore = useAuthStore()
 const { currencySymbol } = useCurrency()
+const { td } = useDomainTranslation()
 
 const uploading = ref(false)
 const imageError = ref<string | null>(null)
@@ -269,7 +271,7 @@ async function handleSubmit() {
         >
           <option value="" disabled>{{ $t('modals.service.category_placeholder') }}</option>
           <option v-for="cat in categoryStore.categories" :key="cat.id" :value="cat.id">
-            {{ cat.name }}
+            {{ td('categories', cat.name) }}
           </option>
         </select>
       </div>

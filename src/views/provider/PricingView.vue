@@ -15,6 +15,7 @@ import Modal from '@/components/common/Modal.vue'
 import LegalDocumentViewer from '@/components/legal/LegalDocumentViewer.vue'
 
 import { useCurrency } from '@/composables/useCurrency'
+import { useDomainTranslation } from '@/composables/useDomainTranslation'
 
 const router = useRouter()
 const route = useRoute()
@@ -22,6 +23,7 @@ const { t } = useI18n()
 const authStore = useAuthStore()
 const { showError, errorMessage } = useNotifications()
 const { targetCurrency, currencySymbol } = useCurrency()
+const { td } = useDomainTranslation()
 
 const plans = ref<Plan[]>([])
 const currentSubscription = ref<Subscription | null>(null)
@@ -250,7 +252,7 @@ function getFeatures(plan: Plan): string[] {
     
     // Add extra features from database
     if (plan.features && Array.isArray(plan.features)) {
-        features.push(...plan.features)
+        features.push(...plan.features.map((f: string) => td('plan_features', f)))
     }
     
     return features
@@ -449,7 +451,7 @@ function resolveLimitViolation() {
                                 {{ plan.display_name }}
                             </h2>
                             <p class="mt-2 text-sm text-gray-600">
-                                {{ plan.description }}
+                                {{ td('plan_descriptions', plan.name) }}
                             </p>
                         </header>
 

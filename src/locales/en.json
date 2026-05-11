@@ -782,5 +782,27 @@
     "confirm_deactivation": "Confirm Deactivation",
     "account_deactivated": "Account Deactivated",
     "deactivated_msg": "Your provider account has been deactivated by the platform administration."
+  },
+  "domains": {
+    "categories": {
+      "barber": "Barber",
+      "hair": "Hair",
+      "nail": "Nail",
+      "spa": "Spa"
+    },
+    "plan_descriptions": {
+      "freemium": "Free basic plan for new providers",
+      "premium": "Unlock limitless resources and ad-free booking."
+    },
+    "plan_features": {
+      "basic_listing": "Basic listing",
+      "local_search_visibility": "Local search visibility",
+      "unlimited_staff": "Unlimited Staff",
+      "unlimited_locations": "Unlimited Locations",
+      "unlimited_services": "Unlimited Services",
+      "priority_support": "Priority Support",
+      "advanced_analytics": "Advanced Analytics",
+      "ad_free_customer_booking": "Ad-free Customer Booking"
+    }
   }
 }

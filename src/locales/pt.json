@@ -780,5 +780,27 @@
     "confirm_deactivation": "Confirmar Desativação",
     "account_deactivated": "Conta Desativada",
     "deactivated_msg": "Sua conta de prestador foi desativada pela administração da plataforma."
+  },
+  "domains": {
+    "categories": {
+      "barber": "Barbeiro",
+      "hair": "Cabelo",
+      "nail": "Unha",
+      "spa": "Spa"
+    },
+    "plan_descriptions": {
+      "freemium": "Plano básico gratuito para novos prestadores",
+      "premium": "Desbloqueie recursos ilimitados e agendamento sem anúncios."
+    },
+    "plan_features": {
+      "basic_listing": "Listagem básica",
+      "local_search_visibility": "Visibilidade na busca local",
+      "unlimited_staff": "Equipe ilimitada",
+      "unlimited_locations": "Locais ilimitados",
+      "unlimited_services": "Serviços ilimitados",
+      "priority_support": "Suporte prioritário",
+      "advanced_analytics": "Análises avançadas",
+      "ad_free_customer_booking": "Agendamento sem anúncios"
+    }
   }
 }

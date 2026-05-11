@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { format, parseISO } from 'date-fns'
 import { useI18n } from 'vue-i18n'
+import { useDomainTranslation } from '../../composables/useDomainTranslation'
 import { useServiceStore } from '../../stores/useServiceStore'
 import { useAuthStore } from '../../stores/useAuthStore'
 import { useCategoryStore } from '../../stores/useCategoryStore'
@@ -20,6 +21,7 @@ import BackButton from '../../components/common/BackButton.vue'
 
 const router = useRouter()
 const { t } = useI18n()
+const { td } = useDomainTranslation()
 const { showSuccess } = useNotifications()
 
 const serviceStore = useServiceStore()
@@ -84,7 +86,7 @@ function formatTime(time: string) {
 const categories = computed(() => {
   return [
     { value: allCategoriesValue, label: t('category_pills.all') },
-    ...categoryStore.categories.map(c => ({ value: c.name, label: c.name }))
+    ...categoryStore.categories.map(c => ({ value: c.name, label: td('categories', c.name) }))
   ]
 })
 
@@ -413,7 +415,7 @@ async function confirmDeactivation() {
               <div>
                 <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full mb-2"
                   :class="service.active ? 'bg-gray-100 text-gray-600' : 'bg-gray-200 text-gray-500'">
-                  {{ service.categories?.name || $t('provider.services.uncategorized') }}
+                  {{ service.categories?.name ? td('categories', service.categories.name) : $t('provider.services.uncategorized') }}
                 </span>
                 <h3 class="text-xl font-bold" :class="service.active ? 'text-gray-900' : 'text-gray-600'">
                   {{ service.name }}
