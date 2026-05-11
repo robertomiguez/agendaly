@@ -18,11 +18,13 @@ import {
 import { useNotifications } from '@/composables/useNotifications'
 import { useRoute } from 'vue-router'
 import { useCurrency } from '@/composables/useCurrency'
+import { useDomainTranslation } from '@/composables/useDomainTranslation'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 const { showSuccess } = useNotifications()
+const { td } = useDomainTranslation()
 
 const subscription = ref<Subscription | null>(null)
 const loading = ref(true)
@@ -170,7 +172,7 @@ function verifyChangePlan() {
                                 </span>
                             </div>
                             <p class="subscription-card__description">
-                                {{ subscription.plan?.description }}
+                                {{ subscription.plan?.name ? td('plan_descriptions', subscription.plan.name) : subscription.plan?.description }}
                             </p>
                         </div>
                         <div class="sm:text-right">

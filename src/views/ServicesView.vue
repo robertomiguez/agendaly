@@ -6,12 +6,14 @@ import type { Service } from '../types'
 import { useModal } from '../composables/useModal'
 import { useNotifications } from '../composables/useNotifications'
 import { useI18n } from 'vue-i18n'
+import { useDomainTranslation } from '../composables/useDomainTranslation'
 import ConfirmationModal from '../components/common/ConfirmationModal.vue'
 
 const serviceStore = useServiceStore()
 const settingsStore = useSettingsStore()
 const modal = useModal<Service>()
 const { t } = useI18n()
+const { td } = useDomainTranslation()
 const { showSuccess, showError } = useNotifications()
 
 const isEditing = ref(false)
@@ -158,7 +160,7 @@ function handleDelete(id: string) {
           <div class="flex justify-between items-start mb-3">
             <div>
               <h3 class="text-lg font-semibold text-gray-900">{{ service.name }}</h3>
-              <p v-if="service.categories?.name" class="text-sm text-gray-500">{{ service.categories.name }}</p>
+              <p v-if="service.categories?.name" class="text-sm text-gray-500">{{ td('categories', service.categories.name) }}</p>
             </div>
             <span class="text-lg font-bold text-primary-600">{{ settingsStore.formatPrice(service.price || 0) }}</span>
           </div>
