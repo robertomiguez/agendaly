@@ -1,6 +1,6 @@
 # TERMOS DE SERVIÇO
 
-**Última Atualização:** 25 de janeiro de 2026
+**Última Atualização:** 11 de maio de 2026
 
 Estes Termos de Serviço ("Termos") regem seu acesso e uso de nossa plataforma (a "Plataforma"), que conecta clientes com prestadores de serviços independentes, como spas, barbearias, salões de beleza e profissionais de bem-estar ("Prestadores").
 
@@ -32,7 +32,7 @@ Fornecemos uma plataforma tecnológica que permite descobrir, agendar e se comun
 
 Ao usar a Plataforma, você declara e garante que:
 
-- Você tem pelo menos 13 anos de idade
+- Você tem pelo menos 18 anos de idade
 - Você tem capacidade legal para firmar contratos vinculantes
 - Todas as informações fornecidas são precisas, atuais e completas
 - Você entende que os serviços podem envolver riscos pessoais, cosméticos ou físicos
@@ -51,6 +51,8 @@ Ao usar a Plataforma, você declara e garante que:
 - Consequências de informações imprecisas, incompletas ou enganosas do Prestador
 
 **O USO DA PLATAFORMA É POR SUA CONTA E RISCO.**
+
+Nada nestes Termos exclui ou limita responsabilidade que não possa ser excluída ou limitada pela lei aplicável.
 
 ### 5. Sem Garantias
 
@@ -89,9 +91,9 @@ Reservamo-nos o direito de suspender ou encerrar seu acesso à Plataforma a qual
 
 ### 9. Requisitos de Idade
 
-- **Brasil:** Você deve ter pelo menos 13 anos de idade
-- **União Europeia:** Você deve ter pelo menos 16 anos de idade
-- Se você estiver abaixo da idade exigida em sua jurisdição, não poderá usar a Plataforma
+Você deve ter pelo menos 18 anos de idade para usar a Plataforma. Se a lei da sua jurisdição exigir idade mínima maior, essa exigência maior será aplicável.
+
+Se você não cumprir a idade exigida na sua jurisdição, não poderá usar a Plataforma.
 
 ---
 
@@ -163,53 +165,68 @@ Podemos suspender ou remover sua conta a qualquer momento, com ou sem aviso pré
 
 **Você não tem direito a compensação por suspensão ou remoção.**
 
+Nada nesta seção limita direitos irrenunciáveis que você possa ter pela lei aplicável.
+
 ---
 
 ## C. DISPOSIÇÕES GERAIS
 
-### 16. Lei e Jurisdição Aplicáveis
+### 16. Modificações no Serviço, Assinaturas e Preços
 
-Estes Termos são regidos pelas leis aplicáveis em sua jurisdição.
+**16.1. Alterações e Descontinuação da Plataforma:** Podemos modificar, suspender ou descontinuar a Plataforma, ou qualquer recurso, plano, região, integração ou canal de suporte, a qualquer momento. Para recursos gratuitos, podemos fazer isso com ou sem aviso prévio. Para assinaturas pagas, alterações materiais prejudiciais serão aplicadas apenas de forma prospectiva após aviso razoável, salvo se uma alteração imediata for necessária por motivos de segurança, legais, prevenção de fraude, técnicos ou operacionais. Se descontinuarmos uma assinatura paga antes do fim de um período já pago, forneceremos qualquer reembolso proporcional, crédito, continuidade de acesso ou outro remédio exigido pela lei aplicável.
+
+**16.2. Planos Gratuitos / Freemium:** Planos gratuitos, "freemium", beta, acesso antecipado, promocionais ou de teste são benefícios discricionários, não direitos garantidos. Podemos alterar limites, reduzir funcionalidades, adicionar restrições, mover recursos para planos pagos, suspender acesso ou encerrar planos gratuitos a qualquer momento. Não somos responsáveis por alterar ou encerrar um plano gratuito, exceto quando a responsabilidade não puder ser excluída por lei.
+
+**16.3. Alterações de Preços Premium:** Podemos aumentar ou alterar preços de assinaturas premium, ciclos de cobrança, limites de planos, descontos, moedas, tributos e termos de pagamento. Aumentos de preço não serão aplicados retroativamente a um período de cobrança já pago. Salvo se prazo de aviso ou consentimento diferente for exigido por lei, alterações de preço entram em vigor na próxima renovação ou após aviso razoável. Se você não concordar, deverá cancelar antes que a alteração entre em vigor.
+
+**16.4. Renovação e Cancelamento:** Assinaturas pagas podem ser renovadas automaticamente até o cancelamento. Você é responsável por cancelar antes da renovação se não quiser a próxima cobrança. O cancelamento normalmente produz efeito ao final do período de cobrança vigente, salvo se a lei aplicável, os termos de contratação ou o provedor de pagamento exigirem resultado diferente.
+
+**16.5. Direitos Obrigatórios:** Os direitos reservados nesta seção aplicam-se apenas na máxima extensão permitida por lei. Eles não removem direitos obrigatórios do consumidor, avisos exigidos, períodos de arrependimento, direitos de cancelamento, direitos de reembolso ou remédios aplicáveis em sua jurisdição.
+
+### 17. Lei e Jurisdição Aplicáveis
+
+Salvo se a lei local obrigatória exigir de outra forma, estes Termos são regidos pelas leis do Brasil, sem considerar conflitos de leis. Os tribunais do Brasil terão jurisdição não exclusiva, exceto quando a lei aplicável conceder a você o direito de apresentar reclamações em outro foro.
 
 **Leis Locais Obrigatórias:** Quando aplicável, leis obrigatórias de proteção ao consumidor, proteção de dados ou trabalho de sua jurisdição serão aplicadas, incluindo:
 
 - **Brasil:** LGPD, Código de Defesa do Consumidor
 - **União Europeia:** GDPR, Diretiva de Direitos do Consumidor
+- **Reino Unido:** UK GDPR, Consumer Rights Act 2015
 - **Califórnia, EUA:** CCPA
-- **Canadá:** PIPEDA, leis provinciais de proteção ao consumidor
 
-### 17. Resolução de Disputas
+### 18. Resolução de Disputas
 
 **Clientes:**
 
 - As disputas devem primeiro ser levantadas diretamente com o Prestador
 - Se não resolvidas, as disputas podem ser submetidas à mediação ou arbitragem, conforme permitido pela lei local
+- Clientes da UE e do Reino Unido podem ter acesso a órgãos locais de resolução de disputas de consumo, quando disponíveis
 
 **Prestadores:**
 
 - As disputas devem ser submetidas à arbitragem vinculativa (quando permitido por lei)
 
-### 18. Força Maior
+### 19. Força Maior
 
 Não somos responsáveis por qualquer atraso ou falha no desempenho devido a circunstâncias além de nosso controle razoável, incluindo desastres naturais, pandemias, atos de guerra, terrorismo, ações governamentais ou falhas de infraestrutura.
 
-### 19. Separabilidade
+### 20. Separabilidade
 
 Se qualquer disposição destes Termos for considerada inválida ou inexequível, as disposições restantes permanecerão em pleno vigor e efeito.
 
-### 20. Acordo Integral
+### 21. Acordo Integral
 
 Estes Termos constituem o acordo integral entre você e a Plataforma em relação ao uso do serviço, substituindo quaisquer acordos anteriores.
 
-### 21. Alterações nos Termos
+### 22. Alterações nos Termos
 
-Podemos atualizar estes Termos a qualquer momento. O uso continuado da Plataforma após a publicação das alterações constitui aceitação dos Termos atualizados. Alterações materiais serão comunicadas por e-mail ou notificação na Plataforma.
+Podemos atualizar estes Termos periodicamente. Alterações materiais serão comunicadas por e-mail, notificação na Plataforma ou outro meio razoável. Alterações aplicam-se prospectivamente, salvo se precisarem vigorar antes por motivos legais, de segurança, prevenção de fraude, técnicos ou operacionais. O uso continuado da Plataforma após a entrada em vigor das alterações constitui aceitação dos Termos atualizados.
 
-### 22. Informações de Contato
+### 23. Informações de Contato
 
 Para perguntas sobre estes Termos, entre em contato:
 
-**E-mail:** kenoslabs+legal@gmail.com
+**E-mail:** agendaly.co+legal@gmail.com
 
 ---
 
