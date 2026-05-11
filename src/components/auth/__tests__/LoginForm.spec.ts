@@ -6,6 +6,28 @@ import { useAuthStore } from '@/stores/useAuthStore'
 
 const pushMock = vi.fn()
 
+vi.mock('@/lib/supabase', () => ({
+  supabase: {
+    auth: {
+      getSession: vi.fn(() => Promise.resolve({ data: { session: null } })),
+      getUser: vi.fn(() => Promise.resolve({ data: { user: null }, error: null })),
+      onAuthStateChange: vi.fn(),
+      signOut: vi.fn(),
+      signInWithOtp: vi.fn(),
+      verifyOtp: vi.fn(),
+      signInWithOAuth: vi.fn()
+    },
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn(() => Promise.resolve({ data: null, error: null })),
+      upsert: vi.fn().mockReturnThis(),
+      single: vi.fn(() => Promise.resolve({ data: null, error: null })),
+      update: vi.fn().mockReturnThis()
+    }))
+  }
+}))
+
 vi.mock('vue-router', () => ({
   useRouter: () => ({
     push: pushMock
