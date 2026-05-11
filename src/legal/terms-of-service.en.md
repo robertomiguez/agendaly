@@ -1,6 +1,6 @@
 # TERMS OF SERVICE
 
-**Last Updated:** January 25, 2026
+**Last Updated:** May 11, 2026
 
 These Terms of Service ("Terms") govern your access to and use of our platform (the "Platform"), which connects customers with independent service providers such as spas, barbershops, salons, and wellness professionals ("Providers").
 
@@ -32,7 +32,7 @@ We provide a technology platform that enables you to discover, book, and communi
 
 By using the Platform, you represent and warrant that:
 
-- You are at least 13 years old (or 16 in the EU)
+- You are at least 18 years old
 - You have legal capacity to enter into binding contracts
 - All information you provide is accurate, current, and complete
 - You understand that services may involve personal, cosmetic, or physical risks
@@ -51,6 +51,8 @@ By using the Platform, you represent and warrant that:
 - Consequences of inaccurate, incomplete, or misleading Provider information
 
 **USE OF THE PLATFORM IS AT YOUR OWN RISK.**
+
+Nothing in these Terms excludes or limits liability that cannot be excluded or limited under applicable law.
 
 ### 5. No Warranties
 
@@ -89,12 +91,9 @@ We reserve the right to suspend or terminate your access to the Platform at any 
 
 ### 9. Age Requirements
 
-- **United States:** You must be at least 13 years old
-- **European Union:** You must be at least 16 years old
-- **Brazil:** You must be at least 13 years old
-- **Canada:** Age requirements vary by province (generally 13-18)
+You must be at least 18 years old to use the Platform. If the law in your jurisdiction requires a higher minimum age, that higher requirement applies.
 
-If you are under the required age in your jurisdiction, you may not use the Platform.
+If you do not meet the required age in your jurisdiction, you may not use the Platform.
 
 ---
 
@@ -102,7 +101,7 @@ If you are under the required age in your jurisdiction, you may not use the Plat
 
 ### 10. Independent Contractor Status
 
-You operate as an **independent contractor**, professional, or business. nothing in these Terms creates:
+You operate as an **independent contractor**, professional, or business. Nothing in these Terms creates:
 
 - An employment relationship
 - A partnership, joint venture, or franchise
@@ -166,55 +165,69 @@ We may suspend or remove your account at any time, with or without notice, if:
 
 **You are not entitled to compensation for suspension or removal.**
 
+Nothing in this section limits any non-waivable rights you may have under applicable law.
+
 ---
 
 ## C. GENERAL PROVISIONS
 
-### 16. Governing Law and Jurisdiction
+### 16. Modifications to Service, Subscriptions, and Pricing
 
-**Default Jurisdiction:** These Terms are governed by the laws of [YOUR JURISDICTION], without regard to conflict of law principles.
+**16.1. Platform Changes and Discontinuation:** We may modify, suspend, or discontinue the Platform, or any feature, plan, region, integration, or support channel, at any time. For free features, we may do so with or without notice. For paid subscriptions, material adverse changes will apply prospectively after reasonable notice, unless an immediate change is needed for security, legal, fraud-prevention, technical, or operational reasons. If we discontinue a paid subscription before the end of a prepaid period, we will provide any prorated refund, credit, continued access, or other remedy required by applicable law.
+
+**16.2. Free/Freemium Plans:** Free, "freemium," beta, early-access, promotional, or trial plans are discretionary benefits, not guaranteed entitlements. We may change limits, reduce functionality, add restrictions, move features to paid plans, suspend access, or drop free plans at any time. We are not liable for changing or ending a free plan, except where liability cannot be excluded by law.
+
+**16.3. Premium Pricing Changes:** We may raise or otherwise change premium subscription prices, billing intervals, plan limits, discounts, currencies, taxes, and payment terms. Price increases will not be applied retroactively to a billing period you have already paid for. Unless a different notice period or consent is required by law, price changes take effect on your next renewal or after reasonable notice. If you do not agree, you must cancel before the change takes effect.
+
+**16.4. Renewal and Cancellation:** Paid subscriptions may renew automatically until canceled. You are responsible for canceling before renewal if you do not want the next charge. Cancellation normally takes effect at the end of the current billing period, unless applicable law, the checkout terms, or the payment provider requires a different result.
+
+**16.5. Mandatory Rights:** The rights reserved in this section apply only to the maximum extent permitted by law. They do not remove any mandatory consumer rights, required notices, cooling-off periods, cancellation rights, refund rights, or remedies that apply in your jurisdiction.
+
+### 17. Governing Law and Jurisdiction
+
+**Default Law:** Unless mandatory local law requires otherwise, these Terms are governed by the laws of Brazil, without regard to conflict of law principles. Courts in Brazil have non-exclusive jurisdiction, except where applicable law gives you the right to bring claims elsewhere.
 
 **Mandatory Local Laws:** Where applicable, mandatory consumer protection, data protection, or labor laws of your jurisdiction will apply, including:
 
 - **European Union:** GDPR, Consumer Rights Directive
+- **United Kingdom:** UK GDPR, Consumer Rights Act 2015
 - **Brazil:** LGPD, Brazilian Consumer Protection Code
 - **California, USA:** CCPA, California Consumer Privacy Act
-- **Canada:** PIPEDA, provincial consumer protection laws
 
-### 17. Dispute Resolution
+### 18. Dispute Resolution
 
 **Customers:**
 
 - Disputes should first be raised with the Provider directly
 - If unresolved, disputes may be submitted to mediation or arbitration as permitted by local law
-- EU customers have the right to use the Online Dispute Resolution platform: https://ec.europa.eu/consumers/odr
+- EU and UK customers may have access to local consumer dispute-resolution bodies where available
 
 **Providers:**
 
 - Disputes must be submitted to binding arbitration (where permitted by law)
 - Class action waivers apply to the extent permitted by law
 
-### 18. Force Majeure
+### 19. Force Majeure
 
 We are not liable for any delay or failure to perform due to circumstances beyond our reasonable control, including natural disasters, pandemics, acts of war, terrorism, government actions, or infrastructure failures.
 
-### 19. Severability
+### 20. Severability
 
 If any provision of these Terms is found to be invalid or unenforceable, the remaining provisions will remain in full force and effect.
 
-### 20. Entire Agreement
+### 21. Entire Agreement
 
 These Terms constitute the entire agreement between you and the Platform regarding your use of the service, superseding any prior agreements.
 
-### 21. Changes to Terms
+### 22. Changes to Terms
 
-We may update these Terms at any time. Continued use of the Platform after changes are posted constitutes acceptance of the updated Terms. Material changes will be communicated via email or Platform notification.
+We may update these Terms from time to time. Material changes will be communicated by email, Platform notice, or another reasonable method. Changes apply prospectively unless they are required sooner for legal, security, fraud-prevention, technical, or operational reasons. Continued use of the Platform after changes take effect constitutes acceptance of the updated Terms.
 
-### 22. Contact Information
+### 23. Contact Information
 
 For questions about these Terms, contact:
 
-**Email:** kenoslabs+legal@gmail.com
+**Email:** agendaly.co+legal@gmail.com
 
 ---
 

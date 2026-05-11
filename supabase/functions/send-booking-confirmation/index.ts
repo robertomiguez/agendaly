@@ -10,7 +10,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-api-key",
 };
 const FROM_EMAIL = "Agendaly Booking System <noreply@mail.agendaly.co>";
-const REPLY_TO = "kenoslabs+agendaly@gmail.com";
+const REPLY_TO = "agendaly.co+agendaly@gmail.com";
 const EMAIL_DELAY_MS = 1000; // 1 email per second (Rate Limit)
 const PRIMARY_COLOR = "#a54545"; // From app style
 const SUCCESS_COLOR = "#059669"; // Green for money/profit

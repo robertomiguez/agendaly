@@ -1,17 +1,19 @@
 # DATA PRIVACY POLICY
 
-**Last Updated:** January 25, 2026
+**Last Updated:** May 11, 2026
 
-This Data Privacy Policy describes how we collect, use, store, and protect your personal data when you use our Platform. We apply **GDPR-level data protection as our default standard**, regardless of your location.
+This Data Privacy Policy describes how we collect, use, store, share, and protect personal data when you use our Platform. We aim to apply GDPR/LGPD-level privacy practices as our baseline, while also honoring mandatory local rights that apply in your jurisdiction.
 
 ---
 
 ## A. WHO WE ARE
 
-**Data Controller:** Agendaly Platform  
-**Email:** kenoslabs+privacy@gmail.com
+**Data Controller:** The operator of the Agendaly Platform ("Agendaly," "we," "us")  
+**Email:** agendaly.co+privacy@gmail.com
 
-For EU users, our Data Protection Officer can be reached at: kenoslabs+dpo@gmail.com
+Our privacy contact can be reached at: agendaly.co+privacy@gmail.com
+
+If we are required to appoint a Data Protection Officer, EU representative, UK representative, or local privacy representative, we will publish or provide those contact details as required by law.
 
 ---
 
@@ -25,8 +27,10 @@ We collect the following personal data:
 - **Authentication Data:** Email verification codes, login timestamps
 - **Booking Information:** Service selections, appointment times, notes/requests
 - **Communication Data:** Messages sent through the Platform
-- **Technical Data:** IP address, browser type, device information, cookies
+- **Technical Data:** IP address, browser type, device information, cookies, local storage, and similar technologies
 - **Usage Data:** Pages visited, features used, search queries
+
+Please do not include sensitive information, health information, government identifiers, or payment credentials in booking notes or messages unless necessary for the requested service. If you voluntarily provide sensitive information, we process it only as needed to facilitate the booking, protect the Platform, comply with law, or as otherwise permitted by applicable law.
 
 ### 2. Providers
 
@@ -45,8 +49,10 @@ We process your personal data based on the following legal grounds:
 
 1. **Contract Performance** (Art. 6(1)(b)): To provide Platform services and enable bookings
 2. **Legitimate Interests** (Art. 6(1)(f)): For security, fraud prevention, and service improvement
-3. **Legal Obligations** (Art. 6(1)(c)): To comply with tax,accounting, and regulatory requirements
-4. **Consent** (Art. 6(1)(a)): For cookies (non-essential), marketing communications
+3. **Legal Obligations** (Art. 6(1)(c)): To comply with tax, accounting, and regulatory requirements
+4. **Consent** (Art. 6(1)(a)): For marketing communications, non-essential cookies, and other processing where consent is required
+
+Where UK GDPR, LGPD, CCPA/CPRA, or other local privacy laws apply, we rely on equivalent lawful bases, permissions, or exceptions available under those laws.
 
 ---
 
@@ -61,6 +67,7 @@ We use your personal data to:
 - **Security:** Detect and prevent fraud, abuse, and unauthorized access
 - **Comply with Law:** Meet tax, accounting, and regulatory obligations
 - **Communications:** Send transactional emails (booking confirmations, account notifications)
+- **Marketing:** Send marketing only where permitted by law or with your consent
 
 ---
 
@@ -73,11 +80,14 @@ Your data may be shared with:
 1. **Providers:** When you book an appointment, we share your name, email, phone, and booking details with the Provider
 2. **Service Providers:** We use trusted third parties for:
    - Hosting and infrastructure (e.g., cloud services)
+   - Authentication and account services
    - Email delivery
+   - Payments and billing, if paid plans are used
+   - Maps, location, or geocoding features, if used
    - Analytics and performance monitoring
 3. **Legal Authorities:** When required by law, court order, or to protect legal rights
 
-**WE DO NOT SELL YOUR PERSONAL DATA.**
+**WE DO NOT SELL YOUR PERSONAL DATA.** We also do not share personal data for cross-context behavioral advertising as defined by California law unless we disclose that practice and provide any required opt-out rights.
 
 ### Provider Responsibilities
 
@@ -87,12 +97,12 @@ Providers are **independent Data Controllers** for personal data they collect th
 
 ## F. INTERNATIONAL DATA TRANSFERS
 
-Your data may be processed outside your country of residence. We ensure appropriate safeguards:
+Your data may be processed outside your country of residence, including in countries that may not provide the same level of data protection as your country. Where required, we use appropriate safeguards:
 
 - **European Union:** Standard Contractual Clauses (SCCs), adequacy decisions
+- **United Kingdom:** UK adequacy regulations, the UK International Data Transfer Agreement, or the UK Addendum to EU SCCs
 - **Brazil (LGPD):** International transfer agreements compliant with ANPD requirements
-- **California (CCPA):** Service provider agreements
-- **Canada (PIPEDA):** Consent and comparable protection standards
+- **United States / California:** Service provider or contractor terms where applicable
 
 ---
 
@@ -110,6 +120,7 @@ We retain personal data for as long as necessary to:
 - **Inactive accounts:** Deleted after 3 years of inactivity
 - **Booking history:** Retained for 7 years (tax/legal requirements)
 - **Marketing consents:** Until consent is withdrawn
+- **Security logs:** Kept for a limited period unless needed to investigate abuse, fraud, or legal claims
 
 ---
 
@@ -130,6 +141,7 @@ In addition to the above:
 
 - Right to restriction of processing
 - Right to lodge a complaint with your local Data Protection Authority
+- Right not to be subject to certain solely automated decisions with legal or similarly significant effects
 
 ### LGPD Rights (Brazil)
 
@@ -143,51 +155,47 @@ In addition to the above:
 ### CCPA Rights (California)
 
 - Right to know what personal information is collected
-- Right to know whether personal information is sold or disclosed
-- Right to opt-out of the sale of personal information (we do not sell data)
+- Right to delete personal information, subject to legal exceptions
+- Right to correct inaccurate personal information
+- Right to know whether personal information is sold, shared, or disclosed
+- Right to opt out of sale or sharing of personal information (we do not sell data)
+- Right to limit use and disclosure of sensitive personal information, where applicable
 - Right to non-discrimination for exercising CCPA rights
 
-### PIPEDA Rights (Canada)
-
-- Right to access personal information
-- Right to challenge accuracy of personal information
-- Right to withdraw consent
-
-**To Exercise Your Rights:** Email kenoslabs+privacy@gmail.com
+**To Exercise Your Rights:** Email agendaly.co+privacy@gmail.com
 
 We will respond within:
 
-- **30 days** (GDPR, CCPA, PIPEDA)
+- **1 month** (GDPR/UK GDPR, unless law permits an extension)
 - **15 days** (LGPD)
+- **45 days** (CCPA/CPRA, unless law permits an extension)
+
+We may ask for information needed to verify your identity and process your request.
 
 ---
 
 ## I. COOKIES AND TRACKING
 
-We use cookies to:
+We use cookies, local storage, and similar technologies to:
 
 - **Essential:** Enable Platform functionality (e.g., session management)
-- **Analytics:** Understand usage patterns and improve performance
+- **Analytics:** Understand usage patterns and improve performance, where enabled and permitted
 - **Preferences:** Remember your settings
 
 **Your Cookie Choices:**
 
-- **EU/UK:** Opt-in consent required for non-essential cookies
+- **EU/UK:** We will request opt-in consent before using non-essential cookies where required
 - **Other jurisdictions:** You can manage cookies through your browser settings
 
-**Cookie Banner:** We display a cookie banner for EU users. You can manage preferences at any time in your account settings.
+If we add non-essential analytics, advertising, or similar tracking tools that require consent or opt-out rights, we will provide the required choices before using them.
 
 ---
 
 ## J. CHILDREN'S PRIVACY
 
-The Platform is not intended for children under:
+The Platform is not intended for users under 18 years old. If the law in your jurisdiction requires a higher minimum age, that higher requirement applies.
 
-- **13 years old** (USA - COPPA)
-- **16 years old** (EU - GDPR)
-- **13 years old** (Brazil - LGPD)
-
-We do not knowingly collect data from children below the applicable age. If we discover such data, we will delete it immediately.
+We do not knowingly collect data from users below the required age. If we discover such data, we will delete it unless we must retain it to comply with law, protect the Platform, or resolve a safety or legal issue. Where Brazilian law applies to users under 18, processing will be evaluated with the best interests of the child or adolescent as a primary consideration.
 
 ---
 
@@ -212,7 +220,6 @@ In the event of a data breach affecting your personal data:
 - **GDPR:** We will notify the relevant Data Protection Authority within **72 hours** and affected users without undue delay
 - **LGPD:** We will notify ANPD and affected users as required
 - **CCPA:** We will notify California residents as required by law
-- **PIPEDA:** We will notify the Privacy Commissioner and affected individuals
 
 ---
 
@@ -221,9 +228,9 @@ In the event of a data breach affecting your personal data:
 As a Provider, you are an **independent Data Controller**. You must:
 
 - Comply with **GDPR** (if serving EU customers)
+- Comply with **UK GDPR** (if serving UK customers)
 - Comply with **LGPD** (if serving Brazilian customers)
 - Comply with **CCPA** (if serving California residents)
-- Comply with **PIPEDA** (if operating in Canada)
 - Implement appropriate security measures
 - Handle customer data lawfully and transparently
 - Respond to data subject rights requests
@@ -248,14 +255,13 @@ We may update this Privacy Policy from time to time. Material changes will be co
 
 For privacy questions or to exercise your rights:
 
-**Email:** kenoslabs+privacy@gmail.com  
-**Data Protection Officer (EU):** kenoslabs+dpo@gmail.com
+**Email:** agendaly.co+privacy@gmail.com
 
 **Supervisory Authorities:**
 
 - **EU:** You may lodge a complaint with your local Data Protection Authority
+- **UK:** Information Commissioner's Office (ICO)
 - **Brazil:** ANPD (Autoridade Nacional de Proteção de Dados)
-- **Canada:** Office of the Privacy Commissioner of Canada
 
 ---
 
