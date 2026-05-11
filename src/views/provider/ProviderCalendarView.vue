@@ -754,7 +754,7 @@ function getLaidOutEventsForDate(date: Date) {
 }
 
 function formatTimeDisplay(date: Date) {
-  return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  return date.toLocaleTimeString(settingsStore.language, { hour: "numeric", minute: "2-digit" });
 }
 
 // Duplicate removed - see top of file

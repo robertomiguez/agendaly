@@ -7,7 +7,7 @@ import { saveProvider } from '../../services/providerService'
 import { useNotifications } from '../../composables/useNotifications'
 import { useI18n } from 'vue-i18n'
 import { Building, FileText, User } from 'lucide-vue-next'
-import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import SubmitButton from '@/components/common/SubmitButton.vue'
 import BackButton from '@/components/common/BackButton.vue'
 
 const router = useRouter()
@@ -231,14 +231,14 @@ async function handleSubmit() {
         </div>
 
         <footer class="profile-panel__footer">
-          <button 
-            @click="handleSubmit" 
-            :disabled="loading"
+          <SubmitButton
+            type="button"
+            :loading="loading"
+            :label="$t('common.save_profile')"
+            :loading-label="$t('common.loading')"
             class="profile-submit"
-          >
-            <LoadingSpinner v-if="loading" inline size="sm" class="mr-2" color="text-white" />
-            {{ loading ? $t('common.loading') : $t('common.save_profile') }}
-          </button>
+            @click="handleSubmit"
+          />
         </footer>
       </section>
     </div>

@@ -423,6 +423,11 @@ async function handleInstallApp() {
   @apply h-10;
 }
 
+.desktop-nav .nav-command,
+.desktop-nav .account-trigger {
+  @apply border border-gray-200 bg-white;
+}
+
 .nav-command--compact {
   @apply px-2;
 }

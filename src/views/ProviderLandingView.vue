@@ -7,9 +7,10 @@ import { fetchServices } from '@/services/serviceService'
 import { fetchStaff } from '@/services/staffService'
 import { useSettingsStore } from '@/stores/useSettingsStore'
 import { useAuthStore } from '@/stores/useAuthStore'
+import { useNotifications } from '@/composables/useNotifications'
 import { getProviderSlugFromHost } from '@/lib/publicHost'
 import type { Provider, ProviderAddress, Service, Staff } from '@/types'
-import { ArrowRight, CalendarDays, Clock, ListChecks, MapPin, Scissors, Star, Users } from 'lucide-vue-next'
+import { ArrowRight, CalendarDays, Check, Clock, ListChecks, MapPin, Scissors, Share2, Star, Users } from 'lucide-vue-next'
 
 const props = defineProps<{
   providerSlug?: string | null
@@ -20,12 +21,14 @@ const router = useRouter()
 const settingsStore = useSettingsStore()
 const authStore = useAuthStore()
 const { t } = useI18n()
+const { showSuccess, showError } = useNotifications()
 
 const provider = ref<Provider | null>(null)
 const services = ref<Service[]>([])
 const staff = ref<Staff[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
+const copiedProviderLink = ref(false)
 
 const resolvedSlug = computed(() => {
   return props.providerSlug || route.params.providerSlug as string || getProviderSlugFromHost()
@@ -43,6 +46,13 @@ const featuredImages = computed(() => {
   return activeServices.value
     .flatMap(service => service.images?.map(image => image.url) || (service.image_url ? [service.image_url] : []))
     .slice(0, 6)
+})
+const isProviderContext = computed(() => {
+  return route.query.menu === '1' && !!provider.value && authStore.provider?.id === provider.value.id
+})
+const providerShareUrl = computed(() => {
+  if (!provider.value?.slug) return ''
+  return `${window.location.origin}/${provider.value.slug}`
 })
 
 function formatAddress(address: ProviderAddress | null) {
@@ -71,6 +81,35 @@ function goToMyBookings() {
     router.push('/my-bookings')
   } else {
     router.push('/login?redirect=/my-bookings&context=customer')
+  }
+}
+
+async function shareProviderLink() {
+  if (!provider.value || !providerShareUrl.value) return
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: t('provider_page.share_title', { name: provider.value.business_name }),
+        text: t('provider_page.share_text', { name: provider.value.business_name }),
+        url: providerShareUrl.value
+      })
+      return
+    } catch (err) {
+      console.error('Share canceled or failed, falling back to copy', err)
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(providerShareUrl.value)
+    copiedProviderLink.value = true
+    showSuccess(t('provider_page.link_copied'))
+    setTimeout(() => {
+      copiedProviderLink.value = false
+    }, 3000)
+  } catch (err) {
+    console.error('Failed to copy provider link', err)
+    showError(t('provider.staff.copy_error'))
   }
 }
 
@@ -147,11 +186,31 @@ onMounted(async () => {
           </div>
 
           <div class="provider-actions">
-            <button type="button" class="provider-button provider-button--primary" @click="bookNow">
+            <button
+              v-if="isProviderContext"
+              type="button"
+              class="provider-button provider-button--outline"
+              @click="shareProviderLink"
+            >
+              <Check v-if="copiedProviderLink" class="provider-button-icon" />
+              <Share2 v-else class="provider-button-icon" />
+              {{ copiedProviderLink ? $t('provider_page.link_copied') : $t('provider_page.share_link') }}
+            </button>
+            <button
+              type="button"
+              class="provider-button provider-button--primary"
+              :disabled="isProviderContext"
+              @click="bookNow"
+            >
               <CalendarDays class="provider-button-icon" />
               {{ $t('nav.book_now') }}
             </button>
-            <button type="button" class="provider-button provider-button--outline" @click="goToMyBookings">
+            <button
+              type="button"
+              class="provider-button provider-button--outline"
+              :disabled="isProviderContext"
+              @click="goToMyBookings"
+            >
               <ListChecks class="provider-button-icon" />
               {{ $t('nav.my_bookings') }}
             </button>
@@ -194,7 +253,12 @@ onMounted(async () => {
             <h2>{{ $t('provider_page.customer_path_title') }}</h2>
             <p>{{ $t('provider_page.customer_path_description') }}</p>
           </div>
-          <button type="button" class="provider-button provider-button--dark" @click="goToMyBookings">
+          <button
+            type="button"
+            class="provider-button provider-button--dark"
+            :disabled="isProviderContext"
+            @click="goToMyBookings"
+          >
             {{ $t('nav.my_bookings') }}
             <ArrowRight class="provider-button-icon" />
           </button>
@@ -223,7 +287,14 @@ onMounted(async () => {
                 <span>{{ settingsStore.formatPrice(service.price || 0) }}</span>
               </div>
             </div>
-            <button type="button" class="provider-button provider-button--outline" @click="bookService(service.id)">{{ $t('provider_page.book') }}</button>
+            <button
+              type="button"
+              class="provider-button provider-button--outline"
+              :disabled="isProviderContext"
+              @click="bookService(service.id)"
+            >
+              {{ $t('provider_page.book') }}
+            </button>
           </article>
         </div>
 
@@ -350,6 +421,10 @@ onMounted(async () => {
 
 .provider-button {
   @apply inline-flex h-11 items-center justify-center gap-2 rounded-md px-5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-200 focus:ring-offset-2 focus:ring-offset-gray-950;
+}
+
+.provider-button:disabled {
+  @apply cursor-not-allowed opacity-50;
 }
 
 .provider-button--primary {

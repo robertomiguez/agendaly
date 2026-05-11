@@ -3,7 +3,7 @@ import { ref, watch, computed } from 'vue'
 import type { Staff, ProviderAddress } from '../../types'
 import Modal from '../../components/common/Modal.vue'
 import { useI18n } from 'vue-i18n'
-import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import SubmitButton from '@/components/common/SubmitButton.vue'
 import ImageUpload from '../ImageUpload.vue'
 
 const props = defineProps<{
@@ -178,14 +178,13 @@ function handleSubmit() {
         >
           {{ $t('common.cancel') }}
         </button>
-        <button
-          type="submit"
-          :disabled="loading || (providerAddresses.length > 0 && selectedAddressIds.length === 0)"
-          class="staff-form-action staff-form-action--primary"
-        >
-          <LoadingSpinner v-if="loading" inline size="sm" class="mr-2" color="text-white" />
-          {{ loading ? $t('common.saving') : $t('common.save') }}
-        </button>
+        <SubmitButton
+          :loading="loading"
+          :disabled="providerAddresses.length > 0 && selectedAddressIds.length === 0"
+          :label="$t('common.save')"
+          :loading-label="$t('common.saving')"
+          responsive
+        />
       </div>
     </form>
   </Modal>

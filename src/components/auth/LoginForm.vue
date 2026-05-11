@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 import { useAuthStore } from '../../stores/useAuthStore'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -22,11 +22,11 @@ const route = useRoute()
 useI18n()
 
 const email = ref('')
-const otpValue = ref<string[]>([])
+const otpValue = ref<string[]>(Array(6).fill(''))
 const codeSent = ref(false)
 
 watch(otpValue, (newVal) => {
-  if (newVal.length === 6 && newVal.every(v => v !== '')) {
+  if (!authStore.loading && newVal.length === 6 && newVal.every(v => v !== '')) {
     verifyCode()
   }
 })
@@ -69,13 +69,36 @@ async function verifyCode() {
     }
   } catch (error) {
     console.error('Verification failed:', error)
-    otpValue.value = []
+    resetOtp()
   }
 }
 
 function goBack() {
   codeSent.value = false
-  otpValue.value = []
+  resetOtp()
+}
+
+function resetOtp() {
+  otpValue.value = Array(6).fill('')
+}
+
+function focusOtpInput(index: number) {
+  const input = document.querySelector<HTMLInputElement>(`.otp-grid input[data-index="${index}"]`)
+  input?.focus()
+}
+
+async function applyOtpDigits(digits: string, startIndex = 0) {
+  const cleanDigits = digits.replace(/\D/g, '').slice(0, 6 - startIndex)
+  if (!cleanDigits) return
+
+  const nextValue = [...otpValue.value]
+  cleanDigits.split('').forEach((digit, offset) => {
+    nextValue[startIndex + offset] = digit
+  })
+  otpValue.value = nextValue
+
+  await nextTick()
+  focusOtpInput(Math.min(startIndex + cleanDigits.length, 5))
 }
 
 function handleGoogleSignIn() {
@@ -94,12 +117,26 @@ function handleGoogleSignIn() {
 
 function updateOtp(index: number, event: Event) {
   const target = event.target as HTMLInputElement
-  otpValue.value[index] = target.value.slice(-1)
+  const digits = target.value.replace(/\D/g, '')
 
-  if (target.value && index < 5) {
-    const next = target.parentElement?.querySelector<HTMLInputElement>(`input[data-index="${index + 1}"]`)
-    next?.focus()
+  if (digits.length > 1) {
+    applyOtpDigits(digits, index)
+    return
   }
+
+  const nextValue = [...otpValue.value]
+  nextValue[index] = digits
+  otpValue.value = nextValue
+  target.value = digits
+
+  if (digits && index < 5) {
+    focusOtpInput(index + 1)
+  }
+}
+
+function handleOtpPaste(index: number, event: ClipboardEvent) {
+  event.preventDefault()
+  applyOtpDigits(event.clipboardData?.getData('text') || '', index)
 }
 </script>
 
@@ -185,6 +222,7 @@ function updateOtp(index: number, event: Event) {
             maxlength="1"
             :disabled="authStore.loading"
             @input="updateOtp(n - 1, $event)"
+            @paste="handleOtpPaste(n - 1, $event)"
           />
         </div>
       </div>
