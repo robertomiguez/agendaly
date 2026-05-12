@@ -29,6 +29,7 @@ const staff = ref<Staff[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 const copiedProviderLink = ref(false)
+const supportEmail = 'agendaly.co+support@gmail.com'
 
 const resolvedSlug = computed(() => {
   return props.providerSlug || route.params.providerSlug as string || getProviderSlugFromHost()
@@ -359,6 +360,21 @@ onMounted(async () => {
           {{ $t('provider_page.open_map') }}
         </a>
       </section>
+
+      <footer class="provider-footer">
+        <p>{{ $t('footer.powered_by') }}</p>
+        <nav class="provider-footer-nav" aria-label="Support and legal">
+          <a href="/privacy" class="provider-footer-link">
+            {{ $t('footer.privacy') }}
+          </a>
+          <a href="/terms" class="provider-footer-link">
+            {{ $t('footer.terms') }}
+          </a>
+          <a :href="`mailto:${supportEmail}`" class="provider-footer-link">
+            {{ $t('footer.support') }}
+          </a>
+        </nav>
+      </footer>
     </template>
   </main>
 </template>
@@ -570,5 +586,17 @@ onMounted(async () => {
 
 .provider-location {
   @apply mb-10 flex flex-col gap-4 border-t md:flex-row md:items-center md:justify-between;
+}
+
+.provider-footer {
+  @apply flex flex-col items-center justify-center gap-3 border-t bg-gray-50 px-6 py-6 text-center text-sm text-gray-500 sm:flex-row;
+}
+
+.provider-footer-nav {
+  @apply flex flex-wrap items-center justify-center gap-2;
+}
+
+.provider-footer-link {
+  @apply rounded-md px-3 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-950 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:ring-offset-2 focus:ring-offset-gray-50;
 }
 </style>

@@ -15,6 +15,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 const { t } = useI18n()
 const providerSlug = computed(() => getProviderSlugFromHost())
+const supportEmail = 'agendaly.co+support@gmail.com'
 
 const valueItems = computed(() => [
   {
@@ -276,6 +277,12 @@ async function goToMyBookings() {
         <nav class="institutional-footer-nav" aria-label="Legal">
           <a href="/privacy" class="institutional-footer-link">
             {{ $t('footer.privacy') }}
+          </a>
+          <a href="/terms" class="institutional-footer-link">
+            {{ $t('footer.terms') }}
+          </a>
+          <a :href="`mailto:${supportEmail}`" class="institutional-footer-link">
+            {{ $t('footer.support') }}
           </a>
         </nav>
       </div>
