@@ -101,7 +101,13 @@ const beautyImages = [
 ]
 
 function goToLogin() {
-  router.push('/login?redirect=/provider')
+  router.push({
+    path: '/login',
+    query: {
+      redirect: '/provider',
+      context: 'provider'
+    }
+  })
 }
 
 async function goToMyBookings() {
