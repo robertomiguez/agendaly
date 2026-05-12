@@ -270,7 +270,15 @@ async function goToMyBookings() {
     </section>
 
     <footer class="institutional-footer">
-      <p>&copy; 2026 Agendaly. {{ $t('footer.rights') }}</p>
+      <div class="institutional-footer-inner">
+        <p>&copy; 2026 Agendaly. {{ $t('footer.rights') }}</p>
+        <span class="institutional-footer-separator" aria-hidden="true"></span>
+        <nav class="institutional-footer-nav" aria-label="Legal">
+          <a href="/privacy" class="institutional-footer-link">
+            {{ $t('footer.privacy') }}
+          </a>
+        </nav>
+      </div>
     </footer>
   </main>
 </template>
@@ -567,6 +575,22 @@ async function goToMyBookings() {
 }
 
 .institutional-footer {
-  @apply border-t bg-gray-950 px-6 py-8 text-center text-sm text-gray-400;
+  @apply border-t border-gray-800 bg-gray-950 px-6 py-7 text-sm text-gray-400;
+}
+
+.institutional-footer-inner {
+  @apply mx-auto flex max-w-7xl flex-col items-center justify-center gap-3 text-center sm:flex-row;
+}
+
+.institutional-footer-separator {
+  @apply hidden h-1 w-1 rounded-full bg-gray-600 sm:block;
+}
+
+.institutional-footer-nav {
+  @apply flex items-center gap-2;
+}
+
+.institutional-footer-link {
+  @apply rounded-md px-3 py-2 font-medium text-gray-300 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-primary-200 focus:ring-offset-2 focus:ring-offset-gray-950;
 }
 </style>
