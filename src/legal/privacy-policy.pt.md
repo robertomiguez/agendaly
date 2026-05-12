@@ -1,8 +1,10 @@
 # POLÍTICA DE PRIVACIDADE DE DADOS
 
-**Última Atualização:** 11 de maio de 2026
+**Última Atualização:** 12 de maio de 2026
 
 Esta Política de Privacidade de Dados descreve como coletamos, usamos, armazenamos, compartilhamos e protegemos dados pessoais quando você usa nossa Plataforma. Buscamos aplicar práticas de privacidade no nível da GDPR/LGPD como padrão, respeitando também direitos locais obrigatórios aplicáveis na sua jurisdição.
+
+Agendaly é atualmente operada como um serviço MVP/beta inicial. No momento, não cobramos Clientes ou Prestadores pelo uso da Plataforma, mas ainda coletamos e tratamos dados pessoais necessários para operar contas, agendamentos, listagens de prestadores, comunicações, segurança, localização e recursos relacionados da Plataforma.
 
 ---
 
@@ -27,7 +29,7 @@ Coletamos os seguintes dados pessoais:
 - **Dados de Autenticação:** Códigos de verificação por e-mail, carimbos de data/hora de login
 - **Informações de Agendamento:** Seleções de serviços, horários de consultas, notas/solicitações
 - **Dados de Comunicação:** Mensagens enviadas pela Plataforma
-- **Dados Técnicos:** Endereço IP, tipo de navegador, informações do dispositivo, cookies, armazenamento local e tecnologias similares
+- **Dados Técnicos:** Endereço IP, tipo de navegador, informações do dispositivo, armazenamento local do navegador e tecnologias similares
 - **Dados de Uso:** Páginas visitadas, recursos usados, consultas de pesquisa
 
 Não inclua dados sensíveis, dados de saúde, documentos oficiais ou credenciais de pagamento em notas de agendamento ou mensagens, salvo se necessário para o serviço solicitado. Se você fornecer voluntariamente dados sensíveis, trataremos esses dados apenas conforme necessário para facilitar o agendamento, proteger a Plataforma, cumprir a lei ou conforme permitido pela lei aplicável.
@@ -50,7 +52,7 @@ Processamos seus dados pessoais com base nos seguintes fundamentos legais:
 1. **Execução de Contrato** (Art. 7, V): Para fornecer serviços da Plataforma e habilitar agendamentos
 2. **Interesse Legítimo** (Art. 7, IX): Para segurança, prevenção de fraudes e melhoria do serviço
 3. **Obrigação Legal** (Art. 7, II): Para cumprir requisitos fiscais, contábeis e regulamentares
-4. **Consentimento** (Art. 7, I): Para comunicações de marketing, cookies não essenciais e outros tratamentos quando o consentimento for exigido
+4. **Consentimento** (Art. 7, I): Para comunicações de marketing, tecnologias de armazenamento ou rastreamento não essenciais e outros tratamentos quando o consentimento for exigido
 
 Quando GDPR do Reino Unido, LGPD, CCPA/CPRA ou outras leis locais de privacidade forem aplicáveis, usaremos bases legais, permissões ou exceções equivalentes previstas nessas leis.
 
@@ -133,7 +135,7 @@ Retemos dados pessoais pelo tempo necessário para:
 - **Exclusão:** Solicitar exclusão de seus dados (sujeito a requisitos legais de retenção)
 - **Oposição:** Opor-se ao processamento baseado em interesses legítimos
 - **Portabilidade de Dados:** Receber seus dados em um formato legível por máquina
-- **Retirar Consentimento:** Retirar consentimento para marketing ou cookies não essenciais
+- **Retirar Consentimento:** Retirar consentimento para marketing ou tecnologias de armazenamento ou rastreamento não essenciais
 
 ### Direitos LGPD (Brasil)
 
@@ -172,18 +174,19 @@ Podemos solicitar informações necessárias para verificar sua identidade e pro
 
 ---
 
-## I. COOKIES E RASTREAMENTO
+## I. ARMAZENAMENTO DO NAVEGADOR E RASTREAMENTO
 
-Usamos cookies, armazenamento local e tecnologias similares para:
+Atualmente, não usamos cookies definidos pela Plataforma. Usamos armazenamento local do navegador, cache do aplicativo e tecnologias similares para:
 
-- **Essenciais:** Habilitar funcionalidades da Plataforma (por exemplo, gerenciamento de sessão)
-- **Análise:** Entender padrões de uso e melhorar o desempenho, quando habilitado e permitido
-- **Preferências:** Lembrar suas configurações
+- **Funcionalidades essenciais:** Habilitar login, gerenciamento de sessão, redirecionamentos de autenticação e continuidade de agendamentos
+- **Preferências:** Lembrar idioma, moeda, país e configurações relacionadas
+- **Localização:** Guardar temporariamente dados de localização para mostrar resultados e opções relevantes
+- **Desempenho:** Manter cache do aplicativo para carregamento e funcionamento da Plataforma
 
-**Suas Escolhas de Cookie:**
+**Suas Escolhas:**
 
-- **UE/Reino Unido:** Solicitaremos consentimento opt-in antes de usar cookies não essenciais quando exigido
-- **Outras jurisdições:** Você pode gerenciar cookies através das configurações do navegador
+- **UE/Reino Unido:** Atualmente, usamos armazenamento do navegador para operação essencial ou funcional da Plataforma. Se introduzirmos tecnologias de armazenamento ou rastreamento não essenciais que exijam consentimento, solicitaremos consentimento opt-in antes de usá-las
+- **Outras jurisdições:** Você pode gerenciar ou apagar dados armazenados localmente através das configurações do navegador
 
 Se adicionarmos ferramentas não essenciais de análise, publicidade ou rastreamento similar que exijam consentimento ou opt-out, forneceremos as escolhas exigidas antes de usá-las.
 
@@ -254,6 +257,10 @@ Podemos atualizar esta Política de Privacidade periodicamente. Alterações mat
 Para perguntas sobre privacidade ou para exercer seus direitos:
 
 **E-mail:** agendaly.co+privacy@gmail.com
+
+Para perguntas gerais de suporte:
+
+**E-mail de Suporte:** agendaly.co+support@gmail.com
 
 **Autoridades Supervisórias:**
 

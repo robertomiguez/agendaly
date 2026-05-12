@@ -748,7 +748,9 @@
     "about": "Sobre",
     "privacy": "Privacidade",
     "terms": "Termos",
-    "contact": "Contato"
+    "contact": "Contato",
+    "support": "Suporte",
+    "powered_by": "Feito com Agendaly"
   },
   "roles": {
     "provider": "Prestador",

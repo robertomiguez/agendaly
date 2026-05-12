@@ -1,8 +1,12 @@
 # TERMOS DE SERVIÇO
 
-**Última Atualização:** 11 de maio de 2026
+**Última Atualização:** 12 de maio de 2026
 
 Estes Termos de Serviço ("Termos") regem seu acesso e uso de nossa plataforma (a "Plataforma"), que conecta clientes com prestadores de serviços independentes, como spas, barbearias, salões de beleza e profissionais de bem-estar ("Prestadores").
+
+Estes Termos se aplicam a todos os usuários da Plataforma, incluindo clientes que buscam ou agendam serviços ("Clientes") e prestadores que oferecem serviços ("Prestadores").
+
+Agendaly é atualmente oferecida como um serviço MVP/beta inicial. No momento, não cobramos Clientes ou Prestadores pelo uso da Plataforma. Se planos pagos, comissões, assinaturas ou outras cobranças forem introduzidos posteriormente, forneceremos os termos aplicáveis antes que essas cobranças sejam aplicadas.
 
 **Ao usar a Plataforma, você concorda com estes Termos. Se você não concordar, não use a Plataforma.**
 
@@ -27,6 +31,7 @@ Fornecemos uma plataforma tecnológica que permite descobrir, agendar e se comun
 - Preços, disponibilidade, cancelamentos, reembolsos e condições de serviço são definidos exclusivamente pelo Prestador
 - Nós **não** somos parte do contrato entre você e o Prestador
 - Nós **não** somos responsáveis por disputas, alterações, cancelamentos, ausências ou problemas de qualidade do serviço
+- A Plataforma não se destina a necessidades emergenciais, urgentes, médicas, de saúde, jurídicas, críticas de segurança ou críticas de tempo
 
 ### 3. Suas Responsabilidades
 
@@ -171,17 +176,21 @@ Nada nesta seção limita direitos irrenunciáveis que você possa ter pela lei 
 
 ## C. DISPOSIÇÕES GERAIS
 
-### 16. Modificações no Serviço, Assinaturas e Preços
+### 16. Serviço MVP/Beta, Modificações, Assinaturas e Preços
 
-**16.1. Alterações e Descontinuação da Plataforma:** Podemos modificar, suspender ou descontinuar a Plataforma, ou qualquer recurso, plano, região, integração ou canal de suporte, a qualquer momento. Para recursos gratuitos, podemos fazer isso com ou sem aviso prévio. Para assinaturas pagas, alterações materiais prejudiciais serão aplicadas apenas de forma prospectiva após aviso razoável, salvo se uma alteração imediata for necessária por motivos de segurança, legais, prevenção de fraude, técnicos ou operacionais. Se descontinuarmos uma assinatura paga antes do fim de um período já pago, forneceremos qualquer reembolso proporcional, crédito, continuidade de acesso ou outro remédio exigido pela lei aplicável.
+**16.1. Status Atual de MVP/Beta:** A Plataforma é atualmente fornecida como serviço MVP/beta para testes, validação e acesso inicial. Recursos podem estar incompletos, experimentais, indisponíveis, alterados, limitados ou removidos. Podemos limitar acesso, pausar cadastros, restringir uso ou encerrar a operação do serviço MVP/beta a qualquer momento, sujeito a direitos irrenunciáveis previstos na lei aplicável.
 
-**16.2. Planos Gratuitos / Freemium:** Planos gratuitos, "freemium", beta, acesso antecipado, promocionais ou de teste são benefícios discricionários, não direitos garantidos. Podemos alterar limites, reduzir funcionalidades, adicionar restrições, mover recursos para planos pagos, suspender acesso ou encerrar planos gratuitos a qualquer momento. Não somos responsáveis por alterar ou encerrar um plano gratuito, exceto quando a responsabilidade não puder ser excluída por lei.
+**16.2. Alterações e Descontinuação da Plataforma:** Podemos modificar, suspender ou descontinuar a Plataforma, ou qualquer recurso, plano, região, integração ou canal de suporte, a qualquer momento. Para recursos gratuitos, podemos fazer isso com ou sem aviso prévio. Para assinaturas pagas, alterações materiais prejudiciais serão aplicadas apenas de forma prospectiva após aviso razoável, salvo se uma alteração imediata for necessária por motivos de segurança, legais, prevenção de fraude, técnicos ou operacionais. Se descontinuarmos uma assinatura paga antes do fim de um período já pago, forneceremos qualquer reembolso proporcional, crédito, continuidade de acesso ou outro remédio exigido pela lei aplicável.
 
-**16.3. Alterações de Preços Premium:** Podemos aumentar ou alterar preços de assinaturas premium, ciclos de cobrança, limites de planos, descontos, moedas, tributos e termos de pagamento. Aumentos de preço não serão aplicados retroativamente a um período de cobrança já pago. Salvo se prazo de aviso ou consentimento diferente for exigido por lei, alterações de preço entram em vigor na próxima renovação ou após aviso razoável. Se você não concordar, deverá cancelar antes que a alteração entre em vigor.
+**16.3. Planos Gratuitos / Freemium:** Planos gratuitos, "freemium", beta, acesso antecipado, promocionais ou de teste são benefícios discricionários, não direitos garantidos. Podemos alterar limites, reduzir funcionalidades, adicionar restrições, mover recursos para planos pagos, suspender acesso ou encerrar planos gratuitos a qualquer momento. Não somos responsáveis por alterar ou encerrar um plano gratuito, exceto quando a responsabilidade não puder ser excluída por lei.
 
-**16.4. Renovação e Cancelamento:** Assinaturas pagas podem ser renovadas automaticamente até o cancelamento. Você é responsável por cancelar antes da renovação se não quiser a próxima cobrança. O cancelamento normalmente produz efeito ao final do período de cobrança vigente, salvo se a lei aplicável, os termos de contratação ou o provedor de pagamento exigirem resultado diferente.
+**16.4. Ofertas Pagas Futuras:** Atualmente, não cobramos Clientes ou Prestadores pelo uso da Plataforma. Se introduzirmos planos premium, assinaturas, comissões, anúncios pagos, processamento de pagamentos, cobrança ou outros recursos pagos, o preço aplicável, ciclo de cobrança, tributos, limites, termos de renovação, termos de cancelamento e termos de reembolso serão divulgados antes que você seja cobrado.
 
-**16.5. Direitos Obrigatórios:** Os direitos reservados nesta seção aplicam-se apenas na máxima extensão permitida por lei. Eles não removem direitos obrigatórios do consumidor, avisos exigidos, períodos de arrependimento, direitos de cancelamento, direitos de reembolso ou remédios aplicáveis em sua jurisdição.
+**16.5. Alterações de Preços Premium:** Se assinaturas pagas forem introduzidas, poderemos aumentar ou alterar preços de assinaturas premium, ciclos de cobrança, limites de planos, descontos, moedas, tributos e termos de pagamento. Aumentos de preço não serão aplicados retroativamente a um período de cobrança já pago. Salvo se prazo de aviso ou consentimento diferente for exigido por lei, alterações de preço entram em vigor na próxima renovação ou após aviso razoável. Se você não concordar, deverá cancelar antes que a alteração entre em vigor.
+
+**16.6. Renovação e Cancelamento:** Se assinaturas pagas forem introduzidas, elas poderão ser renovadas automaticamente até o cancelamento. Você é responsável por cancelar antes da renovação se não quiser a próxima cobrança. O cancelamento normalmente produz efeito ao final do período de cobrança vigente, salvo se a lei aplicável, os termos de contratação ou o provedor de pagamento exigirem resultado diferente.
+
+**16.7. Direitos Obrigatórios:** Os direitos reservados nesta seção aplicam-se apenas na máxima extensão permitida por lei. Eles não removem direitos obrigatórios do consumidor, avisos exigidos, períodos de arrependimento, direitos de cancelamento, direitos de reembolso ou remédios aplicáveis em sua jurisdição.
 
 ### 17. Lei e Jurisdição Aplicáveis
 
@@ -227,6 +236,10 @@ Podemos atualizar estes Termos periodicamente. Alterações materiais serão com
 Para perguntas sobre estes Termos, entre em contato:
 
 **E-mail:** agendaly.co+legal@gmail.com
+
+Para perguntas gerais de suporte, entre em contato:
+
+**E-mail de Suporte:** agendaly.co+support@gmail.com
 
 ---
 

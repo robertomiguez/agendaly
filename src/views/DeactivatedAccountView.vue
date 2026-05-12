@@ -6,6 +6,7 @@ import { ShieldAlert, LogOut } from 'lucide-vue-next'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const supportEmail = 'agendaly.co+support@gmail.com'
 
 const provider = computed(() => authStore.provider)
 
@@ -43,7 +44,7 @@ async function handleLogout() {
         </button>
         
         <a 
-          href="mailto:support@agendaly.com" 
+          :href="`mailto:${supportEmail}`" 
           class="block text-sm text-primary-600 hover:text-primary-700 font-medium py-2"
         >
           Contact Support

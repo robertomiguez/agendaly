@@ -1,8 +1,12 @@
 # TERMS OF SERVICE
 
-**Last Updated:** May 11, 2026
+**Last Updated:** May 12, 2026
 
 These Terms of Service ("Terms") govern your access to and use of our platform (the "Platform"), which connects customers with independent service providers such as spas, barbershops, salons, and wellness professionals ("Providers").
+
+These Terms apply to all users of the Platform, including customers who search for or book services ("Customers") and providers who offer services ("Providers").
+
+Agendaly is currently offered as an early MVP/beta service. We are not currently charging Customers or Providers for use of the Platform. If paid plans, commissions, subscriptions, or other charges are introduced later, we will provide the applicable terms before those charges apply.
 
 **By using the Platform, you agree to these Terms. If you do not agree, do not use the Platform.**
 
@@ -27,6 +31,7 @@ We provide a technology platform that enables you to discover, book, and communi
 - Prices, availability, cancellations, refunds, and service conditions are set solely by the Provider
 - We are **not** a party to the contract between you and the Provider
 - We are **not** responsible for any disputes, changes, cancellations, no-shows, or service quality issues
+- The Platform is not intended for emergency, urgent, medical, health, legal, safety-critical, or time-critical needs
 
 ### 3. Your Responsibilities
 
@@ -171,17 +176,21 @@ Nothing in this section limits any non-waivable rights you may have under applic
 
 ## C. GENERAL PROVISIONS
 
-### 16. Modifications to Service, Subscriptions, and Pricing
+### 16. MVP/Beta Service, Modifications, Subscriptions, and Pricing
 
-**16.1. Platform Changes and Discontinuation:** We may modify, suspend, or discontinue the Platform, or any feature, plan, region, integration, or support channel, at any time. For free features, we may do so with or without notice. For paid subscriptions, material adverse changes will apply prospectively after reasonable notice, unless an immediate change is needed for security, legal, fraud-prevention, technical, or operational reasons. If we discontinue a paid subscription before the end of a prepaid period, we will provide any prorated refund, credit, continued access, or other remedy required by applicable law.
+**16.1. Current MVP/Beta Status:** The Platform is currently provided as an MVP/beta service for testing, validation, and early access. Features may be incomplete, experimental, unavailable, changed, limited, or removed. We may limit access, pause onboarding, restrict usage, or stop operating the MVP/beta service at any time, subject to non-waivable rights under applicable law.
 
-**16.2. Free/Freemium Plans:** Free, "freemium," beta, early-access, promotional, or trial plans are discretionary benefits, not guaranteed entitlements. We may change limits, reduce functionality, add restrictions, move features to paid plans, suspend access, or drop free plans at any time. We are not liable for changing or ending a free plan, except where liability cannot be excluded by law.
+**16.2. Platform Changes and Discontinuation:** We may modify, suspend, or discontinue the Platform, or any feature, plan, region, integration, or support channel, at any time. For free features, we may do so with or without notice. For paid subscriptions, material adverse changes will apply prospectively after reasonable notice, unless an immediate change is needed for security, legal, fraud-prevention, technical, or operational reasons. If we discontinue a paid subscription before the end of a prepaid period, we will provide any prorated refund, credit, continued access, or other remedy required by applicable law.
 
-**16.3. Premium Pricing Changes:** We may raise or otherwise change premium subscription prices, billing intervals, plan limits, discounts, currencies, taxes, and payment terms. Price increases will not be applied retroactively to a billing period you have already paid for. Unless a different notice period or consent is required by law, price changes take effect on your next renewal or after reasonable notice. If you do not agree, you must cancel before the change takes effect.
+**16.3. Free/Freemium Plans:** Free, "freemium," beta, early-access, promotional, or trial plans are discretionary benefits, not guaranteed entitlements. We may change limits, reduce functionality, add restrictions, move features to paid plans, suspend access, or drop free plans at any time. We are not liable for changing or ending a free plan, except where liability cannot be excluded by law.
 
-**16.4. Renewal and Cancellation:** Paid subscriptions may renew automatically until canceled. You are responsible for canceling before renewal if you do not want the next charge. Cancellation normally takes effect at the end of the current billing period, unless applicable law, the checkout terms, or the payment provider requires a different result.
+**16.4. Future Paid Offerings:** We do not currently charge Customers or Providers for use of the Platform. If we introduce premium plans, subscriptions, commissions, paid placements, payment processing, billing, or other paid features, the applicable price, billing cycle, taxes, limits, renewal terms, cancellation terms, and refund terms will be disclosed before you are charged.
 
-**16.5. Mandatory Rights:** The rights reserved in this section apply only to the maximum extent permitted by law. They do not remove any mandatory consumer rights, required notices, cooling-off periods, cancellation rights, refund rights, or remedies that apply in your jurisdiction.
+**16.5. Premium Pricing Changes:** If paid subscriptions are introduced, we may raise or otherwise change premium subscription prices, billing intervals, plan limits, discounts, currencies, taxes, and payment terms. Price increases will not be applied retroactively to a billing period you have already paid for. Unless a different notice period or consent is required by law, price changes take effect on your next renewal or after reasonable notice. If you do not agree, you must cancel before the change takes effect.
+
+**16.6. Renewal and Cancellation:** If paid subscriptions are introduced, they may renew automatically until canceled. You are responsible for canceling before renewal if you do not want the next charge. Cancellation normally takes effect at the end of the current billing period, unless applicable law, the checkout terms, or the payment provider requires a different result.
+
+**16.7. Mandatory Rights:** The rights reserved in this section apply only to the maximum extent permitted by law. They do not remove any mandatory consumer rights, required notices, cooling-off periods, cancellation rights, refund rights, or remedies that apply in your jurisdiction.
 
 ### 17. Governing Law and Jurisdiction
 
@@ -228,6 +237,10 @@ We may update these Terms from time to time. Material changes will be communicat
 For questions about these Terms, contact:
 
 **Email:** agendaly.co+legal@gmail.com
+
+For general support questions, contact:
+
+**Support Email:** agendaly.co+support@gmail.com
 
 ---
 

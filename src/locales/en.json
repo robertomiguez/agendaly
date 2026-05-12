@@ -750,7 +750,9 @@
     "about": "About",
     "privacy": "Privacy",
     "terms": "Terms",
-    "contact": "Contact"
+    "contact": "Contact",
+    "support": "Support",
+    "powered_by": "Powered by Agendaly"
   },
   "roles": {
     "provider": "Provider",
