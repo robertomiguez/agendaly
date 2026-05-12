@@ -1,8 +1,10 @@
 # DATA PRIVACY POLICY
 
-**Last Updated:** May 11, 2026
+**Last Updated:** May 12, 2026
 
 This Data Privacy Policy describes how we collect, use, store, share, and protect personal data when you use our Platform. We aim to apply GDPR/LGPD-level privacy practices as our baseline, while also honoring mandatory local rights that apply in your jurisdiction.
+
+Agendaly is currently operated as an early MVP/beta service. We are not currently charging Customers or Providers for use of the Platform, but we still collect and process personal data needed to operate accounts, bookings, provider listings, communications, security, localization, and related Platform features.
 
 ---
 
@@ -27,7 +29,7 @@ We collect the following personal data:
 - **Authentication Data:** Email verification codes, login timestamps
 - **Booking Information:** Service selections, appointment times, notes/requests
 - **Communication Data:** Messages sent through the Platform
-- **Technical Data:** IP address, browser type, device information, cookies, local storage, and similar technologies
+- **Technical Data:** IP address, browser type, device information, browser local storage, and similar technologies
 - **Usage Data:** Pages visited, features used, search queries
 
 Please do not include sensitive information, health information, government identifiers, or payment credentials in booking notes or messages unless necessary for the requested service. If you voluntarily provide sensitive information, we process it only as needed to facilitate the booking, protect the Platform, comply with law, or as otherwise permitted by applicable law.
@@ -50,7 +52,7 @@ We process your personal data based on the following legal grounds:
 1. **Contract Performance** (Art. 6(1)(b)): To provide Platform services and enable bookings
 2. **Legitimate Interests** (Art. 6(1)(f)): For security, fraud prevention, and service improvement
 3. **Legal Obligations** (Art. 6(1)(c)): To comply with tax, accounting, and regulatory requirements
-4. **Consent** (Art. 6(1)(a)): For marketing communications, non-essential cookies, and other processing where consent is required
+4. **Consent** (Art. 6(1)(a)): For marketing communications, non-essential storage or tracking technologies, and other processing where consent is required
 
 Where UK GDPR, LGPD, CCPA/CPRA, or other local privacy laws apply, we rely on equivalent lawful bases, permissions, or exceptions available under those laws.
 
@@ -133,7 +135,7 @@ We retain personal data for as long as necessary to:
 - **Deletion:** Request deletion of your data (subject to legal retention requirements)
 - **Objection:** Object to processing based on legitimate interests
 - **Data Portability:** Receive your data in a machine-readable format
-- **Withdraw Consent:** Withdraw consent for marketing or non-essential cookies
+- **Withdraw Consent:** Withdraw consent for marketing or non-essential storage or tracking technologies
 
 ### GDPR Rights (EU/EEA/UK)
 
@@ -174,18 +176,19 @@ We may ask for information needed to verify your identity and process your reque
 
 ---
 
-## I. COOKIES AND TRACKING
+## I. BROWSER STORAGE AND TRACKING
 
-We use cookies, local storage, and similar technologies to:
+We currently do not use Platform-set cookies. We use browser local storage, application cache, and similar technologies to:
 
-- **Essential:** Enable Platform functionality (e.g., session management)
-- **Analytics:** Understand usage patterns and improve performance, where enabled and permitted
-- **Preferences:** Remember your settings
+- **Essential functionality:** Enable login, session management, authentication redirects, and booking continuity
+- **Preferences:** Remember language, currency, country, and related settings
+- **Location:** Temporarily store location data to show relevant results and options
+- **Performance:** Maintain application cache for loading and operation of the Platform
 
-**Your Cookie Choices:**
+**Your Choices:**
 
-- **EU/UK:** We will request opt-in consent before using non-essential cookies where required
-- **Other jurisdictions:** You can manage cookies through your browser settings
+- **EU/UK:** We currently use browser storage for essential or functional Platform operation. If we introduce non-essential storage or tracking technologies that require consent, we will request opt-in consent before using them
+- **Other jurisdictions:** You can manage or delete locally stored data through your browser settings
 
 If we add non-essential analytics, advertising, or similar tracking tools that require consent or opt-out rights, we will provide the required choices before using them.
 
@@ -256,6 +259,10 @@ We may update this Privacy Policy from time to time. Material changes will be co
 For privacy questions or to exercise your rights:
 
 **Email:** agendaly.co+privacy@gmail.com
+
+For general support questions:
+
+**Support Email:** agendaly.co+support@gmail.com
 
 **Supervisory Authorities:**
 
