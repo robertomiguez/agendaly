@@ -38,7 +38,7 @@ async function loadData(providerId: string) {
       client: appt.customers?.name || appt.customers?.email || 'Unknown Client',
       service: appt.services?.name || 'Unknown Service',
       amount: appt.booked_price ?? appt.services?.price ?? 0,
-      currency: appt.booked_price_currency || appt.services?.price_currency || 'USD',
+      currency: appt.booked_price_currency || appt.services?.provider?.currency || authStore.provider?.currency || 'USD',
       status: appt.status
     })) || []
 

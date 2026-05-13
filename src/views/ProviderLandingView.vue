@@ -285,7 +285,7 @@ onMounted(async () => {
               <p v-if="service.description">{{ service.description }}</p>
               <div class="service-meta">
                 <span><Clock class="service-meta-icon" />{{ service.duration }} {{ $t('common.minutes') }}</span>
-                <span>{{ settingsStore.formatPrice(service.price || 0, service.price_currency) }}</span>
+                <span>{{ settingsStore.formatPrice(service.price || 0, provider?.currency) }}</span>
               </div>
             </div>
             <button

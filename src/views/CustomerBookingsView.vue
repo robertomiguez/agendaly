@@ -221,7 +221,7 @@ async function handleCancel() {
                 <div>
                   <span class="block text-gray-500">Price</span>
                   <span class="font-medium text-gray-900">
-                    {{ settingsStore.formatPrice(booking.booked_price || 0, booking.booked_price_currency || booking.service?.price_currency) }}
+                    {{ settingsStore.formatPrice(booking.booked_price || 0, booking.booked_price_currency || booking.service?.provider?.currency) }}
                   </span>
                 </div>
               </div>

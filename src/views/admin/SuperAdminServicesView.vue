@@ -133,7 +133,7 @@ async function handleActivate(serviceId: string) {
                 </div>
               </td>
               <td class="px-6 py-4 font-medium text-slate-900">
-                {{ settingsStore.formatPrice(service.price || 0, service.price_currency) }}
+                {{ settingsStore.formatPrice(service.price || 0, service.providers?.currency) }}
               </td>
               <td class="px-6 py-4">
                 <span 
@@ -217,7 +217,7 @@ async function handleActivate(serviceId: string) {
           </div>
           <div class="flex items-center justify-between mt-3">
             <div class="flex items-center gap-3">
-              <span class="text-sm font-semibold text-slate-900">{{ settingsStore.formatPrice(service.price || 0, service.price_currency) }}</span>
+              <span class="text-sm font-semibold text-slate-900">{{ settingsStore.formatPrice(service.price || 0, service.providers?.currency) }}</span>
               <span class="text-xs text-slate-400">{{ service.duration }} min</span>
             </div>
             <span 

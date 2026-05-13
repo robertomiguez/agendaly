@@ -664,7 +664,11 @@
     "save_error": "Failed to save changes",
     "business_name_required": "Business Name is required.",
     "contact_name_required": "Contact person is required.",
-    "contact_phone_required": "Contact phone is required."
+    "contact_phone_required": "Contact phone is required.",
+    "service_settings": "Service settings",
+    "currency": "Currency",
+    "currency_help": "Used for service prices and booking totals.",
+    "currency_change_notice": "Saving will update all services to {currency}. Price amounts will not be converted."
   },
   "modals": {
     "staff": {

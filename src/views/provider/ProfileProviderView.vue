@@ -4,18 +4,21 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/useAuthStore'
 import ImageUpload from '../../components/ImageUpload.vue'
 import { saveProvider } from '../../services/providerService'
+import { useSettingsStore } from '../../stores/useSettingsStore'
 import { useNotifications } from '../../composables/useNotifications'
 import { useI18n } from 'vue-i18n'
-import { Building, FileText, User } from 'lucide-vue-next'
+import { Building, Coins, FileText, User } from 'lucide-vue-next'
 import SubmitButton from '@/components/common/SubmitButton.vue'
 import BackButton from '@/components/common/BackButton.vue'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const settingsStore = useSettingsStore()
 const { t } = useI18n()
 
 const selectedPlan = computed(() => route.query.plan as string || null)
+const currencyOptions = ['USD', 'BRL', 'CAD', 'EUR', 'AUD', 'NZD', 'ZAR']
 
 const form = ref({
   business_name: '',
@@ -25,6 +28,8 @@ const form = ref({
 
 const contactName = ref('')
 const contactPhone = ref('')
+const providerCurrency = ref(settingsStore.currency || 'USD')
+const originalProviderCurrency = ref(providerCurrency.value)
 
 const logoFile = ref<File | null>(null)
 const loading = ref(false)
@@ -32,6 +37,9 @@ const loading = ref(false)
 const { showSuccess, showError, errorMessage, clearMessages } = useNotifications()
 
 const isEditing = computed(() => !!authStore.provider)
+const currencyWillUpdateServices = computed(() => {
+  return isEditing.value && providerCurrency.value !== originalProviderCurrency.value
+})
 
 
 // Populate form when data is available
@@ -49,8 +57,18 @@ function populateForm() {
   }
 }
 
+function getCurrentProviderCurrency() {
+  return authStore.provider?.currency || settingsStore.currency || 'USD'
+}
+
+function loadProviderCurrency() {
+  providerCurrency.value = getCurrentProviderCurrency()
+  originalProviderCurrency.value = providerCurrency.value
+}
+
 onMounted(() => {
   populateForm()
+  loadProviderCurrency()
 })
 
 // Watch for store changes (in case of page reload)
@@ -59,9 +77,9 @@ watch(
   (newProvider) => {
     if (newProvider) {
       populateForm()
+      loadProviderCurrency()
     }
-  },
-  { immediate: true }
+  }
 )
 
 async function handleSubmit() {
@@ -96,10 +114,15 @@ async function handleSubmit() {
       user: authStore.user,
       profile: authStore.profile,
       provider: authStore.provider,
-      form: form.value,
+      form: {
+        ...form.value,
+        currency: providerCurrency.value
+      },
       logoFile: logoFile.value,
       planName: selectedPlan.value
     })
+
+    settingsStore.setCurrency(providerCurrency.value)
 
     await authStore.updateProfile({
       name: contactName.value,
@@ -200,6 +223,35 @@ async function handleSubmit() {
               </div>
             </div>
 
+            <!-- Service Settings -->
+            <div class="profile-section profile-section--divided">
+              <div class="profile-section__heading">
+                <Coins class="profile-section__icon" />
+                <h3 class="profile-section__title">{{ $t('provider_profile.service_settings') }}</h3>
+              </div>
+
+              <div class="profile-currency-row">
+                <div class="profile-currency-row__copy">
+                  <label for="provider_currency" class="profile-label">{{ $t('provider_profile.currency') }}</label>
+                  <p class="profile-help">{{ $t('provider_profile.currency_help') }}</p>
+                </div>
+
+                <select
+                  id="provider_currency"
+                  v-model="providerCurrency"
+                  class="profile-input profile-currency-row__select"
+                >
+                  <option v-for="currency in currencyOptions" :key="currency" :value="currency">
+                    {{ currency }}
+                  </option>
+                </select>
+              </div>
+
+              <div v-if="currencyWillUpdateServices" class="profile-notice" role="status">
+                {{ $t('provider_profile.currency_change_notice', { currency: providerCurrency }) }}
+              </div>
+            </div>
+
             <!-- Description -->
             <div class="space-y-4 pt-4 border-t border-gray-100">
               <div class="flex items-center gap-2 mb-4 text-primary-600">
@@ -272,12 +324,52 @@ async function handleSubmit() {
   @apply flex justify-end border-t border-gray-100 bg-gray-50 px-6 py-4;
 }
 
+.profile-section {
+  @apply space-y-4;
+}
+
+.profile-section--divided {
+  @apply border-t border-gray-100 pt-4;
+}
+
+.profile-section__heading {
+  @apply mb-4 flex items-center gap-2 text-primary-600;
+}
+
+.profile-section__icon {
+  @apply h-5 w-5;
+}
+
+.profile-section__title {
+  @apply truncate font-semibold;
+}
+
 .profile-label {
   @apply text-sm font-medium text-gray-800;
 }
 
+.profile-help {
+  @apply mt-1 text-sm text-gray-500;
+}
+
 .profile-input {
   @apply h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm transition-colors placeholder:text-gray-400 focus-visible:border-amber-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200;
+}
+
+.profile-currency-row {
+  @apply grid gap-3 sm:grid-cols-[1fr_160px] sm:items-start;
+}
+
+.profile-currency-row__copy {
+  @apply min-w-0;
+}
+
+.profile-currency-row__select {
+  @apply sm:max-w-40;
+}
+
+.profile-notice {
+  @apply rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800;
 }
 
 .profile-textarea {

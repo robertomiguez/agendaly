@@ -15,6 +15,7 @@ const props = defineProps<{
   service: any // Temporarily using any to debug potential type import issues
   loading?: boolean
   submitError?: string | null
+  providerCurrency?: string
 }>()
 
 const emit = defineEmits(['close', 'save'])
@@ -23,7 +24,6 @@ const staffStore = useStaffStore()
 const authStore = useAuthStore()
 const settingsStore = useSettingsStore()
 const { td } = useDomainTranslation()
-const currencyOptions = ['USD', 'BRL', 'CAD', 'EUR', 'AUD', 'NZD', 'ZAR']
 
 const uploading = ref(false)
 const imageError = ref<string | null>(null)
@@ -38,7 +38,6 @@ const form = ref({
   name: '',
   category_id: '',
   price: 0,
-  price_currency: settingsStore.currency || 'USD',
   duration: 30,
   description: '',
   buffer_before: 0,
@@ -65,7 +64,6 @@ onMounted(async () => {
       name: props.service.name,
       category_id: props.service.category_id || '',
       price: props.service.price || 0,
-      price_currency: props.service.price_currency || settingsStore.currency || 'USD',
       duration: props.service.duration,
       description: props.service.description || '',
       buffer_before: props.service.buffer_before || 0,
@@ -127,13 +125,13 @@ const currencySymbol = computed(() => {
   try {
     const parts = new Intl.NumberFormat(settingsStore.language || navigator.language || 'en-US', {
       style: 'currency',
-      currency: form.value.price_currency,
+      currency: props.providerCurrency || settingsStore.currency || 'USD',
       currencyDisplay: 'narrowSymbol'
     }).formatToParts(0)
 
-    return parts.find(part => part.type === 'currency')?.value || form.value.price_currency
+    return parts.find(part => part.type === 'currency')?.value || props.providerCurrency || settingsStore.currency || 'USD'
   } catch {
-    return form.value.price_currency
+    return props.providerCurrency || settingsStore.currency || 'USD'
   }
 })
 
@@ -293,7 +291,7 @@ async function handleSubmit() {
         </select>
       </div>
 
-      <div class="grid grid-cols-3 gap-4">
+      <div class="grid grid-cols-2 gap-4">
         <!-- Price -->
         <div class="space-y-2">
           <label for="service-price" class="service-form-label">{{ $t('modals.service.price') }}</label>
@@ -310,21 +308,6 @@ async function handleSubmit() {
               :class="currencySymbol.length > 1 ? 'service-form-input--currency-wide' : 'service-form-input--currency'"
             />
           </div>
-        </div>
-
-        <!-- Currency -->
-        <div class="space-y-2">
-          <label for="service-currency" class="service-form-label">{{ $t('modals.service.currency') }}</label>
-          <select
-            id="service-currency"
-            v-model="form.price_currency"
-            class="service-form-input"
-            required
-          >
-            <option v-for="currency in currencyOptions" :key="currency" :value="currency">
-              {{ currency }}
-            </option>
-          </select>
         </div>
 
         <!-- Duration -->

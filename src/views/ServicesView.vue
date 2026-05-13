@@ -21,7 +21,6 @@ const formData = ref({
   name: '',
   duration: 30,
   price: 0,
-  price_currency: settingsStore.currency || 'USD',
   buffer_before: 0,
   buffer_after: 0,
   category: '',
@@ -72,7 +71,6 @@ function openCreateModal() {
     name: '',
     duration: 30,
     price: 0,
-    price_currency: settingsStore.currency || 'USD',
     buffer_before: 0,
     buffer_after: 0,
     category: '',
@@ -88,7 +86,6 @@ function openEditModal(service: Service) {
     name: service.name,
     duration: service.duration,
     price: service.price || 0,
-    price_currency: service.price_currency || settingsStore.currency || 'USD',
     buffer_before: service.buffer_before,
     buffer_after: service.buffer_after,
     category: service.categories?.name || '',
@@ -165,7 +162,7 @@ function handleDelete(id: string) {
               <h3 class="text-lg font-semibold text-gray-900">{{ service.name }}</h3>
               <p v-if="service.categories?.name" class="text-sm text-gray-500">{{ td('categories', service.categories.name) }}</p>
             </div>
-            <span class="text-lg font-bold text-primary-600">{{ settingsStore.formatPrice(service.price || 0, service.price_currency) }}</span>
+            <span class="text-lg font-bold text-primary-600">{{ settingsStore.formatPrice(service.price || 0, service.provider?.currency || settingsStore.currency) }}</span>
           </div>
           
           <div class="space-y-2 mb-4">

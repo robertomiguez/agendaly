@@ -140,7 +140,7 @@ export const superAdminService = {
     async listServices() {
         const { data, error } = await supabase
             .from('services')
-            .select('*, providers(business_name)')
+            .select('*, providers(business_name, currency)')
             .order('created_at', { ascending: false })
 
         if (error) throw error
