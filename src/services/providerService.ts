@@ -259,16 +259,25 @@ export async function fetchDashboardStats(providerId: string) {
         .from('services')
         .select('*', { count: 'exact', head: true })
         .eq('provider_id', providerId)
-        .eq('active', true)
+        .or('active.is.true,active.is.null')
     
     if (servicesError) throw servicesError
+
+    // Fetch active locations count
+    const { count: locationsCount, error: locationsError } = await supabase
+        .from('provider_addresses')
+        .select('*', { count: 'exact', head: true })
+        .eq('provider_id', providerId)
+        .or('active.is.true,active.is.null')
+
+    if (locationsError) throw locationsError
 
     // Fetch staff count
     const { count: staffCount, error: staffError } = await supabase
         .from('staff')
         .select('*', { count: 'exact', head: true })
         .eq('provider_id', providerId)
-        .eq('active', true)
+        .or('active.is.true,active.is.null')
     
     if (staffError) throw staffError
 
@@ -287,6 +296,7 @@ export async function fetchDashboardStats(providerId: string) {
         weekRevenue,
         monthRevenue,
         revenueCurrency,
+        activeLocations: locationsCount || 0,
         activeServices: servicesCount || 0,
         totalStaff: staffCount || 0
     }
