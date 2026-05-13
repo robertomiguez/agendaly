@@ -62,12 +62,14 @@ describe('useLocation', () => {
     localStorageMock.clear()
     
     // Reset singleton state manually
-    const { city, region, country_name, country_code, location, error, loading, isPreciseLocation } = useLocation()
+    const { city, region, country_name, country_code, location, error, loading, isPreciseLocation, latitude, longitude } = useLocation()
     city.value = null
     region.value = null
     country_name.value = null
     country_code.value = null
     location.value = null
+    latitude.value = null
+    longitude.value = null
     error.value = null
     loading.value = false
     isPreciseLocation.value = false
@@ -100,74 +102,32 @@ describe('useLocation', () => {
     expect(supabase.functions.invoke).not.toHaveBeenCalled()
   })
 
-  it('2. Falls back to Edge Function if cache is missing', async () => {
-    // Setup Supabase mock
-    const edgeData = {
-      city: 'Edge City',
-      region: 'Edge Region',
-      country_name: 'Edge Country',
-      country_code: 'EC',
-      location: 'Edge City, Edge Region'
-    };
-    (supabase.functions.invoke as any).mockResolvedValue({ data: edgeData, error: null })
-
+  it('2. Does not call Edge Function if cache is missing', async () => {
     const { city, refresh, isPreciseLocation } = useLocation()
     await refresh()
 
-    expect(city.value).toBe('Edge City')
+    expect(city.value).toBeNull()
     expect(isPreciseLocation.value).toBe(false)
-    expect(supabase.functions.invoke).toHaveBeenCalledWith('get-location')
+    expect(supabase.functions.invoke).not.toHaveBeenCalled()
   })
 
-  it('3. Falls back to Browser Geolocation if Edge Function returns null', async () => {
-    // Mock Supabase to return null location
-    (supabase.functions.invoke as any).mockResolvedValue({ data: { location: null }, error: null })
-
-    // Mock Browser Geolocation success
-    geolocationMock.getCurrentPosition.mockImplementation((success) => {
-      success({
-        coords: { latitude: 10, longitude: 20 }
-      })
-    })
-
-    // Mock Nominatim response
-    ;(globalThis.fetch as any).mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({
-        address: {
-          city: 'Browser City',
-          state: 'Browser Region',
-          country_name: 'Browser Country',
-          country_code: 'BC'
-        }
-      })
-    })
-
+  it('3. Does not request Browser Geolocation if cache is missing', async () => {
     const { city, refresh, isPreciseLocation } = useLocation()
     await refresh()
 
-    expect(city.value).toBe('Browser City')
-    expect(isPreciseLocation.value).toBe(true)
-    expect(geolocationMock.getCurrentPosition).toHaveBeenCalled()
+    expect(city.value).toBeNull()
+    expect(isPreciseLocation.value).toBe(false)
+    expect(geolocationMock.getCurrentPosition).not.toHaveBeenCalled()
   })
 
-  it('marks browser coordinates precise before reverse geocoding succeeds', async () => {
-    (supabase.functions.invoke as any).mockResolvedValue({ data: { location: null }, error: null })
-
-    geolocationMock.getCurrentPosition.mockImplementation((success) => {
-      success({
-        coords: { latitude: 10, longitude: 20 }
-      })
-    })
-
-    ;(globalThis.fetch as any).mockResolvedValue({ ok: false })
-
+  it('does not set browser coordinates when precise location is disabled', async () => {
     const { latitude, longitude, isPreciseLocation, refresh } = useLocation()
     await refresh()
 
-    expect(latitude.value).toBe(10)
-    expect(longitude.value).toBe(20)
-    expect(isPreciseLocation.value).toBe(true)
+    expect(latitude.value).toBeNull()
+    expect(longitude.value).toBeNull()
+    expect(isPreciseLocation.value).toBe(false)
+    expect(geolocationMock.getCurrentPosition).not.toHaveBeenCalled()
   })
 
   it('4. Singleton Behavior: State is shared', async () => {
@@ -182,18 +142,12 @@ describe('useLocation', () => {
     expect(city2.value).toBe('Shared City')
   })
   
-  it('5. Handles errors gracefully', async () => {
-     // Mock Supabase error
-    (supabase.functions.invoke as any).mockResolvedValue({ data: null, error: 'Function error' })
-    
-    // Mock Geolocation denial
-    geolocationMock.getCurrentPosition.mockImplementation((_, error) => {
-        if (error) error({ code: 1, message: 'User denied' })
-    })
-
+  it('5. Leaves error empty when disabled location detection is unavailable', async () => {
     const { error, refresh } = useLocation()
     await refresh()
     
-    expect(error.value).toBeDefined()
+    expect(error.value).toBeNull()
+    expect(supabase.functions.invoke).not.toHaveBeenCalled()
+    expect(geolocationMock.getCurrentPosition).not.toHaveBeenCalled()
   })
 })
