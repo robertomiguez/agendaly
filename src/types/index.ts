@@ -18,6 +18,7 @@ export interface Service {
     slug?: string | null
     duration: number // in minutes
     price?: number
+    price_currency?: string
     buffer_before: number
     buffer_after: number
     category_id?: string // References categories table
@@ -173,6 +174,7 @@ export interface Appointment {
     end_time: string // HH:mm format
     status: AppointmentStatus
     booked_price?: number // Service price locked at time of booking
+    booked_price_currency?: string // Service currency locked at time of booking
     notes?: string
     created_at?: string
     updated_at?: string

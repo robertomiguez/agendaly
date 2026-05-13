@@ -65,12 +65,12 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   }
 
-  function formatPrice(value: number) {
+  function formatPrice(value: number, currencyCode?: string) {
     if (!value && value !== 0) return ''
     if (value === 0) return 'Free' // Or localized 'Free' if we want detailed i18n
 
     const locale = language.value || navigator.language || 'en-US'
-    const curr = currency.value || 'USD'
+    const curr = currencyCode || currency.value || 'USD'
 
     try {
       return new Intl.NumberFormat(locale, {

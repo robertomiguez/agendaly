@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '../../stores/useAuthStore'
-import { useCurrency } from '@/composables/useCurrency'
+import { useSettingsStore } from '@/stores/useSettingsStore'
 import { fetchRevenueReport } from '../../services/providerService'
 import { 
   Download,
@@ -14,7 +14,7 @@ import LoadingSpinner from '../../components/common/LoadingSpinner.vue'
 import BackButton from '../../components/common/BackButton.vue'
 
 const authStore = useAuthStore()
-const { formatPrice } = useCurrency()
+const settingsStore = useSettingsStore()
 
 const loading = ref(true)
 const transactions = ref<any[]>([])
@@ -38,6 +38,7 @@ async function loadData(providerId: string) {
       client: appt.customers?.name || appt.customers?.email || 'Unknown Client',
       service: appt.services?.name || 'Unknown Service',
       amount: appt.booked_price ?? appt.services?.price ?? 0,
+      currency: appt.booked_price_currency || appt.services?.price_currency || 'USD',
       status: appt.status
     })) || []
 
@@ -77,6 +78,11 @@ const totalRevenue = computed(() => {
 
 const totalAppointments = computed(() => transactions.value.length)
 const averageValue = computed(() => totalRevenue.value / (totalAppointments.value || 1))
+const reportCurrency = computed(() => transactions.value[0]?.currency || settingsStore.currency || 'USD')
+
+function formatPrice(value: number, currency?: string) {
+  return settingsStore.formatPrice(value, currency || reportCurrency.value)
+}
 
 
 function handleExport() {
@@ -199,7 +205,7 @@ function handleExport() {
                     {{ tx.status }}
                   </span>
                 </td>
-                <td class="px-6 py-4 text-right font-medium text-gray-900">{{ formatPrice(tx.amount) }}</td>
+                <td class="px-6 py-4 text-right font-medium text-gray-900">{{ formatPrice(tx.amount, tx.currency) }}</td>
               </tr>
             </tbody>
           </table>
