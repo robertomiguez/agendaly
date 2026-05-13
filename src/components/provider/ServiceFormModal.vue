@@ -83,6 +83,7 @@ onMounted(async () => {
       // Default to first category
       form.value.category_id = categoryStore.categories[0]?.id || ''
     }
+    form.value.staff_ids = staffStore.staff.map(member => member.id)
   }
 })
 
