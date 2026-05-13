@@ -157,16 +157,19 @@ describe('useSettingsStore Currency Formatting', () => {
     it('handles zero values', () => {
         const store = useSettingsStore()
         store.currency = 'USD'
-        // Dependent on implementation, check if we want "Free" or "$0.00"
-        // Current implementation in store might default to Free? 
-        // Let's check the store implementation briefly or just test what we set.
-        // Assuming the store implementation: `if (!price) return 'Free'` logic was in Views, 
-        // let's verify if the store has it or if it relies on standard formatting.
-        // The store implementation added earlier was:
-        // formatPrice(value: number) { return new Intl...().format(value) }
 
         const formatted = store.formatPrice(0)
         expect(formatted).toBe('Free')
+    })
+
+    it('formats zero as currency when requested', () => {
+        const store = useSettingsStore()
+        store.language = 'en-US'
+        store.currency = 'USD'
+
+        const formatted = store.formatPrice(0, undefined, { zeroAsFree: false })
+        expect(formatted).toContain('$')
+        expect(formatted).toContain('0.00')
     })
 
     it('persists currency selection', () => {

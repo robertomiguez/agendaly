@@ -65,9 +65,9 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   }
 
-  function formatPrice(value: number, currencyCode?: string) {
+  function formatPrice(value: number, currencyCode?: string, options: { zeroAsFree?: boolean } = {}) {
     if (!value && value !== 0) return ''
-    if (value === 0) return 'Free' // Or localized 'Free' if we want detailed i18n
+    if (value === 0 && options.zeroAsFree !== false) return 'Free' // Or localized 'Free' if we want detailed i18n
 
     const locale = language.value || navigator.language || 'en-US'
     const curr = currencyCode || currency.value || 'USD'

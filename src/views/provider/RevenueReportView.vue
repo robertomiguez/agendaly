@@ -81,7 +81,7 @@ const averageValue = computed(() => totalRevenue.value / (totalAppointments.valu
 const reportCurrency = computed(() => transactions.value[0]?.currency || settingsStore.currency || 'USD')
 
 function formatPrice(value: number, currency?: string) {
-  return settingsStore.formatPrice(value, currency || reportCurrency.value)
+  return settingsStore.formatPrice(value, currency || reportCurrency.value, { zeroAsFree: false })
 }
 
 
