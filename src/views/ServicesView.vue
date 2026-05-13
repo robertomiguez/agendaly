@@ -162,7 +162,7 @@ function handleDelete(id: string) {
               <h3 class="text-lg font-semibold text-gray-900">{{ service.name }}</h3>
               <p v-if="service.categories?.name" class="text-sm text-gray-500">{{ td('categories', service.categories.name) }}</p>
             </div>
-            <span class="text-lg font-bold text-primary-600">{{ settingsStore.formatPrice(service.price || 0) }}</span>
+            <span class="text-lg font-bold text-primary-600">{{ settingsStore.formatPrice(service.price || 0, service.provider?.currency || settingsStore.currency) }}</span>
           </div>
           
           <div class="space-y-2 mb-4">

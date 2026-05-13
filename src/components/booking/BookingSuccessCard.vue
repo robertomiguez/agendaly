@@ -70,7 +70,7 @@ const authStore = useAuthStore()
           </div>
           <div class="flex justify-between items-center">
             <span class="text-gray-500">{{ $t('booking.price_label') }}</span>
-            <span class="font-bold text-primary-600">{{ settingsStore.formatPrice(selectedService?.price || 0) }}</span>
+            <span class="font-bold text-primary-600">{{ settingsStore.formatPrice(selectedService?.price || 0, providerInfo?.currency) }}</span>
           </div>
           
           <div v-if="selectedAddressObject" class="mt-4 w-full h-40 bg-gray-100 rounded-md overflow-hidden border border-gray-200">

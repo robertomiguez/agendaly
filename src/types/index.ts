@@ -68,6 +68,7 @@ export interface Provider {
     profile_id: string
     business_name: string
     slug?: string | null
+    currency?: string
     description?: string
     logo_url?: string
     logo_path?: string
@@ -173,6 +174,7 @@ export interface Appointment {
     end_time: string // HH:mm format
     status: AppointmentStatus
     booked_price?: number // Service price locked at time of booking
+    booked_price_currency?: string // Service currency locked at time of booking
     notes?: string
     created_at?: string
     updated_at?: string

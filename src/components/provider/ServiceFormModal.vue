@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useCategoryStore } from '../../stores/useCategoryStore'
 import { useStaffStore } from '../../stores/useStaffStore'
 import { useAuthStore } from '../../stores/useAuthStore'
-import { useCurrency } from '../../composables/useCurrency'
+import { useSettingsStore } from '../../stores/useSettingsStore'
 import { useDomainTranslation } from '../../composables/useDomainTranslation'
 import Modal from '../../components/common/Modal.vue'
 import { Trash2, ImagePlus } from 'lucide-vue-next'
@@ -15,13 +15,14 @@ const props = defineProps<{
   service: any // Temporarily using any to debug potential type import issues
   loading?: boolean
   submitError?: string | null
+  providerCurrency?: string
 }>()
 
 const emit = defineEmits(['close', 'save'])
 const categoryStore = useCategoryStore()
 const staffStore = useStaffStore()
 const authStore = useAuthStore()
-const { currencySymbol } = useCurrency()
+const settingsStore = useSettingsStore()
 const { td } = useDomainTranslation()
 
 const uploading = ref(false)
@@ -119,6 +120,20 @@ function handleFileSelect(event: Event) {
   }
   input.value = ''
 }
+
+const currencySymbol = computed(() => {
+  try {
+    const parts = new Intl.NumberFormat(settingsStore.language || navigator.language || 'en-US', {
+      style: 'currency',
+      currency: props.providerCurrency || settingsStore.currency || 'USD',
+      currencyDisplay: 'narrowSymbol'
+    }).formatToParts(0)
+
+    return parts.find(part => part.type === 'currency')?.value || props.providerCurrency || settingsStore.currency || 'USD'
+  } catch {
+    return props.providerCurrency || settingsStore.currency || 'USD'
+  }
+})
 
 function removeImage(index: number) {
     images.value.splice(index, 1)

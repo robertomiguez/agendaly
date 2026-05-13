@@ -81,7 +81,7 @@ function formatDateTime(date: Date) {
               {{ $t('modals.appointment_details.buffer_details', { before: bufferBefore, after: bufferAfter }) }}
             </p>
           </div>
-          <p class="text-sm font-medium text-primary-600">{{ settingsStore.formatPrice(appointment.booked_price || 0) }}</p>
+          <p class="text-sm font-medium text-primary-600">{{ settingsStore.formatPrice(appointment.booked_price || 0, appointment.booked_price_currency) }}</p>
         </div>
         <div>
           <p class="text-sm text-gray-500">{{ $t('modals.appointment_details.staff') }}</p>

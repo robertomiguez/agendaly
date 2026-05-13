@@ -30,7 +30,9 @@
     "saving": "Saving...",
     "deleting": "Deleting...",
     "load_more": "Load More",
-    "and": "and"
+    "and": "and",
+    "share": "Share",
+    "export_pdf": "Export PDF"
   },
   "auth": {
     "login": "Log In",
@@ -664,7 +666,11 @@
     "save_error": "Failed to save changes",
     "business_name_required": "Business Name is required.",
     "contact_name_required": "Contact person is required.",
-    "contact_phone_required": "Contact phone is required."
+    "contact_phone_required": "Contact phone is required.",
+    "service_settings": "Service settings",
+    "currency": "Currency",
+    "currency_help": "Used for service prices and booking totals.",
+    "currency_change_notice": "Saving will update all services to {currency}. Price amounts will not be converted."
   },
   "modals": {
     "staff": {
@@ -711,6 +717,7 @@
       "category": "Category",
       "category_placeholder": "Select a category",
       "price": "Price",
+      "currency": "Currency",
       "duration": "Duration (min)",
       "description": "Description",
       "description_placeholder": "Describe the service...",
@@ -762,6 +769,9 @@
   },
   "reports": {
     "loading": "Loading report..."
+  },
+  "revenue_report": {
+    "title": "Revenue Report"
   },
   "super_admin": {
     "title": "Super Admin Dashboard",

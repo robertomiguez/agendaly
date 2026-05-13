@@ -8,6 +8,7 @@ interface Service {
   name: string
   description?: string
   price?: number
+  provider?: { currency?: string }
   duration: number
   images?: { url: string }[]
   staff?: { id: string; name: string }[]
@@ -62,7 +63,7 @@ const settingsStore = useSettingsStore()
               <div class="flex justify-between items-start mb-2">
                 <h3 class="text-lg font-bold text-gray-900">{{ service.name }}</h3>
                 <div class="text-right">
-                  <p class="text-lg font-bold text-primary-600">{{ settingsStore.formatPrice(service.price || 0) }}</p>
+                  <p class="text-lg font-bold text-primary-600">{{ settingsStore.formatPrice(service.price || 0, service.provider?.currency) }}</p>
                   <p class="text-xs text-gray-500">{{ service.duration }} {{ $t('common.minutes') }}</p>
                 </div>
               </div>

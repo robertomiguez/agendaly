@@ -77,7 +77,7 @@ const settingsStore = useSettingsStore()
         </div>
         <div>
           <dt class="text-gray-500">{{ $t('booking.price_label') }}</dt>
-          <dd class="font-bold text-primary-600 text-lg">{{ settingsStore.formatPrice(selectedService?.price || 0) }}</dd>
+          <dd class="font-bold text-primary-600 text-lg">{{ settingsStore.formatPrice(selectedService?.price || 0, providerInfo?.currency) }}</dd>
         </div>
         <div class="sm:col-span-2 pt-2 mt-2 border-t border-gray-200">
           <dt class="text-gray-500">{{ $t('booking.location_label') }}</dt>

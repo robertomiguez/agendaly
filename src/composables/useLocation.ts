@@ -1,5 +1,4 @@
 import { ref, onMounted } from 'vue'
-import { supabase } from '../lib/supabase'
 
 interface LocationData {
   city: string | null
@@ -32,7 +31,8 @@ const isPreciseLocation = ref(false)
 
 /**
  * Composable for getting user's location.
- * Uses a hybrid approach:
+ * Marketplace localization is disabled for now.
+ * The previous flow used:
  * 1. Immediate: Check localStorage cache
  * 2. Background: Fetch from Edge Function (IP-based)
  * 3. Optional: Request precise location via browser Geolocation API
@@ -68,20 +68,6 @@ export function useLocation() {
   }
 
   /**
-   * Save location to localStorage cache
-   */
-  function saveToCache(data: LocationData): void {
-    try {
-      localStorage.setItem(CACHE_KEY, JSON.stringify({
-        data,
-        timestamp: Date.now()
-      }))
-    } catch {
-      // localStorage might be full or disabled
-    }
-  }
-
-  /**
    * Apply location data to refs
    */
   function applyLocation(data: LocationData): void {
@@ -96,101 +82,33 @@ export function useLocation() {
     isPreciseLocation.value = data.source === 'browser'
   }
 
-  /**
-   * Fetch location from Edge Function (IP-based)
-   */
-  async function fetchFromEdge(): Promise<LocationData | null> {
-    try {
-      const { data, error: fnError } = await supabase.functions.invoke('get-location')
-      
-      if (fnError) {
-        console.warn('Edge function error:', fnError)
-        return null
-      }
-      
-      return data as LocationData
-    } catch (err) {
-      console.warn('Failed to fetch location from edge:', err)
-      return null
-    }
-  }
+  // IP-based Edge Function lookup disabled for now.
+  // Restore this with the supabase import when marketplace region detection is needed again.
+  // async function fetchFromEdge(): Promise<LocationData | null> {
+  //   try {
+  //     const { data, error: fnError } = await supabase.functions.invoke('get-location')
+  //
+  //     if (fnError) {
+  //       console.warn('Edge function error:', fnError)
+  //       return null
+  //     }
+  //
+  //     return data as LocationData
+  //   } catch (err) {
+  //     console.warn('Failed to fetch location from edge:', err)
+  //     return null
+  //   }
+  // }
 
   /**
    * Get precise location using browser Geolocation API
    * Returns a promise that resolves to formatted location string
    */
   async function requestPreciseLocation(): Promise<string | null> {
-    return new Promise((resolve) => {
-      if (!navigator.geolocation) {
-        resolve(null)
-        return
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          try {
-            const { latitude, longitude } = position.coords
-            applyLocation({
-              city: city.value,
-              region: region.value,
-              country_name: country_name.value,
-              country_code: country_code.value,
-              latitude,
-              longitude,
-              location: location.value,
-              source: 'browser'
-            })
-
-            // Use OpenStreetMap Nominatim for reverse geocoding (free)
-            const response = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
-              { headers: { 'Accept-Language': navigator.language || 'en' } }
-            )
-            
-            if (!response.ok) {
-              resolve(null)
-              return
-            }
-
-            const data = await response.json()
-            const preciseCity = data.address?.city || data.address?.town || data.address?.village
-            const preciseRegion = data.address?.state || data.address?.county
-            
-            if (preciseCity) {
-              const preciseLocation = preciseRegion 
-                ? `${preciseCity}, ${preciseRegion}`
-                : preciseCity
-              
-              // Update refs and cache
-              const locationData = {
-                city: preciseCity,
-                region: preciseRegion || null,
-                country_name: data.address?.country || null,
-                country_code: data.address?.country_code?.toUpperCase() || null,
-                latitude,
-                longitude,
-                location: preciseLocation,
-                source: 'browser' as const
-              }
-              
-              applyLocation(locationData)
-              saveToCache(locationData)
-              
-              resolve(preciseLocation)
-            } else {
-              resolve(null)
-            }
-          } catch {
-            resolve(null)
-          }
-        },
-        () => {
-          // User denied or error
-          resolve(null)
-        },
-        { timeout: 5000, maximumAge: 300000 }
-      )
-    })
+    // Browser geolocation disabled to avoid permission prompts.
+    // Restore the previous precise-location flow here if marketplace
+    // precise-location features are needed again.
+    return null
   }
 
   /**
@@ -213,20 +131,20 @@ export function useLocation() {
         return
       }
 
-      // Step 2: Fetch from Edge Function
-      const edgeData = await fetchFromEdge()
-      if (edgeData?.location) {
-        const locationData = { ...edgeData, source: 'edge' as const }
-        applyLocation(locationData)
-        saveToCache(locationData)
-        loading.value = false
-        initialized.value = true
-        return
-      }
+      // Marketplace region detection disabled for now.
+      // Previous IP-based detection:
+      // const edgeData = await fetchFromEdge()
+      // if (edgeData?.location) {
+      //   const locationData = { ...edgeData, source: 'edge' as const }
+      //   applyLocation(locationData)
+      //   saveToCache(locationData)
+      //   loading.value = false
+      //   initialized.value = true
+      //   return
+      // }
 
-      // Step 3: If IP-based detection failed, try browser geolocation
-      // This will trigger the browser permission prompt
-      await requestPreciseLocation()
+      // Browser geolocation fallback disabled to avoid permission prompts.
+      // await requestPreciseLocation()
       initialized.value = true
     } catch (err: any) {
       error.value = err.message || 'Failed to get location'
