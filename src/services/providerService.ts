@@ -195,6 +195,14 @@ function formatLocalDate(date: Date): string {
 }
 
 export async function fetchDashboardStats(providerId: string) {
+    const { data: providerData, error: providerError } = await supabase
+        .from('providers')
+        .select('currency')
+        .eq('id', providerId)
+        .single()
+
+    if (providerError) throw providerError
+
     // Get today's date in local time
     const today = new Date()
     const todayStr = formatLocalDate(today)
@@ -269,6 +277,7 @@ export async function fetchDashboardStats(providerId: string) {
     const monthRevenue = monthAppts?.reduce((sum, apt: any) => sum + (apt.booked_price || 0), 0) || 0
     const revenueCurrency = weekAppts?.find((apt: any) => apt.booked_price_currency || apt.services?.provider?.currency)?.booked_price_currency
         || weekAppts?.find((apt: any) => apt.services?.provider?.currency)?.services?.provider?.currency
+        || providerData?.currency
         || 'USD'
 
     return {
@@ -305,7 +314,7 @@ export async function fetchRevenueReport(providerId: string) {
             booked_price,
             booked_price_currency,
             services!inner(name, price, provider_id, provider:providers(currency)),
-            customers(name, email)
+            customers(profiles(name, email))
         `)
         .eq('services.provider_id', providerId)
         .gte('appointment_date', weekStartStr)

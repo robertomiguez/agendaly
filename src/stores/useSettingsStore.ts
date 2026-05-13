@@ -9,6 +9,18 @@ function normalizeSupportedLanguage(locale?: string | null): 'en' | 'pt' {
   return 'en'
 }
 
+function getLocaleForCurrency(currencyCode?: string | null) {
+  const code = (currencyCode || 'USD').toUpperCase()
+
+  if (code === 'BRL') return 'pt-BR'
+  if (code === 'CAD') return 'en-CA'
+  if (code === 'AUD') return 'en-AU'
+  if (code === 'NZD') return 'en-NZ'
+  if (code === 'ZAR') return 'en-ZA'
+  if (code === 'EUR') return 'de-DE'
+  return 'en-US'
+}
+
 export const useSettingsStore = defineStore('settings', () => {
   const language = ref<string>(localStorage.getItem('language') || '')
   const currency = ref<string>(localStorage.getItem('currency') || '')
@@ -69,8 +81,8 @@ export const useSettingsStore = defineStore('settings', () => {
     if (!value && value !== 0) return ''
     if (value === 0 && options.zeroAsFree !== false) return 'Free' // Or localized 'Free' if we want detailed i18n
 
-    const locale = language.value || navigator.language || 'en-US'
     const curr = currencyCode || currency.value || 'USD'
+    const locale = getLocaleForCurrency(curr)
 
     try {
       return new Intl.NumberFormat(locale, {

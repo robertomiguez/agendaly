@@ -16,7 +16,7 @@ export const useProviderStore = defineStore('provider', () => {
         monthAppointments: 0,
         weekRevenue: 0,
         monthRevenue: 0,
-        revenueCurrency: 'USD',
+        revenueCurrency: '',
         activeServices: 0,
         totalStaff: 0
     })
