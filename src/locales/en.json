@@ -30,7 +30,9 @@
     "saving": "Saving...",
     "deleting": "Deleting...",
     "load_more": "Load More",
-    "and": "and"
+    "and": "and",
+    "share": "Share",
+    "export_pdf": "Export PDF"
   },
   "auth": {
     "login": "Log In",
@@ -767,6 +769,9 @@
   },
   "reports": {
     "loading": "Loading report..."
+  },
+  "revenue_report": {
+    "title": "Revenue Report"
   },
   "super_admin": {
     "title": "Super Admin Dashboard",

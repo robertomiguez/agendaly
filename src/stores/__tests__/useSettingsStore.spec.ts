@@ -154,6 +154,26 @@ describe('useSettingsStore Currency Formatting', () => {
         expect(formatted).toContain('10,00')
     })
 
+    it('formats BRL with Brazilian separators even when UI language is English', () => {
+        const store = useSettingsStore()
+        store.language = 'en'
+        store.currency = 'BRL'
+
+        const formatted = store.formatPrice(10)
+        expect(formatted).toContain('R$')
+        expect(formatted).toContain('10,00')
+    })
+
+    it('formats USD with US separators even when UI language is Portuguese', () => {
+        const store = useSettingsStore()
+        store.language = 'pt'
+        store.currency = 'USD'
+
+        const formatted = store.formatPrice(10)
+        expect(formatted).toContain('$')
+        expect(formatted).toContain('10.00')
+    })
+
     it('handles zero values', () => {
         const store = useSettingsStore()
         store.currency = 'USD'

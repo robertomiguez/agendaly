@@ -30,7 +30,9 @@
     "saving": "Salvando...",
     "deleting": "Excluindo...",
     "load_more": "Carregar Mais",
-    "and": "e"
+    "and": "e",
+    "share": "Compartilhar",
+    "export_pdf": "Exportar PDF"
   },
   "auth": {
     "login": "Entrar",
@@ -765,6 +767,9 @@
   },
   "reports": {
     "loading": "Carregando relatório..."
+  },
+  "revenue_report": {
+    "title": "Relatório de Receita"
   },
   "super_admin": {
     "title": "Painel de Super Admin",
