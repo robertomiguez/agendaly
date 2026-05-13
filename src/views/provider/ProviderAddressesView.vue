@@ -19,6 +19,7 @@ import { canAddLocation } from '../../services/subscriptionService'
 import BackButton from '../../components/common/BackButton.vue'
 import LocationPicker from '../../components/common/LocationPicker.vue'
 import { geocodeAddress, reverseGeocode } from '../../services/geocoding'
+import { getCountryCodeFromLocale } from '../../services/geo'
 import { watch, nextTick } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import ImageUpload from '../../components/ImageUpload.vue'
@@ -70,18 +71,38 @@ async function handleConfirmDelete() {
 
 const { country_name: userCountry, country_code: userCountryCode } = useLocation()
 
+function getDefaultCountryCode() {
+  return userCountryCode.value || getCountryCodeFromLocale(navigator.language) || 'US'
+}
+
+function getDefaultCountryName(countryCode: string) {
+  if (userCountry.value && normalizeCountryCode(userCountryCode.value || '') === countryCode) {
+    return userCountry.value
+  }
+
+  return getCountryName(countryCode) || (countryCode === 'US' ? 'United States' : '')
+}
+
+function createEmptyForm() {
+  const countryCode = getDefaultCountryCode()
+
+  return {
+    label: '',
+    street_address: '',
+    street_address_2: '',
+    city: '',
+    state: '',
+    postal_code: '',
+    country_code: countryCode,
+    country_name: getDefaultCountryName(countryCode),
+    latitude: null as number | null,
+    longitude: null as number | null,
+    photo_url: null as string | null
+  }
+}
+
 const form = ref({
-  label: '',
-  street_address: '',
-  street_address_2: '',
-  city: '',
-  state: '',
-  postal_code: '',
-  country_code: userCountryCode.value || 'US',
-  country_name: userCountry.value || 'United States',
-  latitude: null as number | null,
-  longitude: null as number | null,
-  photo_url: null as string | null
+  ...createEmptyForm()
 })
 
 const photoFile = ref<File | null>(null)
@@ -118,19 +139,7 @@ onMounted(async () => {
 
 function openAddModal() {
   modal.open(null)
-  form.value = {
-    label: '',
-    street_address: '',
-    street_address_2: '',
-    city: '',
-    state: '',
-    postal_code: '',
-    country_code: userCountryCode.value || 'US',
-    country_name: userCountry.value || 'United States',
-    latitude: null,
-    longitude: null,
-    photo_url: null
-  }
+  form.value = createEmptyForm()
   photoFile.value = null
 }
 
