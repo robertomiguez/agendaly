@@ -16,6 +16,7 @@ export const useAuthStore = defineStore('auth', () => {
     const isReady = ref(false)
     let _ensureProfilePromise: Promise<void> | null = null
     let _initPromise: Promise<void> | null = null
+    let _coreDataPromise: Promise<void> | null = null
     let _loadingTimeout: ReturnType<typeof setTimeout> | null = null
     let _coreRequestId = 0
 
@@ -82,16 +83,11 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     async function handleAuthChange(event: string, newSession: Session | null) {
-        session.value = newSession
-        user.value = newSession?.user ?? null
-
-        if (event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
-            return
-        }
-
         if (event === 'SIGNED_IN' && newSession?.user) {
             loading.value = true
             startLoadingSafety()
+            session.value = newSession
+            user.value = newSession.user
             try {
                 const currentUser = await refreshAuthenticatedUser()
                 if (currentUser) {
@@ -101,6 +97,13 @@ export const useAuthStore = defineStore('auth', () => {
                 clearLoadingSafety()
                 loading.value = false
             }
+            return
+        }
+
+        session.value = newSession
+        user.value = newSession?.user ?? null
+
+        if (event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
             return
         }
 
@@ -158,6 +161,17 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     async function fetchCoreData() {
+        if (_coreDataPromise) return _coreDataPromise
+
+        _coreDataPromise = _doFetchCoreData()
+        try {
+            await _coreDataPromise
+        } finally {
+            _coreDataPromise = null
+        }
+    }
+
+    async function _doFetchCoreData() {
         const requestId = ++_coreRequestId
 
         await fetchProfile()

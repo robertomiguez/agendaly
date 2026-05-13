@@ -213,11 +213,11 @@ router.beforeEach(async (to, _from, next) => {
 
     // Login page - redirect if already authenticated based on role
     if (to.meta.requiresGuest && authStore.isAuthenticated) {
-        if (to.query.redirect) {
-            return next(to.query.redirect as string)
-        }
         if (authStore.isSuperAdmin) {
             return next('/super-admin/dashboard')
+        }
+        if (to.query.redirect) {
+            return next(to.query.redirect as string)
         }
         if (role === 'provider') {
             return next('/provider/dashboard')
@@ -236,6 +236,14 @@ router.beforeEach(async (to, _from, next) => {
             path: '/login',
             query
         })
+    }
+
+    // Super Admin containment - admins can ONLY access admin routes
+    if (authStore.isAuthenticated && authStore.isSuperAdmin) {
+        const isAdminRoute = to.path.startsWith('/super-admin') || to.path.startsWith('/admin') || to.path === '/auth/callback'
+        if (!isAdminRoute) {
+            return next('/super-admin/dashboard')
+        }
     }
 
     // Provider routes - only for providers
@@ -281,14 +289,6 @@ router.beforeEach(async (to, _from, next) => {
             return next('/admin?error=not_admin')
         }
         return next('/')
-    }
-
-    // Super Admin containment - admins can ONLY access admin routes
-    if (authStore.isAuthenticated && authStore.isSuperAdmin) {
-        const isAdminRoute = to.path.startsWith('/super-admin') || to.path.startsWith('/admin') || to.path === '/auth/callback'
-        if (!isAdminRoute) {
-            return next('/super-admin/dashboard')
-        }
     }
 
     // Deactivated Account Check (for providers)
