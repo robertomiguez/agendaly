@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useCategoryStore } from '../../stores/useCategoryStore'
 import { useStaffStore } from '../../stores/useStaffStore'
 import { useAuthStore } from '../../stores/useAuthStore'
-import { useCurrency } from '../../composables/useCurrency'
+import { useSettingsStore } from '../../stores/useSettingsStore'
 import { useDomainTranslation } from '../../composables/useDomainTranslation'
 import Modal from '../../components/common/Modal.vue'
 import { Trash2, ImagePlus } from 'lucide-vue-next'
@@ -21,8 +21,9 @@ const emit = defineEmits(['close', 'save'])
 const categoryStore = useCategoryStore()
 const staffStore = useStaffStore()
 const authStore = useAuthStore()
-const { currencySymbol } = useCurrency()
+const settingsStore = useSettingsStore()
 const { td } = useDomainTranslation()
+const currencyOptions = ['USD', 'BRL', 'CAD', 'EUR', 'AUD', 'NZD', 'ZAR']
 
 const uploading = ref(false)
 const imageError = ref<string | null>(null)
@@ -37,6 +38,7 @@ const form = ref({
   name: '',
   category_id: '',
   price: 0,
+  price_currency: settingsStore.currency || 'USD',
   duration: 30,
   description: '',
   buffer_before: 0,
@@ -63,6 +65,7 @@ onMounted(async () => {
       name: props.service.name,
       category_id: props.service.category_id || '',
       price: props.service.price || 0,
+      price_currency: props.service.price_currency || settingsStore.currency || 'USD',
       duration: props.service.duration,
       description: props.service.description || '',
       buffer_before: props.service.buffer_before || 0,
@@ -119,6 +122,20 @@ function handleFileSelect(event: Event) {
   }
   input.value = ''
 }
+
+const currencySymbol = computed(() => {
+  try {
+    const parts = new Intl.NumberFormat(settingsStore.language || navigator.language || 'en-US', {
+      style: 'currency',
+      currency: form.value.price_currency,
+      currencyDisplay: 'narrowSymbol'
+    }).formatToParts(0)
+
+    return parts.find(part => part.type === 'currency')?.value || form.value.price_currency
+  } catch {
+    return form.value.price_currency
+  }
+})
 
 function removeImage(index: number) {
     images.value.splice(index, 1)
@@ -276,7 +293,7 @@ async function handleSubmit() {
         </select>
       </div>
 
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-3 gap-4">
         <!-- Price -->
         <div class="space-y-2">
           <label for="service-price" class="service-form-label">{{ $t('modals.service.price') }}</label>
@@ -293,6 +310,21 @@ async function handleSubmit() {
               :class="currencySymbol.length > 1 ? 'service-form-input--currency-wide' : 'service-form-input--currency'"
             />
           </div>
+        </div>
+
+        <!-- Currency -->
+        <div class="space-y-2">
+          <label for="service-currency" class="service-form-label">{{ $t('modals.service.currency') }}</label>
+          <select
+            id="service-currency"
+            v-model="form.price_currency"
+            class="service-form-input"
+            required
+          >
+            <option v-for="currency in currencyOptions" :key="currency" :value="currency">
+              {{ currency }}
+            </option>
+          </select>
         </div>
 
         <!-- Duration -->

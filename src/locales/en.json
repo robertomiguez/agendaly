@@ -711,6 +711,7 @@
       "category": "Category",
       "category_placeholder": "Select a category",
       "price": "Price",
+      "currency": "Currency",
       "duration": "Duration (min)",
       "description": "Description",
       "description_placeholder": "Describe the service...",

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
 import { useSuperAdminStore } from '../../stores/useSuperAdminStore'
+import { useSettingsStore } from '../../stores/useSettingsStore'
 import { 
   Search, 
   MoreVertical, 
@@ -15,6 +16,7 @@ import {
 } from 'lucide-vue-next'
 
 const adminStore = useSuperAdminStore()
+const settingsStore = useSettingsStore()
 const searchQuery = ref('')
 const selectedService = ref<string | null>(null)
 const deactivationReason = ref('')
@@ -131,7 +133,7 @@ async function handleActivate(serviceId: string) {
                 </div>
               </td>
               <td class="px-6 py-4 font-medium text-slate-900">
-                ${{ service.price }}
+                {{ settingsStore.formatPrice(service.price || 0, service.price_currency) }}
               </td>
               <td class="px-6 py-4">
                 <span 
@@ -215,7 +217,7 @@ async function handleActivate(serviceId: string) {
           </div>
           <div class="flex items-center justify-between mt-3">
             <div class="flex items-center gap-3">
-              <span class="text-sm font-semibold text-slate-900">${{ service.price }}</span>
+              <span class="text-sm font-semibold text-slate-900">{{ settingsStore.formatPrice(service.price || 0, service.price_currency) }}</span>
               <span class="text-xs text-slate-400">{{ service.duration }} min</span>
             </div>
             <span 

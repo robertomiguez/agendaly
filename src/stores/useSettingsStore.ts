@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import i18n from '../lib/i18n'
-import { fetchGeoInfo, getLanguageFromGeo, getCurrencyFromGeo, getCountryCodeFromLocale, saveCountryCode } from '../services/geo'
+import { getCountryCodeFromLocale, getCurrencyFromBrowserLocale, saveCountryCode } from '../services/geo'
 
 function normalizeSupportedLanguage(locale?: string | null): 'en' | 'pt' {
   const language = (locale || 'en').replace('_', '-').split('-')[0] || 'en'
@@ -36,21 +36,11 @@ export const useSettingsStore = defineStore('settings', () => {
     let finalLang: string = savedLang ? normalizeSupportedLanguage(savedLang) : ''
     let finalCurr = currency.value
 
-    // We need to determine if we need to fetch geo.
-    const needsGeo = !finalCurr || !finalLang
-
-    let geoData: import('../services/geo').GeoInfo | null = null
-    if (needsGeo) {
-      geoData = await fetchGeoInfo()
-    }
-
     // Resolve Currency
     if (!finalCurr) {
-      if (geoData) {
-        finalCurr = getCurrencyFromGeo(geoData.country_code, geoData.currency)
-      } else {
-        finalCurr = 'USD' // Fallback
-      }
+      // IP-based currency detection disabled for now.
+      // Previously this called fetchGeoInfo() -> https://ipapi.co/json/.
+      finalCurr = getCurrencyFromBrowserLocale(navigator.language)
       setCurrency(finalCurr)
     }
 
@@ -63,12 +53,9 @@ export const useSettingsStore = defineStore('settings', () => {
       if (supportedLangs.includes(browserLang)) {
         finalLang = normalizeSupportedLanguage(browserLang)
       }
-      // 3. Country detection (IP)
-      else if (geoData) {
-        finalLang = normalizeSupportedLanguage(getLanguageFromGeo(geoData.country_code))
-      }
-      // 4. Fallback
       else {
+        // IP country language fallback disabled for now.
+        // Previously Portuguese countries became pt and other countries became en.
         finalLang = 'en'
       }
       setLanguage(finalLang)
@@ -78,12 +65,12 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   }
 
-  function formatPrice(value: number) {
+  function formatPrice(value: number, currencyCode?: string) {
     if (!value && value !== 0) return ''
     if (value === 0) return 'Free' // Or localized 'Free' if we want detailed i18n
 
     const locale = language.value || navigator.language || 'en-US'
-    const curr = currency.value || 'USD'
+    const curr = currencyCode || currency.value || 'USD'
 
     try {
       return new Intl.NumberFormat(locale, {

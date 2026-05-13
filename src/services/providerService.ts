@@ -217,7 +217,7 @@ export async function fetchDashboardStats(providerId: string) {
     // We compare appointment_date (YYYY-MM-DD) directly with our local date string
     const { data: todayAppts, error: todayError } = await supabase
         .from('appointments')
-        .select('*, services!inner(provider_id, price)')
+        .select('*, services!inner(provider_id, price, price_currency)')
         .eq('appointment_date', todayStr)
         .eq('services.provider_id', providerId)
     
@@ -226,7 +226,7 @@ export async function fetchDashboardStats(providerId: string) {
     // Fetch week's appointments
     const { data: weekAppts, error: weekError } = await supabase
         .from('appointments')
-        .select('*, services!inner(provider_id, price)')
+        .select('*, services!inner(provider_id, price, price_currency)')
         .gte('appointment_date', weekStartStr)
         .lt('appointment_date', weekEndStr)
         .eq('services.provider_id', providerId)
@@ -236,7 +236,7 @@ export async function fetchDashboardStats(providerId: string) {
     // Fetch month's appointments
     const { data: monthAppts, error: monthError } = await supabase
         .from('appointments')
-        .select('*, services!inner(provider_id, price)')
+        .select('*, services!inner(provider_id, price, price_currency)')
         .gte('appointment_date', monthStartStr)
         .lte('appointment_date', monthEndStr)
         .eq('services.provider_id', providerId)
@@ -264,6 +264,9 @@ export async function fetchDashboardStats(providerId: string) {
     // Calculate revenue using booked_price (locked at time of booking)
     const weekRevenue = weekAppts?.reduce((sum, apt: any) => sum + (apt.booked_price || 0), 0) || 0
     const monthRevenue = monthAppts?.reduce((sum, apt: any) => sum + (apt.booked_price || 0), 0) || 0
+    const revenueCurrency = weekAppts?.find((apt: any) => apt.booked_price_currency || apt.services?.price_currency)?.booked_price_currency
+        || weekAppts?.find((apt: any) => apt.services?.price_currency)?.services?.price_currency
+        || 'USD'
 
     return {
         todayAppointments: todayAppts?.length || 0,
@@ -271,6 +274,7 @@ export async function fetchDashboardStats(providerId: string) {
         monthAppointments: monthAppts?.length || 0,
         weekRevenue,
         monthRevenue,
+        revenueCurrency,
         activeServices: servicesCount || 0,
         totalStaff: staffCount || 0
     }
@@ -296,7 +300,8 @@ export async function fetchRevenueReport(providerId: string) {
             appointment_date,
             status,
             booked_price,
-            services!inner(name, price, provider_id),
+            booked_price_currency,
+            services!inner(name, price, price_currency, provider_id),
             customers(name, email)
         `)
         .eq('services.provider_id', providerId)

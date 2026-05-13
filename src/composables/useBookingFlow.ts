@@ -390,6 +390,7 @@ export function useBookingFlow(initialProviderId?: string, initialStaffId?: stri
         end_time: endTime,
         status: 'confirmed',
         booked_price: selectedService.value.price,
+        booked_price_currency: selectedService.value.price_currency || 'USD',
         notes: notes.value || undefined
       })
 

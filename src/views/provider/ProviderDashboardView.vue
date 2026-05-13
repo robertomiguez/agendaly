@@ -14,14 +14,14 @@ import {
   Users
 } from 'lucide-vue-next'
 import LoadingSpinner from '../../components/common/LoadingSpinner.vue'
-import { useCurrency } from '@/composables/useCurrency'
+import { useSettingsStore } from '@/stores/useSettingsStore'
 import { useAuthStore } from '../../stores/useAuthStore'
 import { useProviderStore } from '../../stores/useProviderStore'
 
 const authStore = useAuthStore()
 const providerStore = useProviderStore()
+const settingsStore = useSettingsStore()
 const router = useRouter()
-const { formatPrice } = useCurrency()
 
 onMounted(async () => {
   if (!authStore.provider) {
@@ -36,7 +36,7 @@ const hasStaff = computed(() => providerStore.stats.totalStaff > 0)
 const providerName = computed(() => authStore.provider?.business_name || 'Provider')
 
 function formatCurrency(amount: number) {
-  return formatPrice(amount)
+  return settingsStore.formatPrice(amount, providerStore.stats.revenueCurrency)
 }
 
 function goToServices() {

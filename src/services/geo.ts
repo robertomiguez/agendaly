@@ -67,12 +67,14 @@ export const detectCountryCode = async (): Promise<string> => {
         return browserCountry
     }
 
-    const geoInfo = await fetchGeoInfo()
-    if (geoInfo?.country_code) {
-        const countryCode = geoInfo.country_code.toUpperCase()
-        saveCountryCode(countryCode)
-        return countryCode
-    }
+    // IP country lookup disabled for now.
+    // Previously this called fetchGeoInfo() -> https://ipapi.co/json/.
+    // const geoInfo = await fetchGeoInfo()
+    // if (geoInfo?.country_code) {
+    //     const countryCode = geoInfo.country_code.toUpperCase()
+    //     saveCountryCode(countryCode)
+    //     return countryCode
+    // }
 
     saveCountryCode('US')
     return 'US'
@@ -90,6 +92,26 @@ export const getLanguageFromGeo = (countryCode: string): string => {
 
     // Default to English (including US, UK, Rest of World)
     return 'en'
+}
+
+export const getCurrencyFromBrowserLocale = (locale?: string | null): string => {
+    const normalized = (locale || '').replace('_', '-').toUpperCase()
+    const [, region] = normalized.split('-')
+
+    if (region === 'BR') return 'BRL'
+    if (region === 'US') return 'USD'
+    if (region === 'CA') return 'CAD'
+    if (region === 'AU') return 'AUD'
+    if (region === 'NZ') return 'NZD'
+    if (region === 'ZA') return 'ZAR'
+
+    const euroCountries = [
+        'AT', 'BE', 'HR', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE',
+        'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PT', 'SK', 'SI', 'ES'
+    ]
+    if (region && euroCountries.includes(region)) return 'EUR'
+
+    return 'USD'
 }
 
 export const getCurrencyFromGeo = (countryCode: string, apiCurrency?: string): string => {

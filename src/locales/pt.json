@@ -709,6 +709,7 @@
       "category": "Categoria",
       "category_placeholder": "Selecione uma categoria",
       "price": "Preço",
+      "currency": "Moeda",
       "duration": "Duração (min)",
       "description": "Descrição",
       "description_placeholder": "Descreva o serviço...",

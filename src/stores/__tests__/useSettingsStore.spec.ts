@@ -8,6 +8,18 @@ vi.mock('../../services/geo', () => ({
     fetchGeoInfo: vi.fn(),
     getLanguageFromGeo: vi.fn(),
     getCurrencyFromGeo: vi.fn(),
+    getCurrencyFromBrowserLocale: vi.fn((locale?: string | null) => {
+        const normalized = (locale || '').replace('_', '-').toUpperCase()
+        const [, region] = normalized.split('-')
+        if (region === 'BR') return 'BRL'
+        if (region === 'US') return 'USD'
+        if (region === 'CA') return 'CAD'
+        if (region === 'AU') return 'AUD'
+        if (region === 'NZ') return 'NZD'
+        if (region === 'ZA') return 'ZAR'
+        if (['AT', 'BE', 'HR', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PT', 'SK', 'SI', 'ES'].includes(region || '')) return 'EUR'
+        return 'USD'
+    }),
     getCountryCodeFromLocale: vi.fn((locale?: string | null) => {
         if (!locale) return null
         const [, region] = locale.replace('_', '-').split('-')
@@ -62,59 +74,41 @@ describe('useSettingsStore Localization', () => {
             configurable: true
         })
 
-        // Mock Geo return (should be fetched for currency, but language should stick to browser)
-        vi.mocked(geoService.fetchGeoInfo).mockResolvedValue({
-            country_code: 'BR',
-            region_code: '',
-            currency: 'BRL'
-        })
-        vi.mocked(geoService.getCurrencyFromGeo).mockReturnValue('BRL')
-
         const store = useSettingsStore()
         await store.initializeSettings()
 
         expect(store.language).toBe('pt') // from browser
-        // Currency comes from Geo because it wasn't saved
+        expect(geoService.fetchGeoInfo).not.toHaveBeenCalled()
         expect(store.currency).toBe('BRL')
     })
 
-    it('uses supported fallback if detected IP language is unsupported (3rd Priority)', async () => {
+    it('falls back to English when browser language is unsupported and uses browser region currency', async () => {
         // Mock unsupported browser language (e.g. Spanish)
         Object.defineProperty(window.navigator, 'language', {
             value: 'es-ES',
             configurable: true
         })
 
-        // Mock Geo return for France
-        vi.mocked(geoService.fetchGeoInfo).mockResolvedValue({
-            country_code: 'FR',
-            region_code: '',
-            currency: 'EUR'
-        })
-        vi.mocked(geoService.getLanguageFromGeo).mockReturnValue('fr')
-        vi.mocked(geoService.getCurrencyFromGeo).mockReturnValue('EUR')
-
         const store = useSettingsStore()
         await store.initializeSettings()
 
-        expect(store.language).toBe('en') // unsupported geo language normalizes to fallback
-        expect(store.currency).toBe('EUR') // from IP (geo)
+        expect(store.language).toBe('en')
+        expect(geoService.fetchGeoInfo).not.toHaveBeenCalled()
+        expect(store.currency).toBe('EUR')
     })
 
-    it('falls back to defaults if Geo fails and browser unsupported (Fallback)', async () => {
+    it('falls back to defaults if browser language and region are unsupported', async () => {
         // Mock unsupported browser
         Object.defineProperty(window.navigator, 'language', {
-            value: 'es-ES',
+            value: 'ja-JP',
             configurable: true
         })
-
-        // Mock Geo failure
-        vi.mocked(geoService.fetchGeoInfo).mockResolvedValue(null)
 
         const store = useSettingsStore()
         await store.initializeSettings()
 
         expect(store.language).toBe('en')
+        expect(geoService.fetchGeoInfo).not.toHaveBeenCalled()
         expect(store.currency).toBe('USD')
     })
 })
