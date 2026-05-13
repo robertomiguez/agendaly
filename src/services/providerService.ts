@@ -314,7 +314,7 @@ export async function fetchRevenueReport(providerId: string) {
             booked_price,
             booked_price_currency,
             services!inner(name, price, provider_id, provider:providers(currency)),
-            customers(name, email)
+            customers(profiles(name, email))
         `)
         .eq('services.provider_id', providerId)
         .gte('appointment_date', weekStartStr)

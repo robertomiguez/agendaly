@@ -35,7 +35,7 @@ async function loadData(providerId: string) {
     transactions.value = data?.map((appt: any) => ({
       id: appt.id.substring(0, 8).toUpperCase(),
       date: new Date(appt.appointment_date + 'T12:00:00').toLocaleDateString(), // Use noon to avoid timezone shift on date-only strings
-      client: appt.customers?.name || appt.customers?.email || 'Unknown Client',
+      client: appt.customers?.profiles?.name || appt.customers?.profiles?.email || 'Unknown Client',
       service: appt.services?.name || 'Unknown Service',
       amount: appt.booked_price ?? appt.services?.price ?? 0,
       currency: appt.booked_price_currency || appt.services?.provider?.currency || authStore.provider?.currency || 'USD',
