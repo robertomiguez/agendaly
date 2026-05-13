@@ -1,5 +1,4 @@
 import { ref, onMounted } from 'vue'
-import { supabase } from '../lib/supabase'
 
 interface LocationData {
   city: string | null
@@ -32,7 +31,8 @@ const isPreciseLocation = ref(false)
 
 /**
  * Composable for getting user's location.
- * Uses a hybrid approach:
+ * Marketplace localization is disabled for now.
+ * The previous flow used:
  * 1. Immediate: Check localStorage cache
  * 2. Background: Fetch from Edge Function (IP-based)
  * 3. Optional: Request precise location via browser Geolocation API
@@ -96,24 +96,23 @@ export function useLocation() {
     isPreciseLocation.value = data.source === 'browser'
   }
 
-  /**
-   * Fetch location from Edge Function (IP-based)
-   */
-  async function fetchFromEdge(): Promise<LocationData | null> {
-    try {
-      const { data, error: fnError } = await supabase.functions.invoke('get-location')
-      
-      if (fnError) {
-        console.warn('Edge function error:', fnError)
-        return null
-      }
-      
-      return data as LocationData
-    } catch (err) {
-      console.warn('Failed to fetch location from edge:', err)
-      return null
-    }
-  }
+  // IP-based Edge Function lookup disabled for now.
+  // Restore this with the supabase import when marketplace region detection is needed again.
+  // async function fetchFromEdge(): Promise<LocationData | null> {
+  //   try {
+  //     const { data, error: fnError } = await supabase.functions.invoke('get-location')
+  //
+  //     if (fnError) {
+  //       console.warn('Edge function error:', fnError)
+  //       return null
+  //     }
+  //
+  //     return data as LocationData
+  //   } catch (err) {
+  //     console.warn('Failed to fetch location from edge:', err)
+  //     return null
+  //   }
+  // }
 
   /**
    * Get precise location using browser Geolocation API
@@ -213,20 +212,20 @@ export function useLocation() {
         return
       }
 
-      // Step 2: Fetch from Edge Function
-      const edgeData = await fetchFromEdge()
-      if (edgeData?.location) {
-        const locationData = { ...edgeData, source: 'edge' as const }
-        applyLocation(locationData)
-        saveToCache(locationData)
-        loading.value = false
-        initialized.value = true
-        return
-      }
+      // Marketplace region detection disabled for now.
+      // Previous IP-based detection:
+      // const edgeData = await fetchFromEdge()
+      // if (edgeData?.location) {
+      //   const locationData = { ...edgeData, source: 'edge' as const }
+      //   applyLocation(locationData)
+      //   saveToCache(locationData)
+      //   loading.value = false
+      //   initialized.value = true
+      //   return
+      // }
 
-      // Step 3: If IP-based detection failed, try browser geolocation
-      // This will trigger the browser permission prompt
-      await requestPreciseLocation()
+      // Browser geolocation fallback disabled to avoid permission prompts.
+      // await requestPreciseLocation()
       initialized.value = true
     } catch (err: any) {
       error.value = err.message || 'Failed to get location'
