@@ -36,7 +36,7 @@ const hasStaff = computed(() => providerStore.stats.totalStaff > 0)
 const providerName = computed(() => authStore.provider?.business_name || 'Provider')
 
 function formatCurrency(amount: number) {
-  return settingsStore.formatPrice(amount, providerStore.stats.revenueCurrency)
+  return settingsStore.formatPrice(amount, providerStore.stats.revenueCurrency, { zeroAsFree: false })
 }
 
 function goToServices() {
