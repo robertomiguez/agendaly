@@ -102,6 +102,8 @@ const filteredServices = computed(() => {
   })
 })
 
+const providerCurrency = computed(() => authStore.provider?.currency || settingsStore.currency || 'USD')
+
 async function checkLimits() {
   if (!authStore.provider) return
   const limitCheck = await canAddService(authStore.provider.id)
@@ -214,7 +216,6 @@ async function executeSave(serviceData: any) {
         // Sanitize: Postgres might complain if category_id is empty string for UUID column
         category_id: serviceData.category_id || null, 
         price: parseFloat(serviceData.price), // Ensure number
-        price_currency: serviceData.price_currency || settingsStore.currency || 'USD',
         provider_id: authStore.provider?.id,
         active: true
       }
@@ -424,7 +425,7 @@ async function confirmDeactivation() {
               </div>
               <div class="flex flex-col items-end">
                 <span class="text-lg font-bold" :class="service.active ? 'text-primary-600' : 'text-gray-500'">
-                  {{ settingsStore.formatPrice(service.price || 0, service.price_currency) }}
+                  {{ settingsStore.formatPrice(service.price || 0, providerCurrency) }}
                 </span>
                 <span class="text-sm" :class="service.active ? 'text-gray-500' : 'text-gray-400'">
                   {{ service.duration }} min
@@ -486,6 +487,7 @@ async function confirmDeactivation() {
       :service="modal.data.value"
       :loading="saving"
       :submit-error="serviceFormError"
+      :provider-currency="providerCurrency"
       @close="closeServiceModal"
       @save="handleSave"
     />

@@ -44,7 +44,8 @@ export async function fetchServices(providerId?: string) {
                 id,
                 url,
                 display_order
-            )
+            ),
+            provider:providers(id, currency)
         `)
         .order('active', { ascending: false })
         .order('name', { foreignTable: 'categories', ascending: true })
@@ -80,7 +81,7 @@ export async function createService(service: Omit<Service, 'id' | 'created_at' |
 
     // Explicitly remove 'id' if it exists in the runtime object to avoid violating NOT NULL constraint
     // @ts-ignore
-    const { staff_ids, image_urls, id, ...serviceData } = service
+    const { staff_ids, image_urls, id, ...serviceData } = service as typeof service & { id?: string }
 
     const slug = serviceData.slug || await createUniqueServiceSlug(service.provider_id, serviceData.name)
 
@@ -141,7 +142,8 @@ export async function createService(service: Omit<Service, 'id' | 'created_at' |
                     id,
                     url,
                     display_order
-                )
+                ),
+                provider:providers(id, currency)
             `)
             .eq('id', insertedData.id)
             .single()
@@ -265,7 +267,8 @@ export async function updateService(id: string, updates: Partial<Service> & { st
                 id,
                 url,
                 display_order
-            )
+            ),
+            provider:providers(id, currency)
         `)
         .eq('id', id)
         .single()

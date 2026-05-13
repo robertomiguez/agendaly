@@ -15,7 +15,7 @@ export const useSuperAdminStore = defineStore('superAdmin', () => {
     } | null>(null)
 
     const providers = ref<(Provider & { profiles: { email: string, phone: string } })[]>([])
-    const services = ref<(Service & { providers: { business_name: string } })[]>([])
+    const services = ref<(Service & { providers: { business_name: string, currency?: string } })[]>([])
     const staff = ref<(Staff & { providers: { business_name: string } })[]>([])
     const locals = ref<(ProviderAddress & { providers: { business_name: string } })[]>([])
     const ads = ref<Ad[]>([])

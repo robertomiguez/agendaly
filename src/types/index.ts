@@ -18,7 +18,6 @@ export interface Service {
     slug?: string | null
     duration: number // in minutes
     price?: number
-    price_currency?: string
     buffer_before: number
     buffer_after: number
     category_id?: string // References categories table
@@ -69,6 +68,7 @@ export interface Provider {
     profile_id: string
     business_name: string
     slug?: string | null
+    currency?: string
     description?: string
     logo_url?: string
     logo_path?: string

@@ -662,7 +662,11 @@
     "save_error": "Falha ao salvar as alterações",
     "business_name_required": "Nome da Empresa é obrigatório.",
     "contact_name_required": "A pessoa de contato é obrigatória.",
-    "contact_phone_required": "O telefone de contato é obrigatório."
+    "contact_phone_required": "O telefone de contato é obrigatório.",
+    "service_settings": "Configurações dos serviços",
+    "currency": "Moeda",
+    "currency_help": "Usada nos preços dos serviços e totais de agendamento.",
+    "currency_change_notice": "Ao salvar, todos os serviços serão atualizados para {currency}. Os valores dos preços não serão convertidos."
   },
   "modals": {
     "staff": {

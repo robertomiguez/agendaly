@@ -248,7 +248,7 @@ async function fetchAppointments() {
       .select(
         `
         *,
-        services!inner (name, duration, buffer_before, buffer_after, price_currency),
+        services!inner (name, duration, buffer_before, buffer_after),
         customers (profiles (name, phone, email)),
         staff!inner (name, provider_id)
       `,

@@ -53,9 +53,8 @@ export const useAppointmentStore = defineStore('appointment', () => {
                     service:services(
                         name, 
                         price, 
-                        price_currency,
                         duration,
-                        provider:providers(business_name, logo_url, slug)
+                        provider:providers(business_name, logo_url, slug, currency)
                     ),
                     staff:staff(name)
                 `)
