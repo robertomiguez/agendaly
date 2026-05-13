@@ -6,6 +6,10 @@ const RESERVED_SUBDOMAINS = new Set([
     'www'
 ])
 
+const PROVIDER_BASE_DOMAINS = new Set([
+    'agendaly.co'
+])
+
 export function getProviderSlugFromHost(hostname = window.location.hostname): string | null {
     const normalized = hostname.toLowerCase()
 
@@ -15,6 +19,9 @@ export function getProviderSlugFromHost(hostname = window.location.hostname): st
 
     const parts = normalized.split('.').filter(Boolean)
     if (parts.length < 3) return null
+
+    const baseDomain = parts.slice(-2).join('.')
+    if (!PROVIDER_BASE_DOMAINS.has(baseDomain)) return null
 
     const subdomain = parts[0]
     if (!subdomain || RESERVED_SUBDOMAINS.has(subdomain)) return null

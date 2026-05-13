@@ -54,8 +54,10 @@ function handleLoginSuccess() {
   // Clear any stored redirect intent — we're consuming it now
   localStorage.removeItem('authRedirect')
   const redirect = route.query.redirect as string
-  
-  if (redirect === '/provider') {
+
+  if (authStore.isSuperAdmin) {
+    router.push('/super-admin/dashboard')
+  } else if (redirect === '/provider') {
     if (authStore.provider) {
       router.push('/provider/dashboard')
     } else {
