@@ -17,9 +17,9 @@ const phone = ref('')
 const loading = ref(false)
 const { successMessage, errorMessage, showSuccess, showError, clearMessages } = useNotifications()
 
-// Get redirect destination from query parameter, default to root
+// Get redirect destination from query parameter, default to customer bookings
 const redirectDestination = computed(() => {
-  return (route.query.redirect as string) || '/'
+  return (route.query.redirect as string) || '/my-bookings'
 })
 
 const isProfileComplete = computed(() => {
