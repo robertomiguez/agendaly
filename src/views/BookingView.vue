@@ -39,22 +39,30 @@ const isStaffScopedBooking = computed(() => {
   return !!route.params.staffSlug || !!route.query.staff
 })
 
-function handleLocationBack() {
-  if (isStaffScopedBooking.value) {
-    booking.currentStep.value = 1
-    return
-  }
+function resetProviderScopedStaffChoice() {
+  if (isStaffScopedBooking.value) return
 
-  booking.currentStep.value = 2
+  booking.selectedStaffId.value = ''
+  booking.selectedAddressId.value = ''
+  booking.staffAddresses.value = []
+  booking.selectedTime.value = ''
+}
+
+function returnToServiceStep() {
+  resetProviderScopedStaffChoice()
+  booking.currentStep.value = 1
+}
+
+function handleStaffBack() {
+  returnToServiceStep()
+}
+
+function handleLocationBack() {
+  returnToServiceStep()
 }
 
 function handleDateTimeBack() {
-  if (isStaffScopedBooking.value) {
-    booking.currentStep.value = 1
-    return
-  }
-
-  booking.goBack()
+  returnToServiceStep()
 }
 
 onMounted(async () => {
@@ -345,7 +353,7 @@ async function handleLoginSuccess() {
               :selected-staff-id="booking.selectedStaffId.value"
               @select="booking.selectStaff"
               @confirm="booking.confirmStaff"
-              @back="booking.goBack"
+              @back="handleStaffBack"
             />
 
             <!-- Step 2.5: Location Selection -->
@@ -428,15 +436,15 @@ async function handleLoginSuccess() {
 
 .booking-provider-identity,
 .booking-staff-identity {
-  @apply flex min-w-0 items-center;
+  @apply flex min-w-0 flex-col items-center text-center sm:flex-row sm:text-left;
 }
 
 .booking-provider-identity {
-  @apply flex-1 justify-end gap-3;
+  @apply gap-3;
 }
 
 .booking-staff-identity {
-  @apply flex-1 gap-2 border-l border-gray-200 pl-3 sm:pl-4;
+  @apply gap-2 border-l border-gray-200 pl-3 sm:pl-4;
 }
 
 .booking-provider-avatar {
@@ -452,7 +460,7 @@ async function handleLoginSuccess() {
 }
 
 .booking-identity-text {
-  @apply min-w-0 text-left;
+  @apply min-w-0 text-center sm:text-left;
 }
 
 .booking-identity-label {

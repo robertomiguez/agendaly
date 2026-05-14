@@ -446,7 +446,7 @@
     "available_times_header": "Horários Disponíveis",
     "get_directions": "Como Chegar",
     "completing": "Concluindo seu agendamento...",
-    "provider_page": "Página do profissional"
+    "provider_page": "Ver página de {name}"
   },
   "calendar": {
     "title": "Calendário",

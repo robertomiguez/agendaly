@@ -448,7 +448,7 @@
     "available_times_header": "Available Times",
     "get_directions": "Get Directions",
     "completing": "Completing your booking...",
-    "provider_page": "Provider page"
+    "provider_page": "View {name}'s page"
   },
   "calendar": {
     "title": "Calendar",
