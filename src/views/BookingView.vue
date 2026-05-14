@@ -38,6 +38,19 @@ const bookingBackPath = computed(() => {
 const isStaffScopedBooking = computed(() => {
   return !!route.params.staffSlug || !!route.query.staff
 })
+const isStaffStepSkipped = computed(() => {
+  return isStaffScopedBooking.value || booking.selectedService.value?.staff?.length === 1
+})
+
+function isProgressStepDisabled(step: number) {
+  return step === 2 && isStaffStepSkipped.value
+}
+
+function handleProgressStepClick(step: number) {
+  if (isProgressStepDisabled(step) || booking.currentStep.value <= step) return
+
+  booking.currentStep.value = step
+}
 
 function resetProviderScopedStaffChoice() {
   if (isStaffScopedBooking.value) return
@@ -321,12 +334,14 @@ async function handleLoginSuccess() {
               
               <a href="#" class="relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 bg-white hover:bg-gray-50"
                 :class="[
-                  step < booking.currentStep.value ? 'border-primary-600 bg-primary-600' : '',
-                  step === Math.floor(booking.currentStep.value) ? 'border-primary-600' : 'border-gray-300'
+                  step < booking.currentStep.value && !isProgressStepDisabled(step) ? 'border-primary-600 bg-primary-600' : '',
+                  step === Math.floor(booking.currentStep.value) ? 'border-primary-600' : 'border-gray-300',
+                  isProgressStepDisabled(step) ? 'pointer-events-none cursor-not-allowed opacity-40 hover:bg-white' : ''
                 ]"
-                @click.prevent="booking.currentStep.value > step ? booking.currentStep.value = step : null"
+                :aria-disabled="isProgressStepDisabled(step)"
+                @click.prevent="handleProgressStepClick(step)"
               >
-                <CheckCircle2 v-if="step < booking.currentStep.value" class="h-5 w-5 text-white" aria-hidden="true" />
+                <CheckCircle2 v-if="step < booking.currentStep.value && !isProgressStepDisabled(step)" class="h-5 w-5 text-white" aria-hidden="true" />
                 <span v-else class="h-2.5 w-2.5 rounded-full" :class="step === Math.floor(booking.currentStep.value) ? 'bg-primary-600' : 'bg-transparent'" aria-hidden="true" />
               </a>
             </li>
