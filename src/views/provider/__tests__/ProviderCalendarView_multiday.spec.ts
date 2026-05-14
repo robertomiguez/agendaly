@@ -5,6 +5,7 @@ import ProviderCalendarView from "../ProviderCalendarView.vue";
 import { createPinia, setActivePinia } from "pinia";
 import { useAuthStore } from "../../../stores/useAuthStore";
 import { useSettingsStore } from "../../../stores/useSettingsStore";
+import * as availabilityService from "@/services/availabilityService";
 
 // Mocks
 const { pushMock } = vi.hoisted(() => ({
@@ -215,5 +216,46 @@ describe("ProviderCalendarView Multi-Day Blocks", () => {
         const firstBlock = blocks[0];
         if (!firstBlock) throw new Error("Block not found");
         expect(firstBlock.text()).toContain("Sunday Block");
+    });
+
+    it("renders weekly all-day recurring block", async () => {
+        vi.mocked(availabilityService.fetchBlockedDates).mockResolvedValue([
+            {
+                id: 'block-weekly-all-day',
+                start_date: '2024-01-08',
+                end_date: '2024-01-08',
+                staff_id: 's1',
+                reason: 'Weekly All Day',
+                recurrence_rule: 'DTSTART:20240108T000000\nRRULE:FREQ=WEEKLY;BYDAY=MO',
+            }
+        ]);
+
+        const mockToday = new Date(2024, 0, 8, 12, 0, 0);
+        vi.setSystemTime(mockToday);
+
+        const authStore = useAuthStore();
+        authStore.provider = { id: "p1", name: "Provider" } as any;
+
+        const wrapper = mount(ProviderCalendarView, {
+            global: {
+                mocks: { $t: (key: string) => key },
+                stubs: {
+                    Button: true,
+                    Tabs: true,
+                    TabsList: true,
+                    TabsTrigger: true,
+                },
+            },
+        });
+
+        await flushPromises();
+
+        const dayColumns = wrapper.findAll(".flex-1.grid.grid-cols-7 .relative.min-h-full");
+        const mondayColumn = dayColumns[1];
+        if (!mondayColumn) throw new Error("Monday column not found");
+
+        const blocks = mondayColumn.findAll("button.border-l-4.border-l-gray-500");
+        expect(blocks.length).toBeGreaterThan(0);
+        expect(blocks[0]?.text()).toContain("Weekly All Day");
     });
 });

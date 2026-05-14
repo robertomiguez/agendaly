@@ -167,30 +167,73 @@ onMounted(async () => {
     <template v-else>
       <section class="provider-hero">
         <div class="provider-hero-inner">
-          <div class="provider-identity">
-            <img
-              v-if="provider.logo_url"
-              class="provider-logo"
-              :src="provider.logo_url"
-              :alt="provider.business_name"
-            />
-            <div v-else class="provider-logo-fallback">
-              {{ provider.business_name.slice(0, 2).toUpperCase() }}
-            </div>
-            <div>
+          <div class="provider-hero-copy">
+            <div class="provider-identity">
+              <img
+                v-if="provider.logo_url"
+                class="provider-logo"
+                :src="provider.logo_url"
+                :alt="provider.business_name"
+              />
+              <div v-else class="provider-logo-fallback">
+                {{ provider.business_name.slice(0, 2).toUpperCase() }}
+              </div>
               <p class="provider-eyebrow">{{ $t('provider_page.eyebrow') }}</p>
-              <h1>{{ provider.business_name }}</h1>
-              <p class="provider-description">
-                {{ provider.description || $t('provider_page.default_description') }}
-              </p>
+            </div>
+
+            <h1>{{ provider.business_name }}</h1>
+            <p class="provider-description">
+              {{ provider.description || $t('provider_page.default_description') }}
+            </p>
+
+            <div class="provider-proof-strip">
+              <span><Scissors class="provider-summary-icon" />{{ $t('provider_page.services_count', { count: activeServices.length }) }}</span>
+              <span><Users class="provider-summary-icon" />{{ $t('provider_page.professionals_count', { count: activeStaff.length }) }}</span>
+              <span><Star class="provider-summary-icon" />{{ $t('provider_page.trusted_business') }}</span>
             </div>
           </div>
 
-          <div class="provider-actions">
+          <div class="provider-hero-media" aria-hidden="true">
+            <img
+              v-if="featuredImages[0]"
+              class="provider-feature-image provider-feature-image--large"
+              :src="featuredImages[0]"
+              alt=""
+            />
+            <div v-else class="provider-feature-fallback">
+              {{ provider.business_name.slice(0, 2).toUpperCase() }}
+            </div>
+            <img
+              v-if="featuredImages[1]"
+              class="provider-feature-image provider-feature-image--small"
+              :src="featuredImages[1]"
+              alt=""
+            />
+          </div>
+        </div>
+      </section>
+
+      <section class="provider-booking-panel" aria-label="Booking actions">
+        <div class="provider-booking-copy">
+          <p>{{ $t('provider_page.booking_panel_label') }}</p>
+          <span class="provider-booking-hint">{{ $t('provider_page.booking_panel_hint') }}</span>
+        </div>
+        <div class="provider-actions provider-actions--booking">
+          <button
+            type="button"
+            class="provider-button provider-button--primary"
+            :disabled="isProviderContext"
+            @click="bookNow"
+          >
+            <CalendarDays class="provider-button-icon" />
+            {{ $t('nav.book_now') }}
+          </button>
+
+          <div class="provider-secondary-row">
             <button
               v-if="isProviderContext"
               type="button"
-              class="provider-button provider-button--outline"
+              class="provider-text-action"
               @click="shareProviderLink"
             >
               <Check v-if="copiedProviderLink" class="provider-button-icon" />
@@ -199,16 +242,7 @@ onMounted(async () => {
             </button>
             <button
               type="button"
-              class="provider-button provider-button--primary"
-              :disabled="isProviderContext"
-              @click="bookNow"
-            >
-              <CalendarDays class="provider-button-icon" />
-              {{ $t('nav.book_now') }}
-            </button>
-            <button
-              type="button"
-              class="provider-button provider-button--outline"
+              class="provider-text-action"
               :disabled="isProviderContext"
               @click="goToMyBookings"
             >
@@ -217,7 +251,7 @@ onMounted(async () => {
             </button>
             <a
               v-if="primaryAddress"
-              class="provider-link-button"
+              class="provider-text-action"
               :href="getDirectionsUrl(primaryAddress)"
               target="_blank"
               rel="noopener noreferrer"
@@ -226,21 +260,6 @@ onMounted(async () => {
               {{ $t('provider_page.directions') }}
             </a>
           </div>
-        </div>
-      </section>
-
-      <section class="provider-summary">
-        <div class="provider-summary-item">
-          <Scissors class="provider-summary-icon" />
-          <span>{{ $t('provider_page.services_count', { count: activeServices.length }) }}</span>
-        </div>
-        <div class="provider-summary-item">
-          <Users class="provider-summary-icon" />
-          <span>{{ $t('provider_page.professionals_count', { count: activeStaff.length }) }}</span>
-        </div>
-        <div class="provider-summary-item">
-          <Star class="provider-summary-icon" />
-          <span>{{ $t('provider_page.trusted_business') }}</span>
         </div>
       </section>
 
@@ -254,22 +273,24 @@ onMounted(async () => {
             <h2>{{ $t('provider_page.customer_path_title') }}</h2>
             <p>{{ $t('provider_page.customer_path_description') }}</p>
           </div>
-          <button
-            type="button"
-            class="provider-button provider-button--dark"
-            :disabled="isProviderContext"
-            @click="goToMyBookings"
-          >
-            {{ $t('nav.my_bookings') }}
-            <ArrowRight class="provider-button-icon" />
-          </button>
+          <div class="provider-actions">
+            <button
+              type="button"
+              class="provider-button provider-button--dark"
+              :disabled="isProviderContext"
+              @click="goToMyBookings"
+            >
+              {{ $t('nav.my_bookings') }}
+              <ArrowRight class="provider-button-icon" />
+            </button>
+          </div>
         </div>
       </section>
 
       <section class="provider-section">
         <div class="provider-section-header">
-          <h2>{{ $t('provider_page.services_title') }}</h2>
           <p>{{ $t('provider_page.services_subtitle') }}</p>
+          <h2>{{ $t('provider_page.services_title') }}</h2>
         </div>
 
         <div v-if="activeServices.length" class="service-list">
@@ -306,11 +327,11 @@ onMounted(async () => {
 
       <section v-if="activeStaff.length" class="provider-section">
         <div class="provider-section-header">
-          <h2>{{ $t('provider_page.team_title') }}</h2>
           <p>{{ $t('provider_page.team_subtitle') }}</p>
+          <h2>{{ $t('provider_page.team_title') }}</h2>
         </div>
 
-        <div class="staff-grid">
+        <div class="staff-strip">
           <article v-for="member in activeStaff" :key="member.id" class="staff-card">
             <img
               v-if="member.photo_url"
@@ -328,8 +349,8 @@ onMounted(async () => {
 
       <section v-if="featuredImages.length" class="provider-section">
         <div class="provider-section-header">
-          <h2>{{ $t('provider_page.gallery_title') }}</h2>
           <p>{{ $t('provider_page.gallery_subtitle') }}</p>
+          <h2>{{ $t('provider_page.gallery_title') }}</h2>
         </div>
 
         <div class="gallery-grid">
@@ -383,7 +404,7 @@ onMounted(async () => {
 @reference "../style.css";
 
 .provider-page {
-  @apply min-h-screen bg-white text-gray-950;
+  @apply min-h-screen bg-gray-50 text-gray-950;
 }
 
 .provider-state {
@@ -399,44 +420,98 @@ onMounted(async () => {
 }
 
 .provider-hero {
-  @apply bg-gray-950 text-white;
+  @apply overflow-hidden bg-gradient-to-br from-stone-100 via-amber-50 to-gray-100 text-gray-950;
 }
 
 .provider-hero-inner {
-  @apply mx-auto flex max-w-7xl flex-col gap-8 px-6 py-16 md:flex-row md:items-end md:justify-between;
+  @apply mx-auto grid max-w-7xl gap-10 px-6 pb-16 pt-12 md:grid-cols-[minmax(0,1fr)_360px] md:items-center md:pb-20 md:pt-20 lg:grid-cols-[minmax(0,1fr)_440px];
+}
+
+.provider-hero-copy {
+  @apply max-w-3xl;
 }
 
 .provider-identity {
-  @apply flex max-w-3xl flex-col gap-6 sm:flex-row sm:items-center;
+  @apply mb-7 flex items-center gap-4;
 }
 
 .provider-logo,
 .provider-logo-fallback {
-  @apply h-24 w-24 shrink-0 rounded-lg border border-white/20 object-cover shadow-lg;
+  @apply h-16 w-16 shrink-0 rounded-md border border-stone-300 object-cover shadow-sm;
 }
 
 .provider-logo-fallback {
-  @apply flex items-center justify-center bg-primary-600 text-2xl font-bold text-white;
+  @apply flex items-center justify-center bg-primary-600 text-xl font-bold text-white;
 }
 
 .provider-eyebrow {
-  @apply mb-3 text-sm font-semibold uppercase tracking-wide text-primary-200;
+  @apply text-sm font-semibold uppercase tracking-wide text-primary-700;
 }
 
-.provider-identity h1 {
-  @apply text-4xl font-bold md:text-6xl;
+.provider-hero-copy h1 {
+  @apply max-w-3xl text-4xl font-bold leading-tight text-stone-950 md:text-6xl;
 }
 
 .provider-description {
-  @apply mt-4 max-w-2xl text-lg text-gray-200;
+  @apply mt-5 max-w-2xl text-lg leading-8 text-stone-700;
+}
+
+.provider-proof-strip {
+  @apply mt-8 flex flex-wrap gap-x-6 gap-y-3 border-y border-stone-300 py-4 text-sm font-semibold text-stone-700;
+}
+
+.provider-proof-strip span {
+  @apply inline-flex items-center gap-2;
+}
+
+.provider-hero-media {
+  @apply relative hidden min-h-[420px] md:block;
+}
+
+.provider-feature-image,
+.provider-feature-fallback {
+  @apply absolute object-cover shadow-2xl;
+}
+
+.provider-feature-image--large,
+.provider-feature-fallback {
+  @apply inset-x-0 bottom-0 h-96 rounded-t-full rounded-b-md border border-stone-200;
+}
+
+.provider-feature-image--small {
+  @apply right-4 top-0 h-40 w-40 rounded-md border-8 border-amber-50;
+}
+
+.provider-feature-fallback {
+  @apply flex items-center justify-center bg-stone-900 text-5xl font-bold text-amber-50;
+}
+
+.provider-booking-panel {
+  @apply sticky top-0 z-20 mx-auto -mt-8 flex max-w-7xl flex-col gap-3 border border-stone-200 bg-white px-5 py-3 shadow-lg sm:rounded-lg sm:px-6 sm:py-4 md:flex-row md:items-center md:justify-between;
+}
+
+.provider-booking-copy {
+  @apply min-w-0;
+}
+
+.provider-booking-copy p {
+  @apply text-xs font-semibold uppercase tracking-wide text-primary-700;
+}
+
+.provider-booking-hint {
+  @apply mt-0.5 block text-sm font-semibold leading-5 text-gray-700;
 }
 
 .provider-actions {
-  @apply flex flex-col gap-3 sm:flex-row;
+  @apply flex flex-wrap items-center gap-x-4 gap-y-3 sm:flex-row sm:flex-wrap;
+}
+
+.provider-actions--booking {
+  @apply grid w-full gap-2 sm:flex sm:w-auto sm:justify-end;
 }
 
 .provider-button {
-  @apply inline-flex h-11 items-center justify-center gap-2 rounded-md px-5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-200 focus:ring-offset-2 focus:ring-offset-gray-950;
+  @apply inline-flex h-11 items-center justify-center gap-2 rounded-md px-5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-200 focus:ring-offset-2 focus:ring-offset-white;
 }
 
 .provider-button:disabled {
@@ -444,7 +519,7 @@ onMounted(async () => {
 }
 
 .provider-button--primary {
-  @apply bg-white text-gray-950 hover:bg-gray-100;
+  @apply bg-primary-700 text-white hover:bg-primary-600;
 }
 
 .provider-button--outline {
@@ -460,27 +535,31 @@ onMounted(async () => {
 }
 
 .provider-link-button {
-  @apply inline-flex h-11 items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-5 text-sm font-medium text-gray-900 shadow-sm transition-colors hover:bg-gray-50;
+  @apply inline-flex h-11 items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-5 text-sm font-medium text-gray-900 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:ring-offset-2 focus:ring-offset-white;
 }
 
-.provider-summary {
-  @apply mx-auto grid max-w-7xl grid-cols-1 gap-3 px-6 py-6 sm:grid-cols-3;
+.provider-booking-panel .provider-button--primary {
+  @apply h-10 w-full sm:h-11 sm:w-auto;
 }
 
-.provider-summary-item {
-  @apply flex items-center gap-3 rounded-lg border bg-white px-4 py-3 text-sm font-medium text-gray-700;
+.provider-secondary-row {
+  @apply flex flex-wrap items-center justify-center gap-x-4 gap-y-1 sm:justify-start;
+}
+
+.provider-text-action {
+  @apply inline-flex h-6 items-center justify-center gap-1.5 rounded-md px-1 text-sm font-semibold text-stone-700 underline-offset-4 transition-colors hover:text-stone-950 hover:underline focus:outline-none focus:ring-2 focus:ring-primary-200 focus:ring-offset-2 focus:ring-offset-white disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:border sm:border-gray-300 sm:bg-white sm:px-5 sm:text-gray-900 sm:shadow-sm sm:hover:bg-gray-50 sm:hover:no-underline;
 }
 
 .provider-summary-icon {
-  @apply h-5 w-5 text-primary-600;
+  @apply h-4 w-4 text-primary-700;
 }
 
 .provider-customer-path {
-  @apply bg-gray-50 px-6 py-8;
+  @apply px-6 py-8;
 }
 
 .provider-customer-path-inner {
-  @apply mx-auto flex max-w-7xl flex-col gap-5 rounded-lg border border-gray-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center;
+  @apply mx-auto flex max-w-7xl flex-col gap-5 border-y border-stone-200 bg-gray-50 py-6 sm:flex-row sm:items-center;
 }
 
 .provider-customer-icon {
@@ -508,31 +587,31 @@ onMounted(async () => {
 }
 
 .provider-section {
-  @apply mx-auto max-w-7xl px-6 py-10;
+  @apply mx-auto max-w-7xl px-6 py-12;
 }
 
 .provider-section-header {
-  @apply mb-6;
+  @apply mb-6 max-w-2xl;
 }
 
 .provider-section h2 {
-  @apply text-2xl font-bold text-gray-950;
+  @apply mt-1 text-3xl font-bold leading-tight text-gray-950;
 }
 
 .provider-section p {
-  @apply mt-1 text-gray-600;
+  @apply text-sm font-medium text-gray-600;
 }
 
 .service-list {
-  @apply divide-y rounded-lg border bg-white;
+  @apply divide-y divide-stone-200 border-y border-stone-300 bg-white;
 }
 
 .service-row {
-  @apply grid gap-4 p-4 sm:grid-cols-[96px_1fr_auto] sm:items-center;
+  @apply grid gap-4 py-5 sm:grid-cols-[112px_1fr_auto] sm:items-center;
 }
 
 .service-image {
-  @apply h-24 w-full rounded-md object-cover sm:w-24;
+  @apply h-32 w-full rounded-md object-cover sm:h-28 sm:w-28;
 }
 
 .service-content h3 {
@@ -540,7 +619,7 @@ onMounted(async () => {
 }
 
 .service-meta {
-  @apply mt-3 flex flex-wrap gap-4 text-sm font-medium text-gray-700;
+  @apply mt-3 flex flex-wrap gap-4 text-sm font-semibold text-gray-800;
 }
 
 .service-meta span {
@@ -555,12 +634,12 @@ onMounted(async () => {
   @apply rounded-lg border border-dashed p-8 text-center text-gray-500;
 }
 
-.staff-grid {
-  @apply grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5;
+.staff-strip {
+  @apply flex gap-4 overflow-x-auto pb-2;
 }
 
 .staff-card {
-  @apply rounded-lg border bg-white p-4 text-center;
+  @apply min-w-36 border-y border-stone-200 bg-white px-4 py-5 text-center;
 }
 
 .staff-photo,
@@ -577,15 +656,19 @@ onMounted(async () => {
 }
 
 .gallery-grid {
-  @apply grid grid-cols-2 gap-3 md:grid-cols-3;
+  @apply grid grid-cols-2 gap-3 md:grid-cols-[1.2fr_0.8fr_1fr];
 }
 
 .gallery-image {
-  @apply aspect-square w-full rounded-lg object-cover;
+  @apply aspect-square w-full rounded-md object-cover;
+}
+
+.gallery-image:first-child {
+  @apply md:row-span-2 md:aspect-auto;
 }
 
 .provider-location {
-  @apply mb-10 flex flex-col gap-4 border-t md:flex-row md:items-center md:justify-between;
+  @apply mb-10 flex flex-col gap-4 border-t border-gray-200 md:flex-row md:items-center md:justify-between;
 }
 
 .provider-footer {

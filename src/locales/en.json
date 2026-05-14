@@ -334,6 +334,9 @@
     "share_title": "Book with {name}",
     "share_text": "Book with {name} on Agendaly. Choose the best time for your appointment:",
     "directions": "Directions",
+    "booking_panel_label": "Booking",
+    "booking_panel_title": "Choose a time with {name}",
+    "booking_panel_hint": "Quick links for bookings and directions",
     "services_count": "{count} services",
     "professionals_count": "{count} professionals",
     "trusted_business": "Trusted local business",
@@ -445,7 +448,7 @@
     "available_times_header": "Available Times",
     "get_directions": "Get Directions",
     "completing": "Completing your booking...",
-    "provider_page": "Provider page"
+    "provider_page": "View {name}'s page"
   },
   "calendar": {
     "title": "Calendar",

@@ -95,6 +95,7 @@ function createEmptyForm() {
     postal_code: '',
     country_code: countryCode,
     country_name: getDefaultCountryName(countryCode),
+    active: true,
     latitude: null as number | null,
     longitude: null as number | null,
     photo_url: null as string | null
@@ -155,6 +156,7 @@ function openEditModal(address: ProviderAddress) {
     postal_code: address.postal_code,
     country_code: address.country_code,
     country_name: address.country_name || '',
+    active: address.active !== false,
     latitude: address.latitude || null,
     longitude: address.longitude || null,
     photo_url: address.photo_url || null
