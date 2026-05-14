@@ -5,9 +5,10 @@ import { useAppointmentStore } from '@/stores/useAppointmentStore'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useSettingsStore } from '@/stores/useSettingsStore'
 import { supabase } from '@/lib/supabase'
-import { addDays, format, startOfDay } from 'date-fns'
-import type { TimeSlot, Provider, ProviderAddress } from '@/types'
+import { addDays, format, parseISO, startOfDay } from 'date-fns'
+import type { TimeSlot, Provider, ProviderAddress, BlockedDate } from '@/types'
 import { useI18n } from 'vue-i18n'
+import { rrulestr } from 'rrule'
 
 export function useBookingFlow(initialProviderId?: string, initialStaffId?: string) {
   const serviceStore = useServiceStore()
@@ -85,6 +86,42 @@ export function useBookingFlow(initialProviderId?: string, initialStaffId?: stri
     return dates
   })
 
+  function blockAppliesToDate(block: BlockedDate, date: Date, dateStr: string) {
+    if (!block.recurrence_rule) {
+      return block.start_date <= dateStr && block.end_date >= dateStr
+    }
+
+    try {
+      const blockStart = parseISO(`${block.start_date}T${block.start_time || '00:00:00'}`)
+      const rule = rrulestr(block.recurrence_rule, { dtstart: blockStart })
+      const dayStart = startOfDay(date)
+      const dayEnd = addDays(dayStart, 1)
+
+      return rule.between(dayStart, dayEnd, true).length > 0
+    } catch (e) {
+      console.error('Error checking recurring blocked date:', e)
+      return false
+    }
+  }
+
+  function blocksForDate(date: Date) {
+    const dateStr = format(date, 'yyyy-MM-dd')
+    const matchingBlocks = staffStore.blockedDates.filter(block =>
+      blockAppliesToDate(block, date, dateStr)
+    )
+
+    return {
+      blocksWholeDay: matchingBlocks.some(block => !block.start_time || !block.end_time),
+      timedBlocks: matchingBlocks
+        .filter(block => block.start_time && block.end_time)
+        .map(block => ({
+          id: block.id,
+          start_time: block.start_time,
+          end_time: block.end_time
+        }))
+    }
+  }
+
   const dayStatusMap = computed(() => {
     if (!selectedService.value || !selectedStaffId.value) return {}
     const map: Record<string, 'Available' | 'Busy' | 'Unavailable'> = {}
@@ -99,11 +136,8 @@ export function useBookingFlow(initialProviderId?: string, initialStaffId?: stri
         return
       }
 
-      const isBlocked = staffStore.blockedDates.some(block => 
-        dateStr >= block.start_date && dateStr <= block.end_date
-      )
-      
-      if (isBlocked) {
+      const { blocksWholeDay, timedBlocks } = blocksForDate(date)
+      if (blocksWholeDay) {
         map[dateStr] = 'Unavailable'
         return
       }
@@ -116,7 +150,7 @@ export function useBookingFlow(initialProviderId?: string, initialStaffId?: stri
         const isAvailable = appointmentStore.checkAvailability(
           selectedService.value,
           [schedule],
-          dayAppointments,
+          [...dayAppointments, ...timedBlocks],
           date
         )
         map[dateStr] = isAvailable ? 'Available' : 'Busy'
@@ -158,11 +192,8 @@ export function useBookingFlow(initialProviderId?: string, initialStaffId?: stri
       }
 
       const dateStr = format(selectedDate.value, 'yyyy-MM-dd')
-      const isBlocked = staffStore.blockedDates.some(block => 
-        dateStr >= block.start_date && dateStr <= block.end_date
-      )
-
-      if (isBlocked) {
+      const { blocksWholeDay, timedBlocks } = blocksForDate(selectedDate.value)
+      if (blocksWholeDay) {
         availableSlots.value = []
         return
       }
@@ -174,7 +205,7 @@ export function useBookingFlow(initialProviderId?: string, initialStaffId?: stri
       availableSlots.value = appointmentStore.generateSlots(
         selectedService.value,
         [schedule],
-        dayAppointments,
+        [...dayAppointments, ...timedBlocks],
         selectedDate.value
       )
       
