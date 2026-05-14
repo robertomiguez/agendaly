@@ -332,6 +332,9 @@
     "share_title": "Agende com {name}",
     "share_text": "Agende com {name} pela Agendaly. Escolha o melhor horário para seu atendimento:",
     "directions": "Como chegar",
+    "booking_panel_label": "Agendamento",
+    "booking_panel_title": "Escolha um horário com {name}",
+    "booking_panel_hint": "Links rápidos para agendamentos e rotas",
     "services_count": "{count} serviços",
     "professionals_count": "{count} profissionais",
     "trusted_business": "Negócio local de confiança",
@@ -443,7 +446,7 @@
     "available_times_header": "Horários Disponíveis",
     "get_directions": "Como Chegar",
     "completing": "Concluindo seu agendamento...",
-    "provider_page": "Página do profissional"
+    "provider_page": "Ver página de {name}"
   },
   "calendar": {
     "title": "Calendário",

@@ -106,7 +106,7 @@ const authStore = useAuthStore()
             :to="`/${providerInfo.slug}`"
           >
             <Home class="booking-success-icon" />
-            {{ $t('booking.provider_page') }}
+            {{ $t('booking.provider_page', { name: providerInfo.business_name }) }}
           </router-link>
         </div>
       </div>

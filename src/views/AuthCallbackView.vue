@@ -100,7 +100,7 @@ function handleRedirect() {
     } else {
         // Customer flow from header/normal login
         if (isNewUser) {
-            router.push('/profile?redirect=/')
+            router.push('/profile?redirect=/my-bookings')
         } else {
             router.push('/')
         }

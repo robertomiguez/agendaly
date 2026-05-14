@@ -6,7 +6,15 @@ import { useStaffStore } from '../../stores/useStaffStore'
 import { useAppointmentStore } from '../../stores/useAppointmentStore'
 import { useServiceStore } from '../../stores/useServiceStore'
 import { useAuthStore } from '../../stores/useAuthStore'
-// import { format } from 'date-fns'
+import { format } from 'date-fns'
+
+function nextWeekday(dayOfWeek: number) {
+  const date = new Date()
+  const daysUntil = (dayOfWeek - date.getDay() + 7) % 7 || 7
+  date.setDate(date.getDate() + daysUntil)
+  date.setHours(0, 0, 0, 0)
+  return date
+}
 
 // Mocks
 vi.mock('vue-i18n', () => ({
@@ -115,5 +123,96 @@ describe('useBookingFlow Slots', () => {
     
     // Verify reload happened
     expect(appointmentStore.generateSlots).toHaveBeenCalled()
+  })
+
+  it('keeps a partially blocked day available and applies the block to slots', async () => {
+    const staffStore = useStaffStore()
+    const appointmentStore = useAppointmentStore()
+    const serviceStore = useServiceStore()
+
+    const serviceId = 'srv1'
+    const staffId = 'staff1'
+    const friday = nextWeekday(5)
+    const fridayStr = format(friday, 'yyyy-MM-dd')
+
+    serviceStore.services = [
+      { id: serviceId, name: 'Service A', duration: 30, price: 100, provider_id: 'p1', active: true, buffer_before: 0, buffer_after: 0 } as any
+    ]
+    staffStore.staff = [
+      { id: staffId, name: 'Juan', role: 'staff', active: true, provider_id: 'p1' } as any
+    ]
+    staffStore.availability = [
+      { id: 'avail1', day_of_week: friday.getDay(), is_available: true, start_time: '09:00:00', end_time: '17:00:00', staff_id: staffId } as any
+    ]
+    staffStore.blockedDates = [
+      {
+        id: 'block-friday',
+        staff_id: staffId,
+        start_date: fridayStr,
+        end_date: fridayStr,
+        start_time: '09:00:00',
+        end_time: '13:35:00'
+      } as any
+    ]
+    appointmentStore.checkAvailability = vi.fn().mockReturnValue(true)
+    appointmentStore.generateSlots = vi.fn().mockReturnValue([
+      { time: '13:30', available: false, reason: 'Already booked' },
+      { time: '14:00', available: true }
+    ])
+
+    const booking = useBookingFlow(undefined, staffId)
+    booking.selectedServiceId.value = serviceId
+    booking.selectedDate.value = friday
+
+    expect(booking.getDateStatus(friday)).toBe('Available')
+
+    await booking.loadAvailableSlots()
+
+    expect(appointmentStore.generateSlots).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'block-friday',
+          start_time: '09:00:00',
+          end_time: '13:35:00'
+        })
+      ]),
+      friday
+    )
+    expect(booking.availableSlots.value).toEqual([
+      { time: '13:30', available: false, reason: 'Already booked' },
+      { time: '14:00', available: true }
+    ])
+  })
+
+  it('marks a whole-day blocked day unavailable', () => {
+    const staffStore = useStaffStore()
+    const serviceStore = useServiceStore()
+
+    const serviceId = 'srv1'
+    const staffId = 'staff1'
+    const thursday = nextWeekday(4)
+    const thursdayStr = format(thursday, 'yyyy-MM-dd')
+
+    serviceStore.services = [
+      { id: serviceId, name: 'Service A', duration: 30, price: 100, provider_id: 'p1', active: true, buffer_before: 0, buffer_after: 0 } as any
+    ]
+    staffStore.availability = [
+      { id: 'avail1', day_of_week: thursday.getDay(), is_available: true, start_time: '09:00:00', end_time: '17:00:00', staff_id: staffId } as any
+    ]
+    staffStore.blockedDates = [
+      {
+        id: 'block-thursday',
+        staff_id: staffId,
+        start_date: thursdayStr,
+        end_date: thursdayStr
+      } as any
+    ]
+
+    const booking = useBookingFlow(undefined, staffId)
+    booking.selectedServiceId.value = serviceId
+
+    expect(booking.getDateStatus(thursday)).toBe('Unavailable')
   })
 })

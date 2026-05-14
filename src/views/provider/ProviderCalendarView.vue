@@ -451,6 +451,18 @@ function getBlockTimeRangeForDate(block: BlockedDate, date: Date) {
   return { start, end };
 }
 
+function getBlockDurationInMinutes(block: BlockedDate) {
+  const blockStart = parseISO(
+    `${block.start_date}T${block.start_time || "00:00:00"}`,
+  );
+
+  const blockEnd = block.end_time
+    ? parseISO(`${block.start_date}T${block.end_time}`)
+    : addDays(parseISO(`${block.end_date || block.start_date}T00:00:00`), 1);
+
+  return differenceInMinutes(blockEnd, blockStart);
+}
+
 function getExistingBlockInstancesForDate(staffId: string, date: Date) {
   const dayStart = startOfDay(date);
   const dayEnd = endOfDay(date);
@@ -468,17 +480,12 @@ function getExistingBlockInstancesForDate(staffId: string, date: Date) {
         const rule = rrulestr(block.recurrence_rule, { dtstart: blockStart });
         const occurrences = rule.between(dayStart, dayEnd, true);
 
-        return occurrences.map((occurrence) => {
-          const duration = differenceInMinutes(
-            parseISO(`${block.start_date}T${block.end_time || "23:59:59"}`),
-            blockStart,
-          );
+        const duration = getBlockDurationInMinutes(block);
 
-          return {
-            start: occurrence,
-            end: addMinutes(occurrence, duration),
-          };
-        });
+        return occurrences.map((occurrence) => ({
+          start: occurrence,
+          end: addMinutes(occurrence, duration),
+        }));
       } catch (e) {
         console.error("Error checking recurring block conflict", e);
         return [];
@@ -574,10 +581,7 @@ function expandBlockedDates() {
         const blockStart = parseISO(
           block.start_date + "T" + (block.start_time || "00:00:00"),
         );
-        const blockEnd = parseISO(
-          block.start_date + "T" + (block.end_time || "00:00:00"),
-        );
-        const duration = differenceInMinutes(blockEnd, blockStart);
+        const duration = getBlockDurationInMinutes(block);
 
         const rule = rrulestr(block.recurrence_rule, { dtstart: blockStart });
         const occurrences = rule.between(start, end, true);

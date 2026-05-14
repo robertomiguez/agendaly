@@ -32,7 +32,12 @@ onMounted(async () => {
   await providerStore.fetchDashboardStats(authStore.provider.id)
 })
 
+const hasLocations = computed(() => providerStore.stats.activeLocations > 0)
 const hasStaff = computed(() => providerStore.stats.totalStaff > 0)
+const hasServices = computed(() => providerStore.stats.activeServices > 0)
+const canManageStaff = computed(() => hasLocations.value)
+const canManageServices = computed(() => hasLocations.value && hasStaff.value)
+const canManageSchedule = computed(() => hasLocations.value && hasStaff.value && hasServices.value)
 const providerName = computed(() => authStore.provider?.business_name || 'Provider')
 
 function formatCurrency(amount: number) {
@@ -44,11 +49,12 @@ function formatCurrency(amount: number) {
 }
 
 function goToServices() {
-  if (!hasStaff.value) return
+  if (!canManageServices.value) return
   router.push('/provider/services')
 }
 
 function goToStaff() {
+  if (!canManageStaff.value) return
   router.push('/provider/staff')
 }
 
@@ -57,12 +63,12 @@ function goToAddresses() {
 }
 
 function goToCalendar() {
-  if (!hasStaff.value) return
+  if (!canManageSchedule.value) return
   router.push('/provider/calendar')
 }
 
 function goToAvailability() {
-  if (!hasStaff.value) return
+  if (!canManageSchedule.value) return
   router.push('/provider/availability')
 }
 
@@ -82,7 +88,7 @@ const dashboardStats = computed(() => [
     hint: null,
     icon: Calendar,
     tone: 'amber',
-    disabled: !hasStaff.value,
+    disabled: !canManageSchedule.value,
     action: goToCalendar
   },
   {
@@ -102,7 +108,7 @@ const dashboardStats = computed(() => [
     hint: null,
     icon: Briefcase,
     tone: 'blue',
-    disabled: !hasStaff.value,
+    disabled: !canManageServices.value,
     action: goToServices
   },
   {
@@ -112,7 +118,7 @@ const dashboardStats = computed(() => [
     hint: null,
     icon: Users,
     tone: 'violet',
-    disabled: false,
+    disabled: !canManageStaff.value,
     action: goToStaff
   }
 ])
@@ -133,7 +139,7 @@ const quickActions = computed(() => [
     description: 'dashboard.quick_actions.staff_desc',
     icon: Users,
     tone: 'violet',
-    disabled: false,
+    disabled: !canManageStaff.value,
     action: goToStaff
   },
   {
@@ -142,7 +148,7 @@ const quickActions = computed(() => [
     description: 'dashboard.quick_actions.services_desc',
     icon: Plus,
     tone: 'amber',
-    disabled: !hasStaff.value,
+    disabled: !canManageServices.value,
     action: goToServices
   },
   {
@@ -151,7 +157,7 @@ const quickActions = computed(() => [
     description: 'dashboard.quick_actions.availability_desc',
     icon: Clock,
     tone: 'blue',
-    disabled: !hasStaff.value,
+    disabled: !canManageSchedule.value,
     action: goToAvailability
   },
   {
@@ -160,7 +166,7 @@ const quickActions = computed(() => [
     description: 'dashboard.quick_actions.calendar_desc',
     icon: Calendar,
     tone: 'green',
-    disabled: !hasStaff.value,
+    disabled: !canManageSchedule.value,
     action: goToCalendar
   }
 ])
@@ -257,7 +263,7 @@ const quickActions = computed(() => [
             <div v-if="providerStore.stats.todayAppointments === 0" class="empty-today">
               <Calendar />
               <p>{{ $t('dashboard.upcoming.no_appointments') }}</p>
-              <button v-if="hasStaff" class="text-command" type="button" @click="goToCalendar">
+              <button v-if="canManageSchedule" class="text-command" type="button" @click="goToCalendar">
                 {{ $t('dashboard.upcoming.view_full_calendar') }}
               </button>
             </div>
@@ -267,7 +273,7 @@ const quickActions = computed(() => [
                 <strong>{{ providerStore.stats.todayAppointments }}</strong>
                 <span>{{ $t('dashboard.upcoming.appointments_count', { count: providerStore.stats.todayAppointments }) }}</span>
               </div>
-              <button v-if="hasStaff" class="text-command" type="button" @click="goToCalendar">
+              <button v-if="canManageSchedule" class="text-command" type="button" @click="goToCalendar">
                 {{ $t('dashboard.upcoming.view_details') }}
               </button>
             </div>

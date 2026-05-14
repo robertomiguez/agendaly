@@ -30,6 +30,7 @@ const imageError = ref<string | null>(null)
 const staffError = ref<string | null>(null)
 const actionError = ref<string | null>(null)
 const images = ref<{ id: string, url: string, file?: File }[]>([])
+const MAX_SERVICE_BUFFER_MINUTES = 20
 
 const actionFeedback = computed(() => actionError.value || props.submitError || null)
 const requiresStaffSelection = computed(() => staffStore.staff.length > 0 && form.value.staff_ids.length === 0)
@@ -83,6 +84,7 @@ onMounted(async () => {
       // Default to first category
       form.value.category_id = categoryStore.categories[0]?.id || ''
     }
+    form.value.staff_ids = staffStore.staff.map(member => member.id)
   }
 })
 
@@ -135,6 +137,15 @@ const currencySymbol = computed(() => {
   }
 })
 
+function clampServiceBuffer(value: number) {
+  return Math.min(Math.max(Number(value) || 0, 0), MAX_SERVICE_BUFFER_MINUTES)
+}
+
+function normalizeServiceBuffers() {
+  form.value.buffer_before = clampServiceBuffer(form.value.buffer_before)
+  form.value.buffer_after = clampServiceBuffer(form.value.buffer_after)
+}
+
 function removeImage(index: number) {
     images.value.splice(index, 1)
 }
@@ -146,6 +157,7 @@ function clearStaffSelectionError() {
 
 async function handleSubmit() {
   actionError.value = null
+  normalizeServiceBuffers()
 
   if (form.value.staff_ids.length === 0) {
     staffError.value = 'modals.service.staff_required'
@@ -368,11 +380,13 @@ async function handleSubmit() {
           <label for="buffer-before" class="service-form-label">{{ $t('modals.service.buffer_before') }}</label>
           <input
             id="buffer-before"
-            v-model="form.buffer_before"
+            v-model.number="form.buffer_before"
             type="number"
             min="0"
+            :max="MAX_SERVICE_BUFFER_MINUTES"
             step="5"
             class="service-form-input"
+            @blur="form.buffer_before = clampServiceBuffer(form.buffer_before)"
           />
         </div>
 
@@ -381,11 +395,13 @@ async function handleSubmit() {
           <label for="buffer-after" class="service-form-label">{{ $t('modals.service.buffer_after') }}</label>
           <input
             id="buffer-after"
-            v-model="form.buffer_after"
+            v-model.number="form.buffer_after"
             type="number"
             min="0"
+            :max="MAX_SERVICE_BUFFER_MINUTES"
             step="5"
             class="service-form-input"
+            @blur="form.buffer_after = clampServiceBuffer(form.buffer_after)"
           />
         </div>
       </div>
