@@ -431,7 +431,7 @@ async function handleLoginSuccess() {
 }
 
 .booking-header-identities {
-  @apply mx-auto flex max-w-2xl items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm sm:gap-4;
+  @apply mx-auto flex max-w-2xl items-center justify-center gap-5 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm sm:gap-6;
 }
 
 .booking-provider-identity,
@@ -444,15 +444,15 @@ async function handleLoginSuccess() {
 }
 
 .booking-staff-identity {
-  @apply gap-2 border-l border-gray-200 pl-3 sm:pl-4;
+  @apply gap-2 border-l border-gray-200 pl-5 sm:pl-6;
 }
 
 .booking-provider-avatar {
-  @apply h-14 w-14 flex-shrink-0 rounded-full border-2 border-white object-cover shadow-sm;
+  @apply h-12 w-12 flex-shrink-0 rounded-full border-2 border-white object-cover shadow-sm;
 }
 
 .booking-staff-avatar {
-  @apply h-11 w-11 flex-shrink-0 rounded-full border-2 border-white object-cover shadow-sm;
+  @apply h-12 w-12 flex-shrink-0 rounded-full border-2 border-white object-cover shadow-sm;
 }
 
 .booking-avatar-fallback {
@@ -467,12 +467,9 @@ async function handleLoginSuccess() {
   @apply truncate text-xs font-semibold text-gray-500;
 }
 
-.booking-identity-text h1 {
-  @apply truncate text-xl font-bold text-gray-900 sm:text-2xl;
-}
-
+.booking-identity-text h1,
 .booking-staff-name {
-  @apply truncate text-sm font-semibold text-gray-900 sm:text-base;
+  @apply truncate text-base font-bold text-gray-900 sm:text-lg;
 }
 
 .booking-description {
