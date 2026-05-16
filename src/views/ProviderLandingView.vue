@@ -8,6 +8,7 @@ import { fetchStaff } from '@/services/staffService'
 import { useSettingsStore } from '@/stores/useSettingsStore'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useNotifications } from '@/composables/useNotifications'
+import { useSeo } from '@/composables/useSeo'
 import { getProviderSlugFromHost } from '@/lib/publicHost'
 import type { Provider, ProviderAddress, Service, Staff } from '@/types'
 import { ArrowRight, CalendarDays, Check, Clock, ListChecks, MapPin, Scissors, Share2, Star, Users } from 'lucide-vue-next'
@@ -22,6 +23,7 @@ const settingsStore = useSettingsStore()
 const authStore = useAuthStore()
 const { t } = useI18n()
 const { showSuccess, showError } = useNotifications()
+const { setSeo } = useSeo()
 
 const provider = ref<Provider | null>(null)
 const services = ref<Service[]>([])
@@ -119,10 +121,57 @@ function getDirectionsUrl(address: ProviderAddress) {
   return `https://www.google.com/maps/search/?api=1&query=${query}`
 }
 
+function compactSeoDescription(value: string) {
+  const compact = value.replace(/\s+/g, ' ').trim()
+  if (compact.length <= 155) return compact
+  return `${compact.slice(0, 152).trim()}...`
+}
+
+function getProviderCanonical(slug?: string | null) {
+  return slug ? `https://agendaly.co/${slug}` : 'https://agendaly.co'
+}
+
+function getProviderSeoDescription(publicProvider: Provider) {
+  const providerDescription = publicProvider.description?.trim()
+  if (providerDescription) {
+    return compactSeoDescription(providerDescription)
+  }
+
+  const serviceNames = activeServices.value.slice(0, 3).map(service => service.name)
+  const servicesText = serviceNames.length ? ` for ${serviceNames.join(', ')}` : ''
+  const locationText = primaryAddress.value?.city
+    ? ` in ${[primaryAddress.value.city, primaryAddress.value.state].filter(Boolean).join(', ')}`
+    : ''
+
+  return compactSeoDescription(`Book appointments with ${publicProvider.business_name}${servicesText}${locationText}.`)
+}
+
+function setProviderNotFoundSeo(slug?: string | null) {
+  setSeo({
+    title: 'Business not found | Agendaly',
+    description: 'This Agendaly business page could not be found.',
+    canonical: getProviderCanonical(slug),
+    image: 'https://agendaly.co/og-image.png',
+    robots: 'noindex,nofollow'
+  })
+}
+
+function setProviderSeo(publicProvider: Provider) {
+  setSeo({
+    title: `Book with ${publicProvider.business_name} | Agendaly`,
+    description: getProviderSeoDescription(publicProvider),
+    canonical: getProviderCanonical(publicProvider.slug),
+    image: publicProvider.logo_url || featuredImages.value[0] || 'https://agendaly.co/og-image.png',
+    imageAlt: publicProvider.business_name,
+    robots: 'index,follow'
+  })
+}
+
 onMounted(async () => {
   if (!resolvedSlug.value) {
     loading.value = false
     error.value = t('provider_page.not_found_message')
+    setProviderNotFoundSeo()
     return
   }
 
@@ -132,6 +181,7 @@ onMounted(async () => {
 
     if (!publicProvider) {
       error.value = t('provider_page.not_found_message')
+      setProviderNotFoundSeo(resolvedSlug.value)
       return
     }
 
@@ -142,9 +192,11 @@ onMounted(async () => {
 
     services.value = providerServices
     staff.value = providerStaff
+    setProviderSeo(publicProvider)
   } catch (e) {
     console.error('Failed to load provider page:', e)
     error.value = t('provider_page.load_error')
+    setProviderNotFoundSeo(resolvedSlug.value)
   } finally {
     loading.value = false
   }
