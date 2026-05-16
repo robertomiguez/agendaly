@@ -6,6 +6,8 @@ const DEFAULT_URL = 'https://agendaly.co'
 const DEFAULT_IMAGE = 'https://agendaly.co/og-image.png'
 const SITE_NAME = 'Agendaly'
 
+type JsonLd = Record<string, unknown>
+
 export interface SeoOptions {
   title?: string
   description?: string
@@ -14,6 +16,7 @@ export interface SeoOptions {
   imageAlt?: string
   robots?: string
   type?: string
+  structuredData?: JsonLd | JsonLd[]
 }
 
 let activeOwner: symbol | null = null
@@ -54,6 +57,24 @@ function setCanonical(href: string) {
   tag.href = href
 }
 
+function setStructuredData(data?: JsonLd | JsonLd[]) {
+  document.head
+    .querySelectorAll<HTMLScriptElement>('script[data-agendaly-json-ld="true"]')
+    .forEach(tag => tag.remove())
+
+  if (!data) return
+
+  const entries = Array.isArray(data) ? data : [data]
+
+  entries.forEach(entry => {
+    const tag = document.createElement('script')
+    tag.type = 'application/ld+json'
+    tag.dataset.agendalyJsonLd = 'true'
+    tag.textContent = JSON.stringify(entry)
+    document.head.appendChild(tag)
+  })
+}
+
 export function applySeo(options: SeoOptions = {}) {
   if (typeof document === 'undefined') return
 
@@ -80,6 +101,7 @@ export function applySeo(options: SeoOptions = {}) {
   setMeta('name', 'twitter:title', title)
   setMeta('name', 'twitter:description', description)
   setMeta('name', 'twitter:image', image)
+  setStructuredData(options.structuredData)
 }
 
 export function useSeo(initialOptions?: SeoOptions) {

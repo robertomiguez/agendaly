@@ -22,7 +22,25 @@ useSeo({
   title: 'Agendaly | Online booking for service providers',
   description: 'Create a branded booking page for services, staff, locations, and appointments with Agendaly.',
   canonical: 'https://agendaly.co/',
-  image: 'https://agendaly.co/og-image.png'
+  image: 'https://agendaly.co/og-image.png',
+  structuredData: {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        '@id': 'https://agendaly.co/#website',
+        name: 'Agendaly',
+        url: 'https://agendaly.co/'
+      },
+      {
+        '@type': 'Organization',
+        '@id': 'https://agendaly.co/#organization',
+        name: 'Agendaly',
+        url: 'https://agendaly.co/',
+        logo: 'https://agendaly.co/icon-512.png'
+      }
+    ]
+  }
 })
 
 const valueItems = computed(() => [
