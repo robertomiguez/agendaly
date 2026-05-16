@@ -3,8 +3,16 @@ import LegalDocumentViewer from '@/components/legal/LegalDocumentViewer.vue'
 import BackButton from '@/components/common/BackButton.vue'
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
+import { useSeo } from '@/composables/useSeo'
 
 const route = useRoute()
+
+useSeo({
+  title: 'Terms of Service | Agendaly',
+  description: 'Read the Agendaly terms of service for customers and service providers.',
+  canonical: 'https://agendaly.co/terms',
+  image: 'https://agendaly.co/og-image.png'
+})
 
 const backDestination = computed(() => {
   const from = route.query.from as string

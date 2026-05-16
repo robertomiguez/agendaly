@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import ProviderLandingView from './ProviderLandingView.vue'
 import { getProviderSlugFromHost } from '@/lib/publicHost'
 import { useAuthStore } from '@/stores/useAuthStore'
+import { useSeo } from '@/composables/useSeo'
 import { ArrowRight, CalendarCheck, Clock, Globe2, Link, MapPin, Scissors, Share2, Smartphone, UserPlus, Users } from 'lucide-vue-next'
 import heroManicure from '@/assets/images/hero_background_manicure_1765115664380.png'
 import heroBarber from '@/assets/images/hero_barber_service_1765116285430.png'
@@ -16,6 +17,13 @@ const authStore = useAuthStore()
 const { t } = useI18n()
 const providerSlug = computed(() => getProviderSlugFromHost())
 const supportEmail = 'agendaly.co+support@gmail.com'
+
+useSeo({
+  title: 'Agendaly | Online booking for service providers',
+  description: 'Create a branded booking page for services, staff, locations, and appointments with Agendaly.',
+  canonical: 'https://agendaly.co/',
+  image: 'https://agendaly.co/og-image.png'
+})
 
 const valueItems = computed(() => [
   {
