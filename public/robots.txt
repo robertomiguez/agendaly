@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+Disallow: /admin$
+Disallow: /admin/
+Disallow: /super-admin$
+Disallow: /super-admin/
+Disallow: /provider$
+Disallow: /provider/
+Disallow: /login$
+Disallow: /login/
+Disallow: /auth$
+Disallow: /auth/
+Disallow: /profile$
+Disallow: /profile/
+Disallow: /my-bookings$
+Disallow: /my-bookings/
+Disallow: /deactivated$
+Disallow: /deactivated/
+
+Sitemap: https://agendaly.co/sitemap.xml
